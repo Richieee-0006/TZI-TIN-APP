@@ -6,7 +6,7 @@ Kvíz na opakování přednášek KI/TIN. Vzor: MTCNA-app (stejné režimy a UI)
 
 - `tzi_trener.py`: server (stdlib `http.server`, port 5051) a celé UI. `HTML` je řetězec s inline CSS a JS, `/api/*` routy jsou dole.
 - `banky/*.json`: jedna banka na přednášku, aplikace je najde sama. Typy otázek: `choice` (options, correct, explanation) a `input` (answer, solution).
-- `build_bank.py`: generuje banku 1. přednášky. Příklady na výsledek se počítají ve skriptu, odpovědi neměnit ručně v JSON.
+- `build_bank.py`, `build_bank_2.py`: generují banku 1. a 2. přednášky. Příklady na výsledek se počítají ve skriptu, odpovědi neměnit ručně v JSON.
 - `progress.json`: postup, vzniká za běhu, není v gitu.
 
 ## Nová přednáška

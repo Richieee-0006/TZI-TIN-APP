@@ -76,7 +76,7 @@ Jedna přednáška = jeden soubor `banky/NN-RRRR-MM-DD.json`. Formát:
 ]}
 ```
 
-Banka první přednášky se generuje skriptem `build_bank.py`, který odpovědi i postupy počítá, takže jsou správně. Nová přednáška = nový soubor v `banky/`, aplikace ho najde sama.
+Banky 1. a 2. přednášky se generují skripty `build_bank.py` a `build_bank_2.py`, které odpovědi i postupy počítá, takže jsou správně. Nová přednáška = nový soubor v `banky/`, aplikace ho najde sama.
 
 ## Licence
 

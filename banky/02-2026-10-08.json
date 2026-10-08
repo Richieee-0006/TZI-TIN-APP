@@ -1,0 +1,720 @@
+{
+ "title": "Výroková logika, kvantifikátory a výstavba matematiky",
+ "lecture": 2,
+ "date": "2026-10-08",
+ "questions": [
+  {
+   "type": "choice",
+   "text": "Co je výrok?",
+   "options": {
+    "A": "věta obsahující proměnnou",
+    "B": "věta, které lze přiřadit právě jednu pravdivostní hodnotu",
+    "C": "věta, která je vždy pravdivá",
+    "D": "jakákoli oznamovací věta"
+   },
+   "correct": [
+    "B"
+   ],
+   "explanation": "Výrok je věta určitého jazyka, které lze přiřadit právě jednu z hodnot pravda (1) / nepravda (0).",
+   "number": 1,
+   "id": "2-1"
+  },
+  {
+   "type": "choice",
+   "text": "Která z vět je výrok?",
+   "options": {
+    "A": "x > 0",
+    "B": "4 je sudé",
+    "C": "Bude pršet",
+    "D": "Zavři dveře"
+   },
+   "correct": [
+    "B"
+   ],
+   "explanation": "„4 je sudé“ má právě jednu hodnotu (pravda). „Bude pršet“ se na přednášce označilo jako ne-výrok (hodnotu nelze určit), „x > 0“ je výroková forma.",
+   "number": 2,
+   "id": "2-2"
+  },
+  {
+   "type": "choice",
+   "text": "Jakou pravdivostní hodnotu má věta „3 je sudé“?",
+   "options": {
+    "A": "0",
+    "B": "nelze určit",
+    "C": "není výrok",
+    "D": "1"
+   },
+   "correct": [
+    "A"
+   ],
+   "explanation": "3 není sudé, je to výrok s hodnotou 0.",
+   "number": 3,
+   "id": "2-3"
+  },
+  {
+   "type": "choice",
+   "text": "Kdy je konjunkce x ∧ y pravdivá?",
+   "options": {
+    "A": "když jsou pravdivé oba výroky",
+    "B": "když je pravdivý aspoň jeden výrok",
+    "C": "když jsou oba nepravdivé",
+    "D": "když mají výroky různou hodnotu"
+   },
+   "correct": [
+    "A"
+   ],
+   "explanation": "Konjunkce („a“) je pravdivá jen když platí x i y.",
+   "number": 4,
+   "id": "2-4"
+  },
+  {
+   "type": "choice",
+   "text": "Kdy je disjunkce x ∨ y nepravdivá?",
+   "options": {
+    "A": "když jsou oba pravdivé",
+    "B": "když je nepravdivý aspoň jeden",
+    "C": "nikdy",
+    "D": "když jsou oba výroky nepravdivé"
+   },
+   "correct": [
+    "D"
+   ],
+   "explanation": "Disjunkce („nebo“) je nepravdivá jen v řádku x = 0, y = 0.",
+   "number": 5,
+   "id": "2-5"
+  },
+  {
+   "type": "choice",
+   "text": "Kdy je implikace x ⇒ y nepravdivá?",
+   "options": {
+    "A": "jen když x = 0 a y = 1",
+    "B": "když jsou x i y pravdivé",
+    "C": "jen když x = 1 a y = 0",
+    "D": "když jsou x i y nepravdivé"
+   },
+   "correct": [
+    "C"
+   ],
+   "explanation": "Z pravdy nesmí plynout nepravda: x ⇒ y je 0 jen pro (1, 0), ve všech ostatních řádcích je 1.",
+   "number": 6,
+   "id": "2-6"
+  },
+  {
+   "type": "choice",
+   "text": "Kdy je ekvivalence x ⇔ y pravdivá?",
+   "options": {
+    "A": "když je aspoň jedno z nich pravdivé",
+    "B": "vždy",
+    "C": "když mají x a y stejnou pravdivostní hodnotu",
+    "D": "když je x pravdivé a y nepravdivé"
+   },
+   "correct": [
+    "C"
+   ],
+   "explanation": "Ekvivalence je 1 pro (1,1) a (0,0).",
+   "number": 7,
+   "id": "2-7"
+  },
+  {
+   "type": "choice",
+   "text": "Jak zní obměna implikace x ⇒ y?",
+   "options": {
+    "A": "¬x ⇒ y",
+    "B": "¬y ⇒ ¬x",
+    "C": "y ⇒ x",
+    "D": "¬x ⇒ ¬y"
+   },
+   "correct": [
+    "B"
+   ],
+   "explanation": "Obměna je ¬y ⇒ ¬x. Obrácení je y ⇒ x, to s původní implikací ekvivalentní není.",
+   "number": 8,
+   "id": "2-8"
+  },
+  {
+   "type": "choice",
+   "text": "Mají implikace x ⇒ y a její obměna stejnou pravdivostní hodnotu?",
+   "options": {
+    "A": "ano, vždy",
+    "B": "jen když je x pravdivé",
+    "C": "jen když je y pravdivé",
+    "D": "ne, nikdy"
+   },
+   "correct": [
+    "A"
+   ],
+   "explanation": "Ano, x ⇒ y ≡ ¬y ⇒ ¬x. Je to důležité tvrzení z přednášky.",
+   "number": 9,
+   "id": "2-9"
+  },
+  {
+   "type": "choice",
+   "text": "Mají implikace x ⇒ y a její obrácení y ⇒ x vždy stejnou pravdivostní hodnotu?",
+   "options": {
+    "A": "ano, pokud je y nepravdivé",
+    "B": "ano, vždy",
+    "C": "ne, nemusí",
+    "D": "ano, pokud je x pravdivé"
+   },
+   "correct": [
+    "C"
+   ],
+   "explanation": "Liší se v řádcích (1,0) a (0,1). Obrácení implikace nemusí mít stejnou hodnotu.",
+   "number": 10,
+   "id": "2-10"
+  },
+  {
+   "type": "choice",
+   "text": "Které tři způsoby důkazu implikace x ⇒ y se probíraly?",
+   "options": {
+    "A": "přímý, grafický, numerický",
+    "B": "přímý, nepřímý (obměnou), sporem",
+    "C": "sporem, indukcí, výčtem",
+    "D": "tabulkou, grafem, slovně"
+   },
+   "correct": [
+    "B"
+   ],
+   "explanation": "1) přímý (řetěz implikací), 2) nepřímý (obměnou), 3) sporem.",
+   "number": 11,
+   "id": "2-11"
+  },
+  {
+   "type": "choice",
+   "text": "Jak vypadá přímý důkaz implikace x ⇒ y?",
+   "options": {
+    "A": "předpokládá se x ∧ ¬y a hledá se spor",
+    "B": "dosadí se všechny hodnoty do tabulky",
+    "C": "řetěz implikací x ⇒ y₁, y₁ ⇒ y₂, ..., yₙ ⇒ y",
+    "D": "dokazuje se ¬y ⇒ ¬x"
+   },
+   "correct": [
+    "C"
+   ],
+   "explanation": "Přímý důkaz je řetěz implikací od předpokladu k závěru.",
+   "number": 12,
+   "id": "2-12"
+  },
+  {
+   "type": "choice",
+   "text": "Co se dokazuje při nepřímém důkazu implikace x ⇒ y?",
+   "options": {
+    "A": "ekvivalence x ⇔ y",
+    "B": "její obrácení y ⇒ x",
+    "C": "její obměna ¬y ⇒ ¬x",
+    "D": "negace ¬x"
+   },
+   "correct": [
+    "C"
+   ],
+   "explanation": "Dokáže se obměna ¬y ⇒ ¬x, která je s implikací ekvivalentní.",
+   "number": 13,
+   "id": "2-13"
+  },
+  {
+   "type": "choice",
+   "text": "Jak se postupuje při důkazu sporem implikace x ⇒ y?",
+   "options": {
+    "A": "sestaví se pravdivostní tabulka",
+    "B": "předpokládá se ¬x ∧ y",
+    "C": "předpokládá se y a odvodí se x",
+    "D": "předpokládá se x ∧ ¬y, z toho se odvodí nepravdivé tvrzení Z"
+   },
+   "correct": [
+    "D"
+   ],
+   "explanation": "(x ∧ ¬y) ⇒ Z, kde Z je nepravda; předpoklad „x platí a y ne“ tedy neplatí.",
+   "number": 14,
+   "id": "2-14"
+  },
+  {
+   "type": "choice",
+   "text": "Co musíme dokázat, když dokazujeme ekvivalenci x ⇔ y?",
+   "options": {
+    "A": "obě implikace x ⇒ y a y ⇒ x",
+    "B": "jen ¬y ⇒ ¬x",
+    "C": "x ∧ y",
+    "D": "jen x ⇒ y"
+   },
+   "correct": [
+    "A"
+   ],
+   "explanation": "(x ⇔ y) ⇔ (x ⇒ y) ∧ (y ⇒ x).",
+   "number": 15,
+   "id": "2-15"
+  },
+  {
+   "type": "choice",
+   "text": "Co je výroková formule?",
+   "options": {
+    "A": "zápis z písmen, logických spojek a závorek, z něhož se po dosazení výroků stane výrok",
+    "B": "množina všech pravdivých výroků",
+    "C": "věta s proměnnou, která se stane výrokem po dosazení čísla",
+    "D": "věta, která je vždy pravdivá"
+   },
+   "correct": [
+    "A"
+   ],
+   "explanation": "Výroková formule: písmena + logické spojky + závorky; po dosazení výroků za písmena vznikne výrok.",
+   "number": 16,
+   "id": "2-16"
+  },
+  {
+   "type": "choice",
+   "text": "Co je tautologie?",
+   "options": {
+    "A": "formule s aspoň jednou spojkou",
+    "B": "formule se stejnými písmeny jako jiná formule",
+    "C": "formule, která je po dosazení jakýchkoli hodnot vždy pravdivá",
+    "D": "formule, která je vždy nepravdivá"
+   },
+   "correct": [
+    "C"
+   ],
+   "explanation": "Tautologie dává při libovolném dosazení vždy pravdivý výrok.",
+   "number": 17,
+   "id": "2-17"
+  },
+  {
+   "type": "choice",
+   "text": "Která formule je tautologie?",
+   "options": {
+    "A": "x ∧ ¬x",
+    "B": "x ∧ y",
+    "C": "x ∨ ¬x",
+    "D": "x ⇒ ¬x"
+   },
+   "correct": [
+    "C"
+   ],
+   "explanation": "x ∨ ¬x je pravdivé pro x = 1 i x = 0. Ostatní jsou pro nějaké dosazení nepravdivé.",
+   "number": 18,
+   "id": "2-18"
+  },
+  {
+   "type": "choice",
+   "text": "Kdy jsou dvě výrokové formule ekvivalentní?",
+   "options": {
+    "A": "jsou obě tautologie",
+    "B": "mají stejný počet písmen",
+    "C": "obsahují stejné spojky",
+    "D": "obsahují stejná písmena a po dosazení mají vždy stejnou pravdivostní hodnotu"
+   },
+   "correct": [
+    "D"
+   ],
+   "explanation": "Ekvivalentní formule: stejná písmena a po jakémkoli dosazení vždy stejná pravdivostní hodnota.",
+   "number": 19,
+   "id": "2-19"
+  },
+  {
+   "type": "choice",
+   "text": "Čemu je ekvivalentní ¬(x ∧ y)? (De Morganův zákon)",
+   "options": {
+    "A": "¬x ∨ ¬y",
+    "B": "¬x ∧ ¬y",
+    "C": "x ∨ y",
+    "D": "¬x ⇒ y"
+   },
+   "correct": [
+    "A"
+   ],
+   "explanation": "¬(x ∧ y) ≡ ¬x ∨ ¬y; tabulkou vyjde (0,1,1,1) na obou stranách.",
+   "number": 20,
+   "id": "2-20"
+  },
+  {
+   "type": "choice",
+   "text": "Čemu je ekvivalentní ¬(x ∨ y)? (De Morganův zákon)",
+   "options": {
+    "A": "x ⇒ y",
+    "B": "¬x ∧ ¬y",
+    "C": "x ∧ y",
+    "D": "¬x ∨ ¬y"
+   },
+   "correct": [
+    "B"
+   ],
+   "explanation": "¬(x ∨ y) ≡ ¬x ∧ ¬y; tabulkou vyjde (0,0,0,1) na obou stranách.",
+   "number": 21,
+   "id": "2-21"
+  },
+  {
+   "type": "choice",
+   "text": "Co je výroková forma?",
+   "options": {
+    "A": "formule bez spojek",
+    "B": "libovolný pravdivý výrok",
+    "C": "věta bez proměnné",
+    "D": "věta určitého jazyka obsahující proměnnou, např. V(x)"
+   },
+   "correct": [
+    "D"
+   ],
+   "explanation": "Výroková forma obsahuje proměnnou (nebo několik); výrokem se stane po dosazení z definičního oboru.",
+   "number": 22,
+   "id": "2-22"
+  },
+  {
+   "type": "choice",
+   "text": "Je věta „x² + y² = 1“ výrok?",
+   "options": {
+    "A": "ano, je vždy nepravdivá",
+    "B": "ne, je to výroková forma; výrokem se stane po dosazení za x a y",
+    "C": "ano, je vždy pravdivá",
+    "D": "ne, je to tautologie"
+   },
+   "correct": [
+    "B"
+   ],
+   "explanation": "Obsahuje proměnné, takže je to forma; po dosazení vhodných prvků z definičního oboru vznikne výrok.",
+   "number": 23,
+   "id": "2-23"
+  },
+  {
+   "type": "choice",
+   "text": "Co je definiční obor výrokové formy V(x)?",
+   "options": {
+    "A": "množina D, pro jejíž každé c je V(c) výrok",
+    "B": "prázdná množina",
+    "C": "množina c, pro která je V(c) pravdivé",
+    "D": "množina všech hodnot x"
+   },
+   "correct": [
+    "A"
+   ],
+   "explanation": "Definiční obor: V(c) je výrok pro každé c ∈ D (pravdivý nebo nepravdivý).",
+   "number": 24,
+   "id": "2-24"
+  },
+  {
+   "type": "choice",
+   "text": "Co je obor pravdivosti výrokové formy V(x)?",
+   "options": {
+    "A": "množina c, pro která je V(c) nepravdivé",
+    "B": "množina c z definičního oboru, pro která je V(c) pravdivý výrok",
+    "C": "množina hodnot funkce",
+    "D": "celý definiční obor"
+   },
+   "correct": [
+    "B"
+   ],
+   "explanation": "Obor pravdivosti je podmnožina definičního oboru s pravdivým V(c). Pro √x = 5, D: x ≥ 0 je to {25}.",
+   "number": 25,
+   "id": "2-25"
+  },
+  {
+   "type": "choice",
+   "text": "Co znamená zápis a ∈ X?",
+   "options": {
+    "A": "a není prvkem množiny X",
+    "B": "a je rovno X",
+    "C": "a je podmnožinou X",
+    "D": "a je prvkem množiny X"
+   },
+   "correct": [
+    "D"
+   ],
+   "explanation": "∈ čteme „je prvkem“, ∉ čteme „není prvkem“.",
+   "number": 26,
+   "id": "2-26"
+  },
+  {
+   "type": "choice",
+   "text": "Jak se při negaci mění kvantifikátory?",
+   "options": {
+    "A": "zůstanou stejné",
+    "B": "∀ → ∃ a ∃ → ∀, negace se přesune dovnitř",
+    "C": "∃ se změní na ∃!",
+    "D": "∀ → ∀, ∃ → ∃, jen se přidá ¬"
+   },
+   "correct": [
+    "B"
+   ],
+   "explanation": "¬(∀x V(x)) ⇔ ∃x ¬V(x) a ¬(∃x V(x)) ⇔ ∀x ¬V(x).",
+   "number": 27,
+   "id": "2-27"
+  },
+  {
+   "type": "choice",
+   "text": "Čemu je ekvivalentní ¬(∀x ∈ U; V(x))?",
+   "options": {
+    "A": "∃x ∈ U; V(x)",
+    "B": "¬(∃x ∈ U; V(x))",
+    "C": "∀x ∈ U; ¬V(x)",
+    "D": "∃x ∈ U; ¬V(x)"
+   },
+   "correct": [
+    "D"
+   ],
+   "explanation": "Neplatí, že V platí pro všechna x, právě když existuje x, pro které V neplatí.",
+   "number": 28,
+   "id": "2-28"
+  },
+  {
+   "type": "choice",
+   "text": "Čemu je ekvivalentní ¬(∃x ∈ U; V(x))?",
+   "options": {
+    "A": "∃!x ∈ U; V(x)",
+    "B": "∀x ∈ U; ¬V(x)",
+    "C": "∃x ∈ U; ¬V(x)",
+    "D": "∀x ∈ U; V(x)"
+   },
+   "correct": [
+    "B"
+   ],
+   "explanation": "Neexistuje x s V(x), právě když pro všechna x platí ¬V(x).",
+   "number": 29,
+   "id": "2-29"
+  },
+  {
+   "type": "choice",
+   "text": "Co znamená kvantifikátor ∃!?",
+   "options": {
+    "A": "pro každý prvek",
+    "B": "neexistuje žádný prvek",
+    "C": "existuje aspoň jeden prvek",
+    "D": "existuje právě jeden prvek"
+   },
+   "correct": [
+    "D"
+   ],
+   "explanation": "∃! je kvantifikátor jednoznačné existence. Příklad: ∃!x ∈ ℝ; x = 5.",
+   "number": 30,
+   "id": "2-30"
+  },
+  {
+   "type": "choice",
+   "text": "Je výrok „∀x ∈ ℝ; x² ≥ 0“ pravdivý?",
+   "options": {
+    "A": "ano",
+    "B": "ne",
+    "C": "není výrok",
+    "D": "jen pro kladná x"
+   },
+   "correct": [
+    "A"
+   ],
+   "explanation": "Druhá mocnina reálného čísla je vždy nezáporná.",
+   "number": 31,
+   "id": "2-31"
+  },
+  {
+   "type": "choice",
+   "text": "Čím začíná logická výstavba matematiky?",
+   "options": {
+    "A": "lemmaty",
+    "B": "definicemi všech pojmů",
+    "C": "větami, které se dokazují",
+    "D": "axiomy, o kterých předpokládáme, že platí"
+   },
+   "correct": [
+    "D"
+   ],
+   "explanation": "Na počátku jsou axiomy; předpokládáme jejich platnost.",
+   "number": 32,
+   "id": "2-32"
+  },
+  {
+   "type": "choice",
+   "text": "Co jsou věty v logické výstavbě matematiky?",
+   "options": {
+    "A": "definice nových pojmů",
+    "B": "předpoklady, které se nedokazují",
+    "C": "pravdivé výroky odvoditelné pravidly logiky z axiomů nebo dříve dokázaných vět",
+    "D": "pojmy, které se nedefinují"
+   },
+   "correct": [
+    "C"
+   ],
+   "explanation": "Věta je pravdivý výrok, který lze odvodit pomocí pravidel logiky z axiomů nebo z předcházejících vět.",
+   "number": 33,
+   "id": "2-33"
+  },
+  {
+   "type": "choice",
+   "text": "Co je lemma?",
+   "options": {
+    "A": "primitivní pojem",
+    "B": "definice",
+    "C": "axiom",
+    "D": "věta, která se dokazuje, ale slouží spíš jako pomocná pro důkaz dalších vět"
+   },
+   "correct": [
+    "D"
+   ],
+   "explanation": "Lemma je pomocná věta; rozdíl proti větě bývá nevýrazný.",
+   "number": 34,
+   "id": "2-34"
+  },
+  {
+   "type": "choice",
+   "text": "Které pojmy se v axiomech nedefinují (primitivní pojmy)?",
+   "options": {
+    "A": "např. věta a lemma",
+    "B": "např. bod, přímka, čas, hmotnost",
+    "C": "např. rychlost a zrychlení",
+    "D": "všechny pojmy se definují"
+   },
+   "correct": [
+    "B"
+   ],
+   "explanation": "Primitivní pojmy se nedefinují; další pojmy (rychlost, zrychlení) se zavádějí pomocí definic.",
+   "number": 35,
+   "id": "2-35"
+  },
+  {
+   "type": "input",
+   "text": "Pravdivostní hodnoty formule x ∧ y pro řádky (x,y) = 11, 10, 01, 00",
+   "hint": "čtyři cifry bez mezer, např. 0110",
+   "answer": "1000",
+   "solution": "Hodnoty pro řádky (x,y) = 11, 10, 01, 00:\nx y | x ∧ y\n----+------\n1 1 | 1\n1 0 | 0\n0 1 | 0\n0 0 | 0\nOdpověď čti shora dolů: 1000",
+   "number": 36,
+   "id": "2-36"
+  },
+  {
+   "type": "input",
+   "text": "Pravdivostní hodnoty formule x ∨ y pro řádky (x,y) = 11, 10, 01, 00",
+   "hint": "čtyři cifry bez mezer, např. 0110",
+   "answer": "1110",
+   "solution": "Hodnoty pro řádky (x,y) = 11, 10, 01, 00:\nx y | x ∨ y\n----+------\n1 1 | 1\n1 0 | 1\n0 1 | 1\n0 0 | 0\nOdpověď čti shora dolů: 1110",
+   "number": 37,
+   "id": "2-37"
+  },
+  {
+   "type": "input",
+   "text": "Pravdivostní hodnoty formule x ⇒ y pro řádky (x,y) = 11, 10, 01, 00",
+   "hint": "čtyři cifry bez mezer, např. 0110",
+   "answer": "1011",
+   "solution": "Hodnoty pro řádky (x,y) = 11, 10, 01, 00:\nx y | x ⇒ y\n----+------\n1 1 | 1\n1 0 | 0\n0 1 | 1\n0 0 | 1\nOdpověď čti shora dolů: 1011",
+   "number": 38,
+   "id": "2-38"
+  },
+  {
+   "type": "input",
+   "text": "Pravdivostní hodnoty formule y ⇒ x pro řádky (x,y) = 11, 10, 01, 00",
+   "hint": "čtyři cifry bez mezer, např. 0110",
+   "answer": "1101",
+   "solution": "Hodnoty pro řádky (x,y) = 11, 10, 01, 00:\nx y | y ⇒ x\n----+------\n1 1 | 1\n1 0 | 1\n0 1 | 0\n0 0 | 1\nOdpověď čti shora dolů: 1101",
+   "number": 39,
+   "id": "2-39"
+  },
+  {
+   "type": "input",
+   "text": "Pravdivostní hodnoty formule x ⇔ y pro řádky (x,y) = 11, 10, 01, 00",
+   "hint": "čtyři cifry bez mezer, např. 0110",
+   "answer": "1001",
+   "solution": "Hodnoty pro řádky (x,y) = 11, 10, 01, 00:\nx y | x ⇔ y\n----+------\n1 1 | 1\n1 0 | 0\n0 1 | 0\n0 0 | 1\nOdpověď čti shora dolů: 1001",
+   "number": 40,
+   "id": "2-40"
+  },
+  {
+   "type": "input",
+   "text": "Pravdivostní hodnoty formule ¬x ∨ y pro řádky (x,y) = 11, 10, 01, 00",
+   "hint": "čtyři cifry bez mezer, např. 0110",
+   "answer": "1011",
+   "solution": "Hodnoty pro řádky (x,y) = 11, 10, 01, 00:\nx y | ¬x ∨ y\n----+-------\n1 1 | 1\n1 0 | 0\n0 1 | 1\n0 0 | 1\nOdpověď čti shora dolů: 1011",
+   "number": 41,
+   "id": "2-41"
+  },
+  {
+   "type": "input",
+   "text": "Pravdivostní hodnoty formule ¬y ⇒ ¬x pro řádky (x,y) = 11, 10, 01, 00",
+   "hint": "čtyři cifry bez mezer, např. 0110",
+   "answer": "1011",
+   "solution": "Hodnoty pro řádky (x,y) = 11, 10, 01, 00:\nx y | ¬y ⇒ ¬x\n----+--------\n1 1 | 1\n1 0 | 0\n0 1 | 1\n0 0 | 1\nOdpověď čti shora dolů: 1011",
+   "number": 42,
+   "id": "2-42"
+  },
+  {
+   "type": "input",
+   "text": "Pravdivostní hodnoty formule ¬(x ∧ y) pro řádky (x,y) = 11, 10, 01, 00",
+   "hint": "čtyři cifry bez mezer, např. 0110",
+   "answer": "0111",
+   "solution": "Hodnoty pro řádky (x,y) = 11, 10, 01, 00:\nx y | ¬(x ∧ y)\n----+---------\n1 1 | 0\n1 0 | 1\n0 1 | 1\n0 0 | 1\nOdpověď čti shora dolů: 0111",
+   "number": 43,
+   "id": "2-43"
+  },
+  {
+   "type": "input",
+   "text": "Pravdivostní hodnoty formule ¬x ∨ ¬y pro řádky (x,y) = 11, 10, 01, 00",
+   "hint": "čtyři cifry bez mezer, např. 0110",
+   "answer": "0111",
+   "solution": "Hodnoty pro řádky (x,y) = 11, 10, 01, 00:\nx y | ¬x ∨ ¬y\n----+--------\n1 1 | 0\n1 0 | 1\n0 1 | 1\n0 0 | 1\nOdpověď čti shora dolů: 0111",
+   "number": 44,
+   "id": "2-44"
+  },
+  {
+   "type": "input",
+   "text": "Pravdivostní hodnoty formule ¬(x ∨ y) pro řádky (x,y) = 11, 10, 01, 00",
+   "hint": "čtyři cifry bez mezer, např. 0110",
+   "answer": "0001",
+   "solution": "Hodnoty pro řádky (x,y) = 11, 10, 01, 00:\nx y | ¬(x ∨ y)\n----+---------\n1 1 | 0\n1 0 | 0\n0 1 | 0\n0 0 | 1\nOdpověď čti shora dolů: 0001",
+   "number": 45,
+   "id": "2-45"
+  },
+  {
+   "type": "input",
+   "text": "Pravdivostní hodnoty formule ¬x ∧ ¬y pro řádky (x,y) = 11, 10, 01, 00",
+   "hint": "čtyři cifry bez mezer, např. 0110",
+   "answer": "0001",
+   "solution": "Hodnoty pro řádky (x,y) = 11, 10, 01, 00:\nx y | ¬x ∧ ¬y\n----+--------\n1 1 | 0\n1 0 | 0\n0 1 | 0\n0 0 | 1\nOdpověď čti shora dolů: 0001",
+   "number": 46,
+   "id": "2-46"
+  },
+  {
+   "type": "input",
+   "text": "Pravdivostní hodnoty formule x ∧ ¬y pro řádky (x,y) = 11, 10, 01, 00",
+   "hint": "čtyři cifry bez mezer, např. 0110",
+   "answer": "0100",
+   "solution": "Hodnoty pro řádky (x,y) = 11, 10, 01, 00:\nx y | x ∧ ¬y\n----+-------\n1 1 | 0\n1 0 | 1\n0 1 | 0\n0 0 | 0\nOdpověď čti shora dolů: 0100",
+   "number": 47,
+   "id": "2-47"
+  },
+  {
+   "type": "input",
+   "text": "Pravdivostní hodnoty formule (x ⇒ y) ∧ (y ⇒ x) pro řádky (x,y) = 11, 10, 01, 00",
+   "hint": "čtyři cifry bez mezer, např. 0110",
+   "answer": "1001",
+   "solution": "Hodnoty pro řádky (x,y) = 11, 10, 01, 00:\nx y | (x ⇒ y) ∧ (y ⇒ x)\n----+------------------\n1 1 | 1\n1 0 | 0\n0 1 | 0\n0 0 | 1\nOdpověď čti shora dolů: 1001",
+   "number": 48,
+   "id": "2-48"
+  },
+  {
+   "type": "input",
+   "text": "(1001101)₂ → (?)₁₀ (cvičení 8. 10.)",
+   "hint": "výsledek v soustavě o základu 10",
+   "answer": "77",
+   "solution": "1·2^6 + 0·2^5 + 0·2^4 + 1·2^3 + 1·2^2 + 0·2^1 + 1·2^0 = 77",
+   "number": 49,
+   "id": "2-49"
+  },
+  {
+   "type": "input",
+   "text": "(111)₈ → (?)₁₀ (cvičení 8. 10.)",
+   "hint": "výsledek v soustavě o základu 10",
+   "answer": "73",
+   "solution": "1·8^2 + 1·8^1 + 1·8^0 = 73",
+   "number": 50,
+   "id": "2-50"
+  },
+  {
+   "type": "input",
+   "text": "(111)₁₆ → (?)₁₀ (cvičení 8. 10.)",
+   "hint": "výsledek v soustavě o základu 10",
+   "answer": "273",
+   "solution": "1·16^2 + 1·16^1 + 1·16^0 = 273",
+   "number": 51,
+   "id": "2-51"
+  },
+  {
+   "type": "input",
+   "text": "(132)₁₀ → (?)₂ (cvičení 8. 10.)",
+   "hint": "výsledek v soustavě o základu 2",
+   "answer": "10000100",
+   "solution": "dělení      podíl  zbytek\n  132 : 2     66  0\n   66 : 2     33  0\n   33 : 2     16  1\n   16 : 2      8  0\n    8 : 2      4  0\n    4 : 2      2  0\n    2 : 2      1  0\n    1 : 2      0  1\nZbytky zdola nahoru: 10000100",
+   "number": 52,
+   "id": "2-52"
+  }
+ ]
+}
