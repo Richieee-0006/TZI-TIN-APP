@@ -85,7 +85,7 @@
   },
   {
    "type": "choice",
-   "text": "Jak se definuje inkluze X ⊆ Y?",
+   "text": "Jak se definuje inkluze (X je podmnožinou Y), zapsaná X ⊆ Y?",
    "options": {
     "A": "a ∈ X ∨ a ∈ Y",
     "B": "a ∈ X ⇔ a ∈ Y",
@@ -95,7 +95,7 @@
    "correct": [
     "C"
    ],
-   "explanation": "Každý prvek množiny X leží i v Y. Zápis: X ⊆ Y ⇔ (a ∈ X ⇒ a ∈ Y).",
+   "explanation": "Inkluze znamená „být podmnožinou“: každý prvek množiny X leží i v Y. Zápis: X ⊆ Y ⇔ (a ∈ X ⇒ a ∈ Y).",
    "number": 6,
    "id": "3-6"
   },
