@@ -13,7 +13,7 @@ python3 tzi_trener.py          # http://127.0.0.1:5051, otevře se prohlížeč
 python3 tzi_trener.py --lan    # navíc dostupné v místní síti (telefon)
 ```
 
-Stačí Python 3, nic se neinstaluje.
+Stačí Python 3, nic se neinstaluje. Aplikace čte `ui/*.html` a `banky/*.json`, spouštěj ji z celé složky repa.
 
 ## Výběr přednášky
 
@@ -35,6 +35,16 @@ Nahoře v menu je rozbalovací seznam **Přednáška**. Každá přednáška má
 
 Postup (správně/chybně) se ukládá do `progress.json`, nabídne se **Pokračovat od poslední otázky**. U příkladů se po odpovědi ukáže celý postup (tabulka dělení, rozvoj, skupiny bitů).
 
+## Vzhled
+
+Aplikace má dva vzhledy. Výchozí je **nový** (postup je zobrazený jako binární řetězec: `1` správně, `0` chybně, `·` nová otázka; jeden řádek je jeden blok z režimu Po X). Starý vzhled zůstal zachovaný:
+
+- odkaz **Starý vzhled** dole v menu (a **Nový vzhled** vpravo nahoře ve starém) přepíná mezi nimi, volba se pamatuje v cookie,
+- `?ui=klasicky` nebo `?ui=novy` v adrese přepne přímo,
+- `python3 tzi_trener.py --klasicky` spustí se starým vzhledem jako výchozím.
+
+Soubory: `ui/novy.html`, `ui/klasicky.html`. Záloha celého původního skriptu je v `zaloha/tzi_trener_v1.py` (`python3 zaloha/tzi_trener_v1.py`) a v git tagu `ui-v1-klasicky` (`git checkout ui-v1-klasicky`).
+
 ## Screenshoty
 
 ### Desktop
@@ -52,6 +62,10 @@ Postup (správně/chybně) se ukládá do `progress.json`, nabídne se **Pokrač
 <td align="center"><b>5. Příklad s postupem</b><br><img src="docs/screenshots/desktop-question-input.png" width="420"></td>
 <td align="center"><b>6. Studijní režim</b><br><img src="docs/screenshots/desktop-study.png" width="420"></td>
 </tr>
+<tr>
+<td align="center"><b>7. Výsledky</b><br><img src="docs/screenshots/desktop-results.png" width="420"></td>
+<td align="center"><b>8. Menu v tmavém režimu</b><br><img src="docs/screenshots/desktop-menu-dark.png" width="420"></td>
+</tr>
 </table>
 
 ### Mobil (`--lan`)
@@ -59,9 +73,34 @@ Postup (správně/chybně) se ukládá do `progress.json`, nabídne se **Pokrač
 <table>
 <tr>
 <td align="center"><b>Menu</b><br><img src="docs/screenshots/mobile-menu.png" width="260"></td>
-<td align="center"><b>Příklad</b><br><img src="docs/screenshots/mobile-question.png" width="260"></td>
+<td align="center"><b>Otázka</b><br><img src="docs/screenshots/mobile-question.png" width="260"></td>
 </tr>
 </table>
+
+### Legacy (starý vzhled)
+
+<details>
+<summary>Původní screenshoty</summary>
+
+<table>
+<tr>
+<td align="center"><b>Hlavní menu</b><br><img src="docs/screenshots/legacy/desktop-menu.png" width="320"></td>
+<td align="center"><b>Bloky</b><br><img src="docs/screenshots/legacy/desktop-chunks.png" width="320"></td>
+<td align="center"><b>Detail bloku</b><br><img src="docs/screenshots/legacy/desktop-chunk-detail.png" width="320"></td>
+</tr>
+<tr>
+<td align="center"><b>Teoretická otázka</b><br><img src="docs/screenshots/legacy/desktop-question-choice.png" width="320"></td>
+<td align="center"><b>Příklad</b><br><img src="docs/screenshots/legacy/desktop-question-input.png" width="320"></td>
+<td align="center"><b>Studijní režim</b><br><img src="docs/screenshots/legacy/desktop-study.png" width="320"></td>
+</tr>
+<tr>
+<td align="center"><b>Mobil: menu</b><br><img src="docs/screenshots/legacy/mobile-menu.png" width="200"></td>
+<td align="center"><b>Mobil: příklad</b><br><img src="docs/screenshots/legacy/mobile-question.png" width="200"></td>
+<td></td>
+</tr>
+</table>
+
+</details>
 
 ## Banky otázek
 
