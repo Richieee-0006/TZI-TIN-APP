@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TZI Trenér</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --paper: #EEF2F6;
+  --paper-2: #E2E8F0;
+  --ink: #13203A;
+  --muted: #55627A;
+  --line: #C5CEDB;
+  --blue: #2538D8;
+  --blue-ink: #FFFFFF;
+  --ok: #12754E;
+  --bad: #C2255C;
+  --new: #8793A8;
+  --exam: #13203A;
+  --exam-text: #EEF2F6;
+  --exam-accent: #FF8FB3;
+  --font: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0F1729;
+    --paper-2: #1A2540;
+    --ink: #E8EDF5;
+    --muted: #9AA7BF;
+    --line: #2C3957;
+    --blue: #6F7DFF;
+    --blue-ink: #0F1729;
+    --ok: #4CC38A;
+    --bad: #FF7BA5;
+    --new: #66738F;
+    --exam: #E8EDF5;
+    --exam-text: #0F1729;
+    --exam-accent: #C2255C;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0F1729; --paper-2: #1A2540; --ink: #E8EDF5; --muted: #9AA7BF; --line: #2C3957;
+  --blue: #6F7DFF; --blue-ink: #0F1729; --ok: #4CC38A; --bad: #FF7BA5; --new: #66738F;
+  --exam: #E8EDF5; --exam-text: #0F1729; --exam-accent: #C2255C;
+}
+
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 400 16px/1.5 var(--font);
+  min-height: 100vh;
+}
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; border-radius: 4px; }
+
+#app {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 40px 24px 56px;
+}
+
+/* ---------- hlavička ---------- */
+.top { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.top h1 {
+  margin: 0;
+  font-size: clamp(2.4rem, 6vw, 4.2rem);
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  font-variation-settings: "opsz" 96;
+}
+.top p { margin: 0; color: var(--muted); max-width: 34ch; text-align: right; }
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  gap: 56px;
+  margin-top: 48px;
+  align-items: start;
+}
+
+h2 { margin: 0 0 12px; font-size: 1.05rem; font-weight: 700; letter-spacing: 0; }
+
+/* ---------- přednášky ---------- */
+.lectures { list-style: none; margin: 0 0 32px; padding: 0; border-top: 1px solid var(--line); }
+.lectures li { border-bottom: 1px solid var(--line); }
+.lec {
+  display: grid;
+  grid-template-columns: 2.2rem 1fr auto;
+  gap: 12px;
+  align-items: baseline;
+  width: 100%;
+  padding: 14px 8px 14px 16px;
+  background: none;
+  border: 0;
+  text-align: left;
+}
+.lec .n { font: 700 1.6rem/1 var(--font); color: var(--muted); }
+.lec .t { font-weight: 500; }
+.lec .d { color: var(--muted); font-size: .875rem; white-space: nowrap; }
+.lec[aria-pressed="true"] .n { color: var(--blue); }
+.lec[aria-pressed="true"] .t { font-weight: 700; }
+.lec[aria-pressed="true"] { box-shadow: inset 4px 0 0 var(--blue); }
+.lec:hover .t { text-decoration: underline; text-underline-offset: 3px; }
+
+/* ---------- postup jako bity ---------- */
+.bits-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 8px; }
+.bits-head span { color: var(--muted); font-size: .875rem; }
+.bits {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: clamp(1.25rem, 3.4vw, 1.85rem);
+  line-height: 1;
+}
+.brow { display: flex; align-items: center; gap: 14px; padding: 7px 0; width: 100%; background: none; border: 0; text-align: left; }
+.brow:hover .cells { filter: brightness(1.25); }
+.brow:hover b { color: var(--blue); }
+.brow b {
+  flex: none;
+  width: 1.6rem;
+  font: 500 .8rem/1 var(--font);
+  color: var(--muted);
+  text-align: right;
+}
+.brow .cells { display: flex; flex-wrap: wrap; gap: .45em; flex: 1; }
+.bit { width: 1ch; text-align: center; }
+.bits.anim .bit { opacity: 0; animation: flip .35s ease-out forwards; }
+.bit.ok { color: var(--ok); }
+.bit.bad { color: var(--bad); }
+.bit.new { color: var(--new); font-weight: 500; }
+@keyframes flip { from { opacity: 0; transform: translateY(.35em) } to { opacity: 1; transform: none } }
+@media (prefers-reduced-motion: reduce) { .bits.anim .bit { animation: none; opacity: 1; } }
+
+.legend { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 14px; font-size: .875rem; color: var(--muted); }
+.legend i { font: 700 1rem/1 var(--mono); font-style: normal; margin-right: 6px; }
+.legend .ok i { color: var(--ok); } .legend .bad i { color: var(--bad); } .legend .new i { color: var(--new); }
+
+/* ---------- režimy ---------- */
+.filter { display: inline-flex; background: var(--paper-2); border-radius: 10px; padding: 3px; margin-bottom: 24px; max-width: 100%; }
+.filter button { background: none; border: 0; padding: 8px 14px; border-radius: 8px; font-weight: 500; font-size: .9375rem; white-space: nowrap; }
+.filter button[aria-pressed="true"] { background: var(--paper); box-shadow: 0 1px 2px rgba(19,32,58,.25); font-weight: 700; }
+
+.go {
+  display: block; width: 100%;
+  background: var(--blue); color: var(--blue-ink);
+  border: 0; border-radius: 14px;
+  padding: 20px 24px;
+  text-align: left;
+  margin-bottom: 36px;
+}
+.go strong { display: block; font-size: 1.5rem; line-height: 1.2; font-weight: 800; letter-spacing: -0.01em; }
+.go span { display: block; margin-top: 2px; opacity: .85; font-size: .9375rem; }
+.go:hover { filter: brightness(1.08); }
+
+.group { margin-bottom: 32px; }
+.modes { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.modes li { border-bottom: 1px solid var(--line); }
+.mode {
+  display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; align-items: baseline;
+  width: 100%; padding: 13px 4px; background: none; border: 0; text-align: left;
+}
+.mode .name { font-weight: 700; }
+.mode .desc { grid-column: 1; color: var(--muted); font-size: .875rem; }
+.mode .count { grid-row: 1 / span 2; grid-column: 2; font: 700 1.25rem/1 var(--mono); align-self: center; }
+.mode:hover { background: var(--paper-2); }
+.mode.ok .count { color: var(--ok); } .mode.bad .count { color: var(--bad); } .mode.new .count { color: var(--new); }
+.mode:disabled { opacity: .45; cursor: default; }
+.mode:disabled:hover { background: none; }
+
+.exam { background: var(--exam); color: var(--exam-text); border-radius: 14px; padding: 8px 20px; }
+.exam h2 { color: var(--exam-text); padding-top: 14px; margin-bottom: 4px; }
+.exam .modes { border-top: 0; }
+.exam .modes li { border-bottom: 1px solid color-mix(in srgb, var(--exam-text) 22%, transparent); }
+.exam .modes li:last-child { border-bottom: 0; }
+.exam .mode { padding: 14px 0; }
+.exam .mode:hover { background: none; }
+.exam .mode:hover .name { text-decoration: underline; text-underline-offset: 3px; }
+.exam .mode .desc { color: color-mix(in srgb, var(--exam-text) 72%, transparent); }
+.exam .mode .count { color: var(--exam-accent); font-size: 1rem; }
+
+.foot { margin-top: 28px; display: flex; gap: 24px; flex-wrap: wrap; font-size: .875rem; }
+.foot button { background: none; border: 0; color: var(--muted); padding: 4px 0; text-decoration: underline; text-underline-offset: 3px; }
+.foot button:hover { color: var(--ink); }
+
+.ai { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: .8125rem; max-width: 70ch; }
+
+@media (max-width: 860px) {
+  .layout { grid-template-columns: 1fr; gap: 40px; margin-top: 32px; }
+  .top p { text-align: left; }
+  #app { padding: 28px 16px 40px; }
+}
+@media (max-width: 420px) {
+  .lec { grid-template-columns: 1.8rem 1fr; }
+  .lec .d { grid-column: 2; }
+  .filter { display: flex; }
+  .filter button { flex: 1; padding: 8px 6px; font-size: .875rem; }
+}
+
+.lnk { color: var(--muted); text-decoration: underline; text-underline-offset: 3px; padding: 4px 0; background: none; border: 0; font: inherit; }
+.lnk:hover { color: var(--ink); }
+.foot a { color: var(--muted); }
+
+/* ===== SCREEN:common-old (barvy ze starého UI, přepracovat na tokeny) ===== */
+  .ps-good { color: #16a34a; font-weight: 700; }
+  .ps-bad  { color: #dc2626; font-weight: 700; }
+  .ps-new  { color: #6b7280; }
+/* ===== SCREEN:chunks / chunk-detail / modal / quiz / results ===== */
+  #chunks { display: none; padding-top: 24px; }
+  #chunks h1 { font-size: 1.6rem; color: #3b82f6; text-align: center; margin-bottom: 16px; }
+  .chunk-list { display: flex; flex-direction: column; gap: 10px; max-width: 420px; margin: 0 auto; }
+  .chunk-btn {
+    display: flex; justify-content: space-between; align-items: center; gap: 8px;
+    background: white; border: none; border-radius: 10px; padding: 14px 18px;
+    cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,.12); font-size: 1rem; text-align: left;
+  }
+  .chunk-btn:hover { box-shadow: 0 4px 12px rgba(0,0,0,.15); }
+  .chunk-name { font-weight: 700; }
+  .chunk-stats { font-size: .85rem; white-space: nowrap; }
+  .chunk-stats span { margin-left: 8px; }
+  .chunk-back { display: block; margin: 20px auto 0; padding: 10px 20px; border: none; border-radius: 8px; background: #e5e7eb; cursor: pointer; }
+  .chunk-size-row { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 16px; font-size: .9rem; }
+  .chunk-size-row input { width: 70px; padding: 6px 8px; border-radius: 8px; border: 2px solid #d1d5db; font-size: 1rem; text-align: center; }
+  .chunk-size-row button { padding: 7px 14px; border: none; border-radius: 8px; cursor: pointer; background: #3b82f6; color: white; font-weight: 600; }
+
+  #chunk-detail { display: none; padding-top: 24px; }
+  #chunk-detail h1 { font-size: 1.4rem; color: #3b82f6; text-align: center; margin-bottom: 16px; }
+  .chunk-detail-wrap { max-width: 480px; margin: 0 auto; }
+  .chunk-detail-btns { display: flex; gap: 8px; justify-content: center; margin-bottom: 18px; flex-wrap: wrap; }
+  .chunk-detail-btns button { padding: 8px 14px; border: none; border-radius: 8px; cursor: pointer; font-size: .85rem; background: white; box-shadow: 0 1px 4px rgba(0,0,0,.12); }
+  .cd-section { margin-bottom: 14px; }
+  .cd-section h3 { font-size: .9rem; margin: 0 0 6px; }
+  .cd-section.good h3 { color: #16a34a; }
+  .cd-section.bad h3 { color: #dc2626; }
+  .cd-section.new h3 { color: #6b7280; }
+  .cd-qlist { display: flex; flex-wrap: wrap; gap: 6px; }
+  .cd-qlist span { background: white; border-radius: 6px; padding: 3px 8px; font-size: .8rem; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+  .cd-qlist .q-pill { border: none; cursor: pointer; font: inherit; background: white; border-radius: 6px; padding: 3px 8px; font-size: .8rem; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+  .cd-qlist .q-pill:hover { background: #dbeafe; }
+
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 100; align-items: center; justify-content: center; }
+  .overlay.show { display: flex; }
+  .modal { background: white; padding: 32px; border-radius: 14px; min-width: 320px; text-align: center; }
+  .modal h2 { margin-bottom: 20px; }
+  .modal input[type=number] { width: 120px; font-size: 1.3rem; text-align: center; padding: 8px; border: 2px solid #d1d5db; border-radius: 8px; }
+  .modal-btns { display: flex; gap: 12px; justify-content: center; margin-top: 20px; }
+  .modal-btns button { padding: 10px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; }
+  .btn-ok { background: #3b82f6; color: white; }
+  .btn-cancel { background: #e5e7eb; }
+
+  #quiz { display: none; }
+  .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 8px; }
+  .header .prog  { color: #6b7280; font-size: .95rem; font-weight: 600; }
+  .header .score { font-weight: 700; color: #3b82f6; }
+  .progress-bar { height: 8px; background: #e5e7eb; border-radius: 99px; margin-bottom: 24px; }
+  .progress-bar .fill { height: 100%; background: #3b82f6; border-radius: 99px; transition: width .3s; }
+  .sudden-banner { background: #111827; color: #ef4444; text-align: center; padding: 8px; border-radius: 8px; margin-bottom: 16px; font-weight: 700; }
+  .question-box { background: white; border-radius: 12px; padding: 24px 28px; margin-bottom: 20px; box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+  .question-box .hint { font-size: .85rem; color: #9ca3af; margin-top: 6px; }
+  .qsrc { font-size: .8rem; color: #9ca3af; margin-bottom: 6px; }
+  .question-text { font-size: 1.15rem; font-weight: 700; line-height: 1.5; overflow-wrap: anywhere; }
+  sub, sup { font-size: .72em; line-height: 0; }
+  .question-text.calc { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 1.5rem; }
+  .options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+  .opt {
+    display: flex; align-items: flex-start; gap: 14px;
+    background: white; border: 2px solid #e5e7eb; border-radius: 10px;
+    padding: 14px 18px; cursor: pointer; transition: border-color .15s, background .15s;
+    font-size: 1rem; line-height: 1.4; user-select: none;
+  }
+  .opt:hover:not(.disabled) { border-color: #93c5fd; background: #eff6ff; }
+  .opt.selected { border-color: #3b82f6; background: #dbeafe; }
+  .opt.correct  { border-color: #22c55e; background: #dcfce7; }
+  .opt.wrong    { border-color: #ef4444; background: #fee2e2; }
+  .opt.missed   { border-color: #f59e0b; background: #fef9c3; }
+  .opt.disabled { cursor: default; }
+  .opt .letter { font-weight: 800; color: #3b82f6; min-width: 20px; }
+  .opt.correct .letter { color: #16a34a; }
+  .opt.wrong .letter { color: #dc2626; }
+  .opt.missed .letter { color: #d97706; }
+  .ans-input { width: 100%; font: 1.4rem ui-monospace, Menlo, Consolas, monospace; padding: 12px 16px; border: 2px solid #d1d5db; border-radius: 10px; margin-bottom: 20px; background: white; }
+  .ans-input:focus { outline: none; border-color: #3b82f6; }
+  .ans-input.correct { border-color: #22c55e; background: #dcfce7; }
+  .ans-input.wrong { border-color: #ef4444; background: #fee2e2; }
+  .feedback { font-size: 1.05rem; font-weight: 700; min-height: 28px; margin-bottom: 12px; overflow-wrap: anywhere; }
+  .feedback.ok  { color: #22c55e; }
+  .feedback.bad { color: #ef4444; }
+  .solution { background: white; border-radius: 10px; padding: 14px 18px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.1);
+    white-space: pre-wrap; font: .95rem/1.5 ui-monospace, Menlo, Consolas, monospace; overflow-x: auto; display: none; }
+  .solution.explain { font-family: 'Segoe UI', system-ui, sans-serif; font-size: 1rem; }
+  .nav { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .nav button { padding: 12px 24px; border: none; border-radius: 9px; cursor: pointer; font-size: 1rem; font-weight: 600; }
+  .nav button:disabled { opacity: .35; cursor: default; }
+  .btn-prev { background: #e5e7eb; color: #374151; }
+  .btn-end { background: #fff3cd; color: #856404; font-size: .9rem; }
+  .btn-next { background: #3b82f6; color: white; }
+
+  #results { display: none; text-align: center; padding-top: 40px; }
+  #results h1 { font-size: 2rem; margin-bottom: 8px; }
+  .big-pct { font-size: 5rem; font-weight: 900; margin: 12px 0; }
+  .big-pct.good { color: #22c55e; }
+  .big-pct.bad { color: #ef4444; }
+  .res-detail { color: #6b7280; margin-bottom: 30px; }
+  .res-btns { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .res-btns button { width: 300px; padding: 13px; border: none; border-radius: 10px; cursor: pointer; font-size: 1rem; font-weight: 600; background: white; box-shadow: 0 1px 4px rgba(0,0,0,.12); }
+  .res-btns .primary { background: #3b82f6; color: white; }
+  .res-btns .warning-btn { background: #ffebee; }
+
+  @media (max-width: 600px) {
+    #app { padding: 12px; }
+    #menu { padding-top: 20px; gap: 10px; }
+    #menu h1 { font-size: 1.6rem; }
+    .menu-btn, .menu-sep { width: 100%; }
+    .source-row { flex-wrap: wrap; }
+    .modal { min-width: unset; width: 90vw; padding: 24px 16px; }
+    .question-box { padding: 16px; }
+    .question-text { font-size: 1rem; }
+    .question-text.calc { font-size: 1.2rem; }
+    .opt { padding: 12px 14px; gap: 10px; font-size: .95rem; }
+    .nav { flex-wrap: wrap; }
+    .nav button { flex: 1 1 auto; padding: 12px 10px; font-size: .9rem; }
+    .btn-end { flex-basis: 100%; order: 3; }
+    .big-pct { font-size: 3.5rem; }
+    .res-btns button { width: 100%; }
+  }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <div id="menu">
+    <header class="top">
+      <h1>TZI Trenér</h1>
+      <p>Opakování přednášek z Teoretické informatiky, KI/TIN</p>
+    </header>
+
+    <div class="layout">
+      <section aria-labelledby="h-lec">
+        <h2 id="h-lec">Přednáška</h2>
+        <ul class="lectures" id="lectures"></ul>
+
+        <div class="bits-head">
+          <h2 style="margin:0">Tvůj postup</h2>
+          <span id="bits-sum"></span>
+        </div>
+        <div class="bits" id="bits" role="group" aria-label="Postup po blocích, klikni na blok"></div>
+        <div class="legend" aria-hidden="true">
+          <span class="ok"><i>1</i>správně</span>
+          <span class="bad"><i>0</i>chybně</span>
+          <span class="new"><i>·</i>nová</span>
+        </div>
+      </section>
+
+      <section aria-label="Režimy">
+        <div class="filter" id="type-row" role="group" aria-label="Typ otázek">
+          <button data-t="all" aria-pressed="true" onclick="setType('all')">Vše</button>
+          <button data-t="choice" aria-pressed="false" onclick="setType('choice')">Teorie (A/B/C/D)</button>
+          <button data-t="input" aria-pressed="false" onclick="setType('input')">Příklady (výsledek)</button>
+        </div>
+
+        <button class="go" id="go" onclick="goPrimary()">
+          <strong id="go-title">Načítám…</strong>
+          <span id="go-sub"></span>
+        </button>
+
+        <div class="group">
+          <h2>Procvičuj</h2>
+          <ul class="modes">
+            <li><button class="mode" onclick="showChunks()"><span class="name">Po <span id="menu-chunk-size">10</span></span><span class="desc">Postupně po blocích, v bloku si vybereš podmnožinu</span><span class="count" id="c-blocks"></span></button></li>
+            <li><button class="mode" onclick="startAll()"><span class="name">Vše popořadě</span><span class="desc">Celá banka od první otázky</span><span class="count" id="c-all"></span></button></li>
+            <li><button class="mode" onclick="showRandomModal('random')"><span class="name">Náhodný výběr</span><span class="desc">Zadáš kolik otázek chceš</span><span class="count">?</span></button></li>
+            <li><button class="mode" onclick="showRandomModal('study')"><span class="name">Studuj, pak testuj</span><span class="desc">Nejdřív otázky s odpovědí a postupem, potom test</span><span class="count"></span></button></li>
+          </ul>
+        </div>
+
+        <div class="group">
+          <h2>Vrať se k tomu, co ti nejde</h2>
+          <ul class="modes">
+            <li><button class="mode new" id="btn-unseen" onclick="startUnseen()"><span class="name">Jen neprozkoumané</span><span class="desc">Na tyhle jsi ještě neodpovídal</span><span class="count" id="unseen-count"></span></button></li>
+            <li><button class="mode bad" id="btn-wrongs" onclick="startWrongs()"><span class="name">Jen chybné</span><span class="desc">Odpověděl jsi špatně</span><span class="count" id="wrongs-count"></span></button></li>
+            <li><button class="mode ok" id="btn-correct" onclick="startCorrect()"><span class="name">Zopakovat správné</span><span class="desc">Ať ti nevyprchaly z hlavy</span><span class="count" id="correct-count"></span></button></li>
+          </ul>
+        </div>
+
+        <div class="exam">
+          <h2>Zkouška nanečisto</h2>
+          <ul class="modes">
+            <li><button class="mode" onclick="startExam()"><span class="name">Ostrý test</span><span class="desc"><span id="exam-n">15</span> otázek, <span id="exam-min">30</span> minut, na úspěch orientačně 60 %</span><span class="count" id="exam-clock">30:00</span></button></li>
+            <li><button class="mode" onclick="startSuddenDeath()"><span class="name">Sudden Death</span><span class="desc">Náhodné otázky, první chyba ukončí hru</span><span class="count">1 život</span></button></li>
+          </ul>
+        </div>
+
+        <div class="foot">
+          <button class="lnk" onclick="clearSourceProgress()">Smazat postup této přednášky</button>
+          <button class="lnk" onclick="shutdown()">Ukončit server</button>
+          <a class="lnk" href="/?ui=klasicky">Starý vzhled</a>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div id="chunks">
+    <h1>📦 Otázky po <span id="chunks-size-label">10</span></h1>
+    <div class="chunk-size-row">
+      <label for="chunk-size-input">Velikost úseku:</label>
+      <input type="number" id="chunk-size-input" min="1" step="1">
+      <button onclick="applyChunkSize()">Použít</button>
+    </div>
+    <div class="chunk-list" id="chunk-list"></div>
+    <button class="chunk-back" onclick="showMenu()">← Zpět do menu</button>
+  </div>
+
+  <div id="chunk-detail">
+    <h1 id="chunk-detail-title"></h1>
+    <div class="chunk-detail-wrap">
+      <div class="chunk-detail-btns">
+        <button onclick="startChunkSubset('all')">🚀 Vše</button>
+        <button onclick="startChunkSubset(undefined)">🆕 Neznámé</button>
+        <button onclick="startChunkSubset('wrong')">⚠️ Chybné</button>
+        <button onclick="startChunkSubset('correct')">✅ Správné</button>
+        <button onclick="startChunkStudy()">📖 Studuj pak testuj</button>
+      </div>
+      <div class="cd-section good"><h3>✅ Správné</h3><div class="cd-qlist" id="cd-good"></div></div>
+      <div class="cd-section bad"><h3>✗ Chybné</h3><div class="cd-qlist" id="cd-bad"></div></div>
+      <div class="cd-section new"><h3>— Neznámé</h3><div class="cd-qlist" id="cd-new"></div></div>
+    </div>
+    <button class="chunk-back" onclick="showChunks()">← Zpět na bloky</button>
+  </div>
+
+  <div class="overlay" id="random-modal">
+    <div class="modal">
+      <h2>Kolik otázek?</h2>
+      <input type="number" id="rand-count" min="1" value="10">
+      <div class="modal-btns">
+        <button class="btn-cancel" onclick="closeModal()">Zrušit</button>
+        <button class="btn-ok" onclick="startRandom()">Spustit</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="quiz">
+    <div id="sudden-banner" class="sudden-banner" style="display:none">💀 SUDDEN DEATH: jedna chyba = konec!</div>
+    <div class="header">
+      <span class="prog" id="prog-label"></span>
+      <span class="score" id="score-label"></span>
+    </div>
+    <div class="progress-bar"><div class="fill" id="pbar"></div></div>
+    <div class="question-box">
+      <div class="qsrc" id="q-src"></div>
+      <div class="question-text" id="q-text"></div>
+      <div class="hint" id="q-hint"></div>
+    </div>
+    <div class="options" id="opts"></div>
+    <input type="text" class="ans-input" id="ans-input" autocomplete="off" autocapitalize="characters" spellcheck="false" style="display:none" oninput="onInput()">
+    <div class="feedback" id="feedback"></div>
+    <div class="solution" id="solution"></div>
+    <div class="nav">
+      <button class="btn-prev" id="btn-prev" onclick="prevQ()">← Předchozí</button>
+      <button class="btn-end" onclick="finishEarly()">🏳 Ukončit předčasně</button>
+      <button class="btn-next" id="btn-action" onclick="handleAction()">✔ Potvrdit (Enter)</button>
+    </div>
+  </div>
+
+  <div id="results">
+    <h1 id="res-title"></h1>
+    <div class="big-pct" id="res-pct"></div>
+    <div class="res-detail" id="res-detail"></div>
+    <div class="res-btns">
+      <button class="primary" onclick="restartSame()">🔄 Restartovat stejný výběr</button>
+      <button id="btn-wrong" onclick="practiceWrong()" style="display:none" class="warning-btn"></button>
+      <button onclick="backFromResults()">🏠 Hlavní menu</button>
+    </div>
+  </div>
+
+</div>
+<script>
+let FULL = [];        // všechny otázky zdroje
+let ALL = [];         // po filtru typu
+let currentSource = '';
+let sources = [];
+let progress = {};    // {qid: "correct"|"wrong"}
+let session = null;
+let typeFilter = 'all';
+
+let queue = [], idx = 0, history = [], checked = false, suddenDeath = false;
+let selected = new Set(), modalMode = 'random', studyMode = false, studyPicks = [];
+let examMode = false, examTimer = null, examEndTime = 0;
+
+const $ = id => document.getElementById(id);
+const plural = (n, one, few, many) => n === 1 ? one : (n >= 2 && n <= 4 ? few : many);
+const show = id => {
+  for (const s of ['menu','chunks','chunk-detail','quiz','results']) $(s).style.display = (s === id) ? 'block' : 'none';
+};
+const norm = s => { s = (s || '').toUpperCase().replace(/[\s_]/g, ''); return s.replace(/^0+(?=.)/, ''); };
+const isInput = q => q.type === 'input';
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const shuffle = a => [...a].sort(() => Math.random() - .5);
+// Zápis z banky (a_n, Z^n, a_(n-1), ->) převede na HTML s dolními/horními indexy a šipkami.
+function fmt(s) {
+  s = String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return s
+    .replace(/_\(([^)]+)\)/g, '<sub>$1</sub>').replace(/_([A-Za-z0-9]+)/g, '<sub>$1</sub>')
+    .replace(/\^\(([^)]+)\)/g, '<sup>$1</sup>').replace(/\^([A-Za-z0-9]+)/g, '<sup>$1</sup>')
+    .replace(/[₀-₉]+/g, m => '<sub>' + [...m].map(c => '₀₁₂₃₄₅₆₇₈₉'.indexOf(c)).join('') + '</sub>')
+    .replace(/-&gt;/g, '→').replace(/&lt;-/g, '←').replace(/\.\.\./g, '…');
+}
+
+async function init() {
+  const r = await fetch('/api/sources');
+  const data = await r.json();
+  sources = data.sources;
+  currentSource = data.default;
+  renderLectures();
+  await loadSource(currentSource);
+}
+
+async function selectSource(id) { currentSource = id; renderLectures(); await loadSource(id); }
+
+// "3. přednáška (15. 10. 2026): Téma" → {n, date, title}; "Všechny dohromady" dostane Σ
+function parseSource(s) {
+  const m = /^(\d+)\. přednáška \((.+?)\): (.*)$/.exec(s.label);
+  return m ? {n: m[1], date: m[2], title: m[3]} : {n: 'Σ', date: '', title: s.label};
+}
+function renderLectures() {
+  $('lectures').innerHTML = sources.map(s => {
+    const p = parseSource(s);
+    return `<li><button class="lec" onclick="selectSource('${esc(s.id)}')" aria-pressed="${s.id === currentSource}">` +
+      `<span class="n">${esc(p.n)}</span><span class="t">${esc(p.title)}</span><span class="d">${esc(p.date)}</span></button></li>`;
+  }).join('');
+}
+
+async function loadSource(source) {
+  const [qr, pr] = await Promise.all([
+    fetch(`/api/questions?source=${encodeURIComponent(source)}`),
+    fetch(`/api/progress?source=${encodeURIComponent(source)}`)
+  ]);
+  FULL = await qr.json();
+  const pd = await pr.json();
+  progress = pd.seen || {};
+  session = pd.session || null;
+  applyFilter();
+}
+
+function setType(t) {
+  typeFilter = t;
+  document.querySelectorAll('#type-row button').forEach(b => b.setAttribute('aria-pressed', b.dataset.t === t));
+  applyFilter();
+}
+
+function applyFilter() {
+  ALL = typeFilter === 'all' ? FULL : FULL.filter(q => q.type === typeFilter);
+  $('rand-count').max = ALL.length;
+  $('rand-count').value = Math.min(10, ALL.length);
+  updateMenuStats(true);
+}
+
+function updateMenuStats(animate) {
+  const total = ALL.length;
+  const good = ALL.filter(q => progress[q.id] === 'correct').length;
+  const bad = ALL.filter(q => progress[q.id] === 'wrong').length;
+  const unseen = total - good - bad;
+  const blocks = Math.ceil(total / CHUNK_SIZE);
+  $('bits-sum').textContent = `${total} ${plural(total, 'otázka', 'otázky', 'otázek')} v ${blocks} ${plural(blocks, 'bloku', 'blocích', 'blocích')}`;
+  $('unseen-count').textContent = unseen;
+  $('wrongs-count').textContent = bad;
+  $('correct-count').textContent = good;
+  $('c-all').textContent = total;
+  $('c-blocks').textContent = blocks + '×';
+  $('menu-chunk-size').textContent = CHUNK_SIZE;
+  $('btn-unseen').disabled = unseen === 0;
+  $('btn-wrongs').disabled = bad === 0;
+  $('btn-correct').disabled = good === 0;
+  const n = Math.min(15, total), min = Math.max(5, Math.round(n * 2));
+  $('exam-n').textContent = n;
+  $('exam-min').textContent = min;
+  $('exam-clock').textContent = String(min).padStart(2, '0') + ':00';
+  const q = session && session.idx < session.queue_ids.length ? FULL.find(x => x.id === session.queue_ids[session.idx]) : null;
+  resumable = !!q;
+  if (q) {
+    $('go-title').textContent = `Pokračovat od otázky ${q.number}`;
+    $('go-sub').textContent = `V rozdělané sadě zbývá ${session.queue_ids.length - session.idx} z ${session.queue_ids.length} otázek`;
+  } else {
+    $('go-title').textContent = 'Začít od první otázky';
+    $('go-sub').textContent = total ? `${total} otázek popořadě` : 'Ve výběru nejsou žádné otázky';
+  }
+  renderBits(!!animate);
+}
+let resumable = false;
+function goPrimary() { if (resumable) resumeSession(); else startAll(); }
+
+// Postup jako binární řetězec: jeden řádek = jeden blok, 1 správně, 0 chybně, · nová.
+function renderBits(animate) {
+  let d = 0;
+  const html = getChunks().map((qs, i) => {
+    const cells = qs.map(q => {
+      const s = progress[q.id];
+      const k = s === 'correct' ? 'ok' : s === 'wrong' ? 'bad' : 'new';
+      const c = k === 'ok' ? '1' : k === 'bad' ? '0' : '·';
+      const delay = animate ? ` style="animation-delay:${(d++) * 9}ms"` : '';
+      return `<span class="bit ${k}"${delay} title="Otázka ${esc(q.id)}">${c}</span>`;
+    }).join('');
+    return `<button class="brow" onclick="openBlock(${i})" aria-label="Blok ${i + 1}, otázky ${i * CHUNK_SIZE + 1} až ${i * CHUNK_SIZE + qs.length}"><b>${i + 1}</b><span class="cells">${cells}</span></button>`;
+  }).join('');
+  const el = $('bits');
+  el.className = 'bits' + (animate ? ' anim' : '');
+  el.innerHTML = html;
+}
+function openBlock(i) { const qs = getChunks()[i]; if (qs) showChunkDetail(qs, i); }
+
+async function saveProgress() {
+  const m = {};
+  for (const h of history) m[h.id] = h.isCorrect ? 'correct' : 'wrong';
+  const newProgress = Object.assign({}, progress, m);
+  const newSession = (idx < queue.length && !examMode) ? {queue_ids: queue.map(q => q.id), idx, sudden_death: suddenDeath, history} : null;
+  await fetch(`/api/progress?source=${encodeURIComponent(currentSource)}`, {
+    method: 'POST', headers: {'Content-Type': 'application/json', 'X-TZI': '1'},
+    body: JSON.stringify({seen: newProgress, session: newSession})
+  });
+  progress = newProgress; session = newSession;
+}
+
+let fromChunks = false;
+function showMenu() { updateMenuStats(false); show('menu'); }
+function showResults() { show('results'); renderResults(); }
+
+// ── bloky ──
+let CHUNK_SIZE = parseInt(localStorage.getItem('tzi_chunk_size'), 10) || 10;
+function syncChunkSizeUI() {
+  $('menu-chunk-size').textContent = CHUNK_SIZE;
+  $('chunks-size-label').textContent = CHUNK_SIZE;
+  $('chunk-size-input').value = CHUNK_SIZE;
+}
+function applyChunkSize() {
+  const n = parseInt($('chunk-size-input').value, 10);
+  if (!n || n < 1) return;
+  CHUNK_SIZE = n; localStorage.setItem('tzi_chunk_size', String(n));
+  syncChunkSizeUI(); renderChunks(); updateMenuStats(false);
+}
+function showChunks() { fromChunks = false; syncChunkSizeUI(); renderChunks(); show('chunks'); }
+function getChunks() { const out = []; for (let i = 0; i < ALL.length; i += CHUNK_SIZE) out.push(ALL.slice(i, i + CHUNK_SIZE)); return out; }
+function renderChunks() {
+  const list = $('chunk-list'); list.innerHTML = '';
+  getChunks().forEach((qs, i) => {
+    const done = qs.filter(q => progress[q.id] === 'correct').length;
+    const wrong = qs.filter(q => progress[q.id] === 'wrong').length;
+    const btn = document.createElement('button');
+    btn.className = 'chunk-btn';
+    btn.innerHTML = `<span class="chunk-name">Blok ${i + 1} (${i * CHUNK_SIZE + 1}–${i * CHUNK_SIZE + qs.length})</span>` +
+      `<span class="chunk-stats"><span class="ps-new">— ${qs.length - done - wrong}</span><span class="ps-bad">✗ ${wrong}</span><span class="ps-good">✓ ${done}</span></span>`;
+    btn.onclick = () => showChunkDetail(qs, i);
+    list.appendChild(btn);
+  });
+}
+let currentChunk = [];
+function showChunkDetail(qs, i) {
+  currentChunk = qs;
+  $('chunk-detail-title').textContent = `Blok ${i + 1} (${i * CHUNK_SIZE + 1}–${i * CHUNK_SIZE + qs.length})`;
+  const pills = (el, list) => $(el).innerHTML = list.map(q => `<button class="q-pill" onclick="startChunkQuestion('${q.id}')">${q.number}${isInput(q) ? ' ✎' : ''}</button>`).join('') || '<span>—</span>';
+  pills('cd-good', qs.filter(q => progress[q.id] === 'correct'));
+  pills('cd-bad', qs.filter(q => progress[q.id] === 'wrong'));
+  pills('cd-new', qs.filter(q => !progress[q.id]));
+  show('chunk-detail');
+}
+function startChunkQuestion(id) { const q = currentChunk.find(q => q.id === id); if (q) { fromChunks = true; beginSession([q], false); } }
+function startChunkSubset(status) {
+  let qs;
+  if (status === 'all') qs = currentChunk;
+  else if (status === undefined) qs = currentChunk.filter(q => !progress[q.id]);
+  else qs = currentChunk.filter(q => progress[q.id] === status);
+  if (!qs.length) return;
+  fromChunks = true; beginSession([...qs], false);
+}
+function startChunkStudy() {
+  const pool = currentChunk.filter(q => !progress[q.id] || progress[q.id] === 'wrong');
+  if (!pool.length) return;
+  fromChunks = true; showRandomModal('chunk-study', pool);
+}
+
+// ── režimy ──
+function startAll() { beginSession([...ALL], false); }
+function startUnseen() { beginSession(ALL.filter(q => !progress[q.id]), false); }
+function startWrongs() { beginSession(ALL.filter(q => progress[q.id] === 'wrong'), false); }
+function startCorrect() { beginSession(ALL.filter(q => progress[q.id] === 'correct'), false); }
+
+function resumeSession() {
+  if (!session) return;
+  const idMap = Object.fromEntries(FULL.map(q => [q.id, q]));
+  queue = session.queue_ids.map(id => idMap[id]).filter(Boolean);
+  idx = session.idx; history = session.history || []; suddenDeath = session.sudden_death || false;
+  studyMode = false; examMode = false; fromChunks = false;
+  $('sudden-banner').style.display = suddenDeath ? 'block' : 'none';
+  show('quiz'); renderQ();
+}
+
+let modalPool = null;
+function showRandomModal(mode, pool) {
+  modalMode = mode || 'random';
+  if (modalMode === 'study' && !pool) pool = ALL.filter(q => !progress[q.id] || progress[q.id] === 'wrong');
+  modalPool = pool || null;
+  $('random-modal').querySelector('h2').textContent = (modalMode === 'study' || modalMode === 'chunk-study') ? 'Kolik otázek nastudovat?' : 'Kolik otázek?';
+  const maxN = modalPool ? modalPool.length : ALL.length;
+  const input = $('rand-count'); input.max = maxN; input.value = Math.min(10, maxN);
+  $('random-modal').classList.add('show');
+  setTimeout(() => input.focus(), 50);
+}
+function closeModal() { $('random-modal').classList.remove('show'); }
+function startRandom() {
+  const maxN = modalPool ? modalPool.length : ALL.length;
+  const n = Math.min(Math.max(1, parseInt($('rand-count').value) || 1), maxN);
+  closeModal();
+  if (modalMode === 'study' || modalMode === 'chunk-study') startStudy(shuffle(modalPool || ALL).slice(0, n));
+  else beginSession(shuffle(ALL).slice(0, n), false);
+}
+function startStudy(qs) {
+  if (!qs.length) return;
+  studyPicks = [...qs]; studyMode = true; examMode = false;
+  queue = [...qs]; idx = 0; history = []; suddenDeath = false;
+  $('sudden-banner').style.display = 'none';
+  show('quiz'); renderQ();
+}
+function startSuddenDeath() { beginSession(shuffle(ALL), true); }
+
+function startExam() {
+  const n = Math.min(15, ALL.length);
+  if (!n) return;
+  examMode = true; studyMode = false;
+  queue = shuffle(ALL).slice(0, n); idx = 0; history = []; suddenDeath = false;
+  $('sudden-banner').style.display = 'none';
+  show('quiz');
+  startExamTimer(Math.max(5, n * 2) * 60);
+  renderQ();
+}
+function startExamTimer(sec) { clearExamTimer(); examEndTime = Date.now() + sec * 1000; updateExamTimer(); examTimer = setInterval(updateExamTimer, 1000); }
+function clearExamTimer() { if (examTimer) clearInterval(examTimer); examTimer = null; }
+function updateExamTimer() {
+  const remain = Math.max(0, Math.round((examEndTime - Date.now()) / 1000));
+  $('score-label').textContent = `⏱ ${String(Math.floor(remain / 60)).padStart(2, '0')}:${String(remain % 60).padStart(2, '0')}`;
+  if (remain <= 0) { clearExamTimer(); saveProgress(); showResults(); }
+}
+
+function beginSession(qs, sd) {
+  if (!qs.length) return;
+  queue = qs; idx = 0; history = []; suddenDeath = sd; studyMode = false; examMode = false;
+  $('sudden-banner').style.display = sd ? 'block' : 'none';
+  show('quiz'); renderQ();
+}
+
+// ── otázka ──
+function evaluate(q) {
+  if (isInput(q)) {
+    const v = norm($('ans-input').value);
+    return {userKeys: [v], correctKeys: [norm(q.answer)], isCorrect: v === norm(q.answer)};
+  }
+  const cs = new Set(q.correct);
+  return {userKeys: [...selected], correctKeys: [...cs],
+    isCorrect: selected.size === cs.size && [...selected].every(k => cs.has(k))};
+}
+function record(q) {
+  const rec = Object.assign({id: q.id}, evaluate(q));
+  const i = history.findIndex(h => h.id === q.id);
+  if (i >= 0) history[i] = rec; else history.push(rec);
+  return rec;
+}
+function hasAnswer() { return isInput(queue[idx]) ? $('ans-input').value.trim() !== '' : selected.size > 0; }
+function syncAction() { $('btn-action').disabled = !hasAnswer(); }
+function onInput() { if (!checked && !studyMode) syncAction(); }
+
+function renderQ() {
+  const q = queue[idx];
+  checked = false; selected = new Set();
+  const total = queue.length;
+  const correct = history.filter(h => h.isCorrect).length;
+  const pct = history.length ? Math.round(correct / history.length * 100) : 0;
+
+  $('prog-label').textContent = `Otázka ${idx + 1} / ${total}`;
+  if (!examMode) $('score-label').textContent = history.length ? `Úspěšnost: ${pct} %` : 'Úspěšnost: – %';
+  $('pbar').style.width = `${(idx / total) * 100}%`;
+
+  const src = sources.find(s => s.id === currentSource);
+  const lec = q.id.split('-')[0];
+  $('q-src').textContent = `${lec}. přednáška · otázka ${q.number}` + (isInput(q) ? ' · příklad na výsledek' : ' · teorie');
+  const t = $('q-text'); t.innerHTML = fmt(q.text); t.className = 'question-text' + (isInput(q) ? ' calc' : '');
+  $('q-hint').textContent = isInput(q) ? (q.hint || '') : (q.correct.length > 1 ? '(Vyberte více správných odpovědí)' : '');
+  $('feedback').textContent = ''; $('feedback').className = 'feedback';
+  const sol = $('solution'); sol.style.display = 'none'; sol.textContent = '';
+
+  const optsEl = $('opts'); optsEl.innerHTML = '';
+  const inp = $('ans-input'); inp.value = ''; inp.disabled = false; inp.className = 'ans-input';
+  inp.style.display = isInput(q) ? 'block' : 'none';
+  if (!isInput(q)) {
+    for (const [letter, text] of Object.entries(q.options)) {
+      const div = document.createElement('div');
+      div.className = 'opt'; div.id = 'opt-' + letter;
+      div.innerHTML = `<span class="letter">${letter}</span><span>${fmt(text)}</span>`;
+      div.addEventListener('click', () => toggleOpt(letter));
+      optsEl.appendChild(div);
+    }
+  }
+
+  $('btn-prev').disabled = (idx === 0) || suddenDeath || studyMode;
+  $('btn-action').textContent = '✔ Potvrdit (Enter)';
+  $('btn-action').disabled = true;
+
+  if (studyMode) { renderStudy(q); return; }
+  const rec = history.find(h => h.id === q.id);
+  if (examMode) {
+    if (rec) {
+      if (isInput(q)) inp.value = rec.userKeys[0] || '';
+      else { selected = new Set(rec.userKeys); rec.userKeys.forEach(l => $('opt-' + l)?.classList.add('selected')); }
+    }
+    $('btn-action').textContent = idx < total - 1 ? 'Další →  (Enter)' : '📊 Odeslat test (Enter)';
+    syncAction();
+    if (isInput(q)) inp.focus();
+    return;
+  }
+  if (rec) restoreState(rec); else if (isInput(q)) inp.focus();
+}
+
+function renderStudy(q) {
+  $('prog-label').textContent = `📖 Studium ${idx + 1} / ${queue.length}`;
+  $('score-label').textContent = '';
+  if (isInput(q)) {
+    $('ans-input').value = q.answer; $('ans-input').disabled = true; $('ans-input').classList.add('correct');
+    showSolution(q);
+  } else {
+    const cs = new Set(q.correct);
+    for (const l of Object.keys(q.options)) { const el = $('opt-' + l); if (cs.has(l)) el.classList.add('correct'); el.classList.add('disabled'); }
+    showSolution(q);
+  }
+  $('feedback').textContent = '📖 Studijní režim: správná odpověď je zvýrazněna';
+  $('feedback').className = 'feedback ok';
+  $('btn-action').textContent = idx < queue.length - 1 ? '📖 Další (studium) →' : '▶ Spustit test bez klíče';
+  $('btn-action').disabled = false;
+}
+
+function showSolution(q) {
+  const el = $('solution');
+  const text = isInput(q) ? q.solution : q.explanation;
+  if (!text) return;
+  el.className = 'solution' + (isInput(q) ? '' : ' explain');
+  el.innerHTML = fmt(text); el.style.display = 'block';
+}
+
+function toggleOpt(letter) {
+  if (checked || studyMode) return;
+  const q = queue[idx];
+  if (isInput(q)) return;
+  if (selected.has(letter)) { selected.delete(letter); $('opt-' + letter).classList.remove('selected'); }
+  else {
+    if (selected.size >= q.correct.length) return;
+    selected.add(letter); $('opt-' + letter).classList.add('selected');
+  }
+  syncAction();
+}
+
+function handleAction() {
+  if (studyMode) { studyNext(); return; }
+  if (examMode) { examNext(); return; }
+  if (!checked) confirmAnswer(); else nextQ();
+}
+
+function studyNext() {
+  idx++;
+  if (idx < queue.length) renderQ();
+  else { studyMode = false; queue = shuffle(studyPicks); idx = 0; history = []; renderQ(); }
+}
+
+function examNext() {
+  if (!hasAnswer()) return;
+  record(queue[idx]);
+  idx++;
+  if (idx < queue.length) renderQ();
+  else { clearExamTimer(); saveProgress(); showResults(); }
+}
+
+function confirmAnswer() {
+  if (!hasAnswer()) return;
+  checked = true;
+  const q = queue[idx];
+  const rec = record(q);
+  restoreState(rec);
+  saveProgress();
+  if (suddenDeath && !rec.isCorrect) {
+    setTimeout(() => { alert(`☠️ GAME OVER!\nSprávně bylo: ${isInput(q) ? q.answer : rec.correctKeys.join(', ')}`); showResults(); }, 600);
+  }
+}
+
+function restoreState(rec) {
+  checked = true;
+  const q = queue[idx];
+  const fb = $('feedback');
+  if (isInput(q)) {
+    const inp = $('ans-input'); inp.value = rec.userKeys[0] || ''; inp.disabled = true;
+    inp.classList.add(rec.isCorrect ? 'correct' : 'wrong');
+    fb.textContent = rec.isCorrect ? '✅  Správně!' : `❌  Špatně!   Správně: ${q.answer}`;
+  } else {
+    const cs = new Set(rec.correctKeys), us = new Set(rec.userKeys);
+    for (const l of Object.keys(q.options)) {
+      const el = $('opt-' + l); if (!el) continue;
+      el.classList.remove('selected', 'correct', 'wrong', 'missed'); el.classList.add('disabled');
+      if (us.has(l) && cs.has(l)) el.classList.add('correct');
+      else if (us.has(l)) el.classList.add('wrong');
+      else if (cs.has(l)) el.classList.add('missed');
+    }
+    fb.textContent = rec.isCorrect ? '✅  Správně!' : `❌  Špatně!   Správně: ${rec.correctKeys.join(', ')}`;
+  }
+  fb.className = 'feedback ' + (rec.isCorrect ? 'ok' : 'bad');
+  showSolution(q);
+  const correct = history.filter(h => h.isCorrect).length;
+  $('score-label').textContent = `Úspěšnost: ${Math.round(correct / history.length * 100)} %`;
+  const btn = $('btn-action');
+  btn.textContent = idx < queue.length - 1 ? 'Další →  (Enter)' : '📊 Výsledky (Enter)';
+  btn.disabled = false;
+  btn.focus();
+}
+
+function prevQ() {
+  if (studyMode || idx === 0) return;
+  if (examMode && hasAnswer()) record(queue[idx]);
+  idx--; renderQ();
+}
+function nextQ() { idx++; if (idx < queue.length) { renderQ(); saveProgress(); } else { saveProgress(); showResults(); } }
+
+function finishEarly() {
+  if (!history.length) { if (confirm('Žádné odpovědi. Zpět do menu?')) { clearExamTimer(); examMode = false; backFromResults(); } return; }
+  if (confirm('Ukončit předčasně a uložit progress?')) { clearExamTimer(); saveProgress(); showResults(); }
+}
+
+function renderResults() {
+  const correct = history.filter(h => h.isCorrect).length;
+  const pct = Math.round(correct / Math.max(history.length, 1) * 100);
+  $('res-title').textContent = examMode ? (pct >= 60 ? '✅ Ostrý test SPLNĚN' : '❌ Ostrý test NESPLNĚN')
+    : (suddenDeath && pct < 100 ? '☠️ GAME OVER ☠️' : 'Výsledky testu');
+  const p = $('res-pct'); p.textContent = pct + ' %'; p.className = 'big-pct ' + (pct >= 60 ? 'good' : 'bad');
+  $('res-detail').textContent = `Správně ${correct} z ${history.length} zodpovězených` + (examMode ? ' · orientační hranice 60 %' : '');
+  const wrongIds = new Set(history.filter(h => !h.isCorrect).map(h => h.id));
+  const wrongQ = FULL.filter(q => wrongIds.has(q.id));
+  const wb = $('btn-wrong');
+  if (wrongQ.length && !suddenDeath) { wb.style.display = 'block'; wb.textContent = `⚠️ Procvičit jen chyby (${wrongQ.length})`; wb._wrongQ = wrongQ; }
+  else wb.style.display = 'none';
+  examMode = false;
+}
+
+function backFromResults() { if (fromChunks) showChunks(); else showMenu(); }
+function restartSame() { beginSession([...queue], suddenDeath); }
+function practiceWrong() { beginSession([...$('btn-wrong')._wrongQ], false); }
+
+async function clearSourceProgress() {
+  if (!confirm('Smazat progress pro vybranou přednášku?')) return;
+  const ids = new Set(FULL.map(q => q.id));
+  const keep = Object.fromEntries(Object.entries(progress).filter(([k]) => !ids.has(k)));
+  await fetch(`/api/progress?source=${encodeURIComponent(currentSource)}`, {
+    method: 'POST', headers: {'Content-Type': 'application/json', 'X-TZI': '1'}, body: JSON.stringify({seen: keep, session: null})
+  });
+  progress = keep; session = null; updateMenuStats();
+}
+
+document.addEventListener('keydown', e => {
+  if ($('quiz').style.display === 'none') return;
+  const inField = e.target.tagName === 'INPUT';
+  if (e.key === 'Enter') { if (!$('btn-action').disabled) { e.preventDefault(); handleAction(); } }
+  else if (inField) return;
+  else if (e.key === 'ArrowRight') { if (!$('btn-action').disabled) handleAction(); }
+  else if (e.key === 'ArrowLeft') { if (!$('btn-prev').disabled) prevQ(); }
+  else { const k = e.key.toUpperCase(); if (/^[A-D]$/.test(k)) toggleOpt(k); }
+});
+$('rand-count').addEventListener('keydown', e => { if (e.key === 'Enter') startRandom(); if (e.key === 'Escape') closeModal(); });
+
+async function shutdown() {
+  if (!confirm('Ukončit TZI Trenér server?')) return;
+  document.body.innerHTML = '<div style="text-align:center;padding:80px;font-family:sans-serif"><h2>Server zastaven.</h2><p style="color:#6b7280">Zavři tuto záložku.</p></div>';
+  try { await fetch('/shutdown', {method: 'POST', headers: {'X-TZI': '1'}}); } catch {}
+}
+
+init();
+</script>
+</body>
+</html>
