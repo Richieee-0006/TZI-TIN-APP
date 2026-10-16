@@ -254,52 +254,97 @@ h2 { margin: 0 0 12px; font-size: 1.05rem; font-weight: 700; letter-spacing: 0; 
   .btn-ok { background: #3b82f6; color: white; }
   .btn-cancel { background: #e5e7eb; }
 
-  #quiz { display: none; }
-  .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 8px; }
-  .header .prog  { color: #6b7280; font-size: .95rem; font-weight: 600; }
-  .header .score { font-weight: 700; color: #3b82f6; }
-  .progress-bar { height: 8px; background: #e5e7eb; border-radius: 99px; margin-bottom: 24px; }
-  .progress-bar .fill { height: 100%; background: #3b82f6; border-radius: 99px; transition: width .3s; }
-  .sudden-banner { background: #111827; color: #ef4444; text-align: center; padding: 8px; border-radius: 8px; margin-bottom: 16px; font-weight: 700; }
-  .question-box { background: white; border-radius: 12px; padding: 24px 28px; margin-bottom: 20px; box-shadow: 0 1px 4px rgba(0,0,0,.1); }
-  .question-box .hint { font-size: .85rem; color: #9ca3af; margin-top: 6px; }
-  .qsrc { font-size: .8rem; color: #9ca3af; margin-bottom: 6px; }
-  .question-text { font-size: 1.15rem; font-weight: 700; line-height: 1.5; overflow-wrap: anywhere; }
+  /* BEGIN quiz */
+  #quiz { display: none; max-width: 760px; margin: 0 auto; }
+  .sudden-banner { background: var(--exam); color: var(--exam-text); padding: 10px 16px; margin-bottom: 20px; font-weight: 700; border-radius: 10px; }
+  .sudden-banner span { font: 700 .875rem/1.6 var(--mono); color: var(--exam-accent); margin-left: 14px; }
+  .header { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 10px; }
+  .header .prog { color: var(--ink); font-size: 1.05rem; font-weight: 700; }
+  .header .score { color: var(--muted); font: 500 .9rem/1 var(--font); font-variant-numeric: tabular-nums; }
+  .pchain { font: 700 1rem/1.5 var(--mono); display: flex; flex-wrap: wrap; gap: 0 .5em; margin-bottom: 8px; }
+  .pchain:empty { display: none; }
+  .pchain i { font-style: normal; width: 1ch; text-align: center; color: var(--new); font-weight: 500; }
+  .pchain i.ok { color: var(--ok); font-weight: 700; }
+  .pchain i.bad { color: var(--bad); font-weight: 700; }
+  .pchain i.ans { color: var(--muted); font-weight: 700; }
+  .pchain i.cur { box-shadow: 0 2px 0 var(--blue); }
+  .progress-bar { height: 3px; background: var(--line); margin-bottom: 28px; }
+  .pchain:not(:empty) + .progress-bar { height: 1px; }
+  .progress-bar .fill { height: 100%; background: var(--blue); transition: width .3s; }
+  .question-box { padding: 4px 0 24px; margin-bottom: 8px; border-bottom: 1px solid var(--line); }
+  .qsrc { font-size: .875rem; color: var(--muted); margin-bottom: 10px; }
+  .question-text { font-size: 1.4rem; font-weight: 600; line-height: 1.35; letter-spacing: -0.01em; overflow-wrap: anywhere; font-variation-settings: "opsz" 36; }
+  .question-box .hint { font-size: .9375rem; color: var(--muted); margin-top: 10px; }
+  .question-box .hint:empty { display: none; }
   sub, sup { font-size: .72em; line-height: 0; }
-  .question-text.calc { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 1.5rem; }
-  .options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+  .question-text.calc { font: 500 1.3rem/1.55 var(--mono); letter-spacing: 0; }
+  .options { display: flex; flex-direction: column; margin-bottom: 24px; }
   .opt {
-    display: flex; align-items: flex-start; gap: 14px;
-    background: white; border: 2px solid #e5e7eb; border-radius: 10px;
-    padding: 14px 18px; cursor: pointer; transition: border-color .15s, background .15s;
-    font-size: 1rem; line-height: 1.4; user-select: none;
+    position: relative; display: grid; grid-template-columns: 2.25rem 1fr auto; align-items: baseline; gap: 12px;
+    padding: 14px 8px 14px 14px; border-bottom: 1px solid var(--line);
+    cursor: pointer; font-size: 1.0625rem; line-height: 1.4; user-select: none;
   }
-  .opt:hover:not(.disabled) { border-color: #93c5fd; background: #eff6ff; }
-  .opt.selected { border-color: #3b82f6; background: #dbeafe; }
-  .opt.correct  { border-color: #22c55e; background: #dcfce7; }
-  .opt.wrong    { border-color: #ef4444; background: #fee2e2; }
-  .opt.missed   { border-color: #f59e0b; background: #fef9c3; }
-  .opt.disabled { cursor: default; }
-  .opt .letter { font-weight: 800; color: #3b82f6; min-width: 20px; }
-  .opt.correct .letter { color: #16a34a; }
-  .opt.wrong .letter { color: #dc2626; }
-  .opt.missed .letter { color: #d97706; }
-  .ans-input { width: 100%; font: 1.4rem ui-monospace, Menlo, Consolas, monospace; padding: 12px 16px; border: 2px solid #d1d5db; border-radius: 10px; margin-bottom: 20px; background: white; }
-  .ans-input:focus { outline: none; border-color: #3b82f6; }
-  .ans-input.correct { border-color: #22c55e; background: #dcfce7; }
-  .ans-input.wrong { border-color: #ef4444; background: #fee2e2; }
-  .feedback { font-size: 1.05rem; font-weight: 700; min-height: 28px; margin-bottom: 12px; overflow-wrap: anywhere; }
-  .feedback.ok  { color: #22c55e; }
-  .feedback.bad { color: #ef4444; }
-  .solution { background: white; border-radius: 10px; padding: 14px 18px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.1);
-    white-space: pre-wrap; font: .95rem/1.5 ui-monospace, Menlo, Consolas, monospace; overflow-x: auto; display: none; }
-  .solution.explain { font-family: 'Segoe UI', system-ui, sans-serif; font-size: 1rem; }
-  .nav { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-  .nav button { padding: 12px 24px; border: none; border-radius: 9px; cursor: pointer; font-size: 1rem; font-weight: 600; }
-  .nav button:disabled { opacity: .35; cursor: default; }
-  .btn-prev { background: #e5e7eb; color: #374151; }
-  .btn-end { background: #fff3cd; color: #856404; font-size: .9rem; }
-  .btn-next { background: #3b82f6; color: white; }
+  .opt .letter { font: 700 1rem/1 var(--mono); color: var(--muted); width: 1.9rem; height: 1.9rem; display: grid; place-items: center; border: 1.5px solid var(--line); border-radius: 6px; align-self: start; }
+  .opt::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: transparent; }
+  .opt::after { font: 700 .8125rem/1.2 var(--mono); white-space: nowrap; }
+  .opt:hover:not(.disabled) { background: var(--paper-2); }
+  .opt:hover:not(.disabled) .letter { border-color: var(--blue); color: var(--blue); }
+  .opt.selected::before { background: var(--blue); }
+  .opt.selected { font-weight: 600; }
+  .opt.selected .letter { background: var(--blue); border-color: var(--blue); color: var(--blue-ink); }
+  .opt.selected::after { content: "vybráno"; color: var(--blue); font-family: var(--font); font-weight: 500; }
+  .opt.disabled { cursor: default; color: var(--muted); }
+  .opt.correct, .opt.wrong, .opt.missed { color: var(--ink); }
+  .opt.correct::before { background: var(--ok); }
+  .opt.correct .letter { background: var(--ok); border-color: var(--ok); color: var(--paper); }
+  .opt.correct::after { content: "1 správně"; color: var(--ok); }
+  .opt.wrong::before { background: var(--bad); }
+  .opt.wrong .letter { background: var(--bad); border-color: var(--bad); color: var(--paper); }
+  .opt.wrong::after { content: "0 špatně"; color: var(--bad); }
+  .opt.wrong > span:nth-child(2) { text-decoration: line-through; text-decoration-color: var(--bad); text-decoration-thickness: 1.5px; }
+  .opt.missed::before { background: repeating-linear-gradient(var(--ok) 0 5px, transparent 5px 9px); }
+  .opt.missed .letter { border-color: var(--ok); color: var(--ok); border-style: dashed; }
+  .opt.missed::after { content: "1 chybělo"; color: var(--ok); }
+  .ans-input { width: 100%; font: 500 1.5rem/1.3 var(--mono); padding: 12px 14px; border: 1.5px solid var(--ink); border-radius: 8px; margin-bottom: 20px; background: var(--paper); color: var(--ink); }
+  .ans-input:focus { outline: 3px solid var(--blue); outline-offset: 2px; }
+  .ans-input::placeholder { color: var(--muted); }
+  .ans-input.correct { border-color: var(--ok); border-width: 3px; color: var(--ok); }
+  .ans-input.wrong { border-color: var(--bad); border-width: 3px; color: var(--bad); text-decoration: line-through; }
+  .ans-input:disabled { opacity: 1; -webkit-text-fill-color: currentColor; }
+  .feedback { display: flex; gap: 12px; align-items: baseline; font-size: 1.125rem; font-weight: 700; margin-bottom: 14px; overflow-wrap: anywhere; }
+  .feedback:empty { display: none; }
+  .feedback.ok::before, .feedback.bad::before { font: 800 1.5rem/1 var(--mono); }
+  .feedback.ok { color: var(--ok); } .feedback.ok::before { content: "1"; }
+  .feedback.bad { color: var(--bad); } .feedback.bad::before { content: "0"; }
+  .feedback.study::before { content: none; }
+  .feedback.ok, .feedback.bad { animation: fbin .22s ease-out; }
+  @keyframes fbin { from { opacity: 0; transform: translateY(.3em) } to { opacity: 1; transform: none } }
+  .solution { border-left: 3px solid var(--blue); padding: 4px 0 4px 16px; margin: 0 0 24px;
+    white-space: pre-wrap; font: 500 .9375rem/1.65 var(--mono); overflow: auto; max-height: 60vh; display: none; overflow-wrap: normal; tab-size: 4; }
+  .solution.explain { font: 400 1rem/1.55 var(--font); white-space: pre-wrap; overflow-wrap: anywhere; }
+  .nav { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; padding-top: 4px; }
+  .nav button { font-size: 1rem; }
+  .btn-prev, .btn-end { background: none; border: 0; padding: 10px 4px; color: var(--muted); font-weight: 500; text-underline-offset: 3px; }
+  .btn-prev:hover:not(:disabled), .btn-end:hover { color: var(--ink); text-decoration: underline; }
+  .btn-prev:disabled { opacity: .4; cursor: default; }
+  .btn-end { justify-self: start; font-size: .9375rem; }
+  .btn-next { background: var(--blue); color: var(--blue-ink); border: 0; border-radius: 12px; padding: 14px 24px; font-weight: 700; min-width: 11rem; }
+  .btn-next:hover:not(:disabled) { filter: brightness(1.1); }
+  .btn-next:disabled { background: var(--paper-2); color: var(--muted); cursor: default; }
+  .btn-next .kh { font: 500 .75rem/1 var(--mono); opacity: .8; margin-left: 10px; }
+  @media (prefers-reduced-motion: reduce) { .feedback.ok, .feedback.bad { animation: none; } .progress-bar .fill { transition: none; } }
+  @media (hover: none) { .btn-next .kh { display: none; } }
+  @media (max-width: 600px) {
+    .question-text { font-size: 1.2rem; }
+    .question-text.calc { font-size: 1.05rem; }
+    .opt { grid-template-columns: 2rem 1fr; padding: 12px 6px 12px 12px; gap: 10px; font-size: 1rem; }
+    .opt::after { grid-column: 2; }
+    .nav { grid-template-columns: 1fr 1fr; }
+    .btn-next { grid-column: 1 / -1; grid-row: 1; width: 100%; }
+    .btn-prev { justify-self: start; } .btn-end { justify-self: end; }
+    .ans-input { font-size: 1.2rem; }
+  }
+  /* END quiz */
 
   #results { display: none; text-align: center; padding-top: 40px; }
   #results h1 { font-size: 2rem; margin-bottom: 8px; }
@@ -319,13 +364,6 @@ h2 { margin: 0 0 12px; font-size: 1.05rem; font-weight: 700; letter-spacing: 0; 
     .menu-btn, .menu-sep { width: 100%; }
     .source-row { flex-wrap: wrap; }
     .modal { min-width: unset; width: 90vw; padding: 24px 16px; }
-    .question-box { padding: 16px; }
-    .question-text { font-size: 1rem; }
-    .question-text.calc { font-size: 1.2rem; }
-    .opt { padding: 12px 14px; gap: 10px; font-size: .95rem; }
-    .nav { flex-wrap: wrap; }
-    .nav button { flex: 1 1 auto; padding: 12px 10px; font-size: .9rem; }
-    .btn-end { flex-basis: 100%; order: 3; }
     .big-pct { font-size: 3.5rem; }
     .res-btns button { width: 100%; }
   }
@@ -445,11 +483,12 @@ h2 { margin: 0 0 12px; font-size: 1.05rem; font-weight: 700; letter-spacing: 0; 
   </div>
 
   <div id="quiz">
-    <div id="sudden-banner" class="sudden-banner" style="display:none">💀 SUDDEN DEATH: jedna chyba = konec!</div>
+    <div id="sudden-banner" class="sudden-banner" style="display:none">Sudden Death<span>1 život, první chyba ukončí hru</span></div>
     <div class="header">
       <span class="prog" id="prog-label"></span>
       <span class="score" id="score-label"></span>
     </div>
+    <div class="pchain" id="pchain" aria-hidden="true"></div>
     <div class="progress-bar"><div class="fill" id="pbar"></div></div>
     <div class="question-box">
       <div class="qsrc" id="q-src"></div>
@@ -461,9 +500,9 @@ h2 { margin: 0 0 12px; font-size: 1.05rem; font-weight: 700; letter-spacing: 0; 
     <div class="feedback" id="feedback"></div>
     <div class="solution" id="solution"></div>
     <div class="nav">
-      <button class="btn-prev" id="btn-prev" onclick="prevQ()">← Předchozí</button>
-      <button class="btn-end" onclick="finishEarly()">🏳 Ukončit předčasně</button>
-      <button class="btn-next" id="btn-action" onclick="handleAction()">✔ Potvrdit (Enter)</button>
+      <button class="btn-prev" id="btn-prev" onclick="prevQ()">Předchozí</button>
+      <button class="btn-end" onclick="finishEarly()">Ukončit předčasně</button>
+      <button class="btn-next" id="btn-action" onclick="handleAction()">Potvrdit<span class="kh">Enter</span></button>
     </div>
   </div>
 
@@ -740,7 +779,7 @@ function startExamTimer(sec) { clearExamTimer(); examEndTime = Date.now() + sec 
 function clearExamTimer() { if (examTimer) clearInterval(examTimer); examTimer = null; }
 function updateExamTimer() {
   const remain = Math.max(0, Math.round((examEndTime - Date.now()) / 1000));
-  $('score-label').textContent = `⏱ ${String(Math.floor(remain / 60)).padStart(2, '0')}:${String(remain % 60).padStart(2, '0')}`;
+  $('score-label').textContent = `Zbývá ${String(Math.floor(remain / 60)).padStart(2, '0')}:${String(remain % 60).padStart(2, '0')}`;
   if (remain <= 0) { clearExamTimer(); saveProgress(); showResults(); }
 }
 
@@ -778,8 +817,8 @@ function renderQ() {
   const correct = history.filter(h => h.isCorrect).length;
   const pct = history.length ? Math.round(correct / history.length * 100) : 0;
 
-  $('prog-label').textContent = `Otázka ${idx + 1} / ${total}`;
-  if (!examMode) $('score-label').textContent = history.length ? `Úspěšnost: ${pct} %` : 'Úspěšnost: – %';
+  $('prog-label').textContent = `Otázka ${idx + 1} z ${total}`;
+  if (!examMode) $('score-label').textContent = history.length ? `Úspěšnost: ${pct} %` : 'Úspěšnost –';
   $('pbar').style.width = `${(idx / total) * 100}%`;
 
   const src = sources.find(s => s.id === currentSource);
@@ -804,7 +843,8 @@ function renderQ() {
   }
 
   $('btn-prev').disabled = (idx === 0) || suddenDeath || studyMode;
-  $('btn-action').textContent = '✔ Potvrdit (Enter)';
+  $('btn-action').innerHTML = 'Potvrdit<span class="kh">Enter</span>';
+  renderChain();
   $('btn-action').disabled = true;
 
   if (studyMode) { renderStudy(q); return; }
@@ -814,7 +854,7 @@ function renderQ() {
       if (isInput(q)) inp.value = rec.userKeys[0] || '';
       else { selected = new Set(rec.userKeys); rec.userKeys.forEach(l => $('opt-' + l)?.classList.add('selected')); }
     }
-    $('btn-action').textContent = idx < total - 1 ? 'Další →  (Enter)' : '📊 Odeslat test (Enter)';
+    $('btn-action').innerHTML = (idx < total - 1 ? 'Další' : 'Odeslat test') + '<span class="kh">Enter</span>';
     syncAction();
     if (isInput(q)) inp.focus();
     return;
@@ -822,8 +862,20 @@ function renderQ() {
   if (rec) restoreState(rec); else if (isInput(q)) inp.focus();
 }
 
+function renderChain() {
+  const el = $('pchain');
+  if (studyMode || queue.length > 45) { el.innerHTML = ''; return; }
+  el.innerHTML = queue.map((q, i) => {
+    const h = history.find(h => h.id === q.id);
+    let c = '', ch = '·';
+    if (h && examMode) { c = 'ans'; ch = '–'; }
+    else if (h) { c = h.isCorrect ? 'ok' : 'bad'; ch = h.isCorrect ? '1' : '0'; }
+    return `<i class="${c}${i === idx ? ' cur' : ''}"${i === idx ? ' aria-current="step"' : ''}>${ch}</i>`;
+  }).join('');
+}
+
 function renderStudy(q) {
-  $('prog-label').textContent = `📖 Studium ${idx + 1} / ${queue.length}`;
+  $('prog-label').textContent = `Studium ${idx + 1} z ${queue.length}`;
   $('score-label').textContent = '';
   if (isInput(q)) {
     $('ans-input').value = q.answer; $('ans-input').disabled = true; $('ans-input').classList.add('correct');
@@ -833,9 +885,9 @@ function renderStudy(q) {
     for (const l of Object.keys(q.options)) { const el = $('opt-' + l); if (cs.has(l)) el.classList.add('correct'); el.classList.add('disabled'); }
     showSolution(q);
   }
-  $('feedback').textContent = '📖 Studijní režim: správná odpověď je zvýrazněna';
-  $('feedback').className = 'feedback ok';
-  $('btn-action').textContent = idx < queue.length - 1 ? '📖 Další (studium) →' : '▶ Spustit test bez klíče';
+  $('feedback').textContent = 'Studijní režim: správná odpověď je zvýrazněna';
+  $('feedback').className = 'feedback ok study';
+  $('btn-action').innerHTML = (idx < queue.length - 1 ? 'Další' : 'Spustit test bez klíče') + '<span class="kh">Enter</span>';
   $('btn-action').disabled = false;
 }
 
@@ -887,7 +939,7 @@ function confirmAnswer() {
   restoreState(rec);
   saveProgress();
   if (suddenDeath && !rec.isCorrect) {
-    setTimeout(() => { alert(`☠️ GAME OVER!\nSprávně bylo: ${isInput(q) ? q.answer : rec.correctKeys.join(', ')}`); showResults(); }, 600);
+    setTimeout(() => { alert(`Konec hry!\nSprávně bylo: ${isInput(q) ? q.answer : rec.correctKeys.join(', ')}`); showResults(); }, 600);
   }
 }
 
@@ -898,7 +950,7 @@ function restoreState(rec) {
   if (isInput(q)) {
     const inp = $('ans-input'); inp.value = rec.userKeys[0] || ''; inp.disabled = true;
     inp.classList.add(rec.isCorrect ? 'correct' : 'wrong');
-    fb.textContent = rec.isCorrect ? '✅  Správně!' : `❌  Špatně!   Správně: ${q.answer}`;
+    fb.textContent = rec.isCorrect ? 'Správně' : `Špatně. Správně: ${q.answer}`;
   } else {
     const cs = new Set(rec.correctKeys), us = new Set(rec.userKeys);
     for (const l of Object.keys(q.options)) {
@@ -908,14 +960,15 @@ function restoreState(rec) {
       else if (us.has(l)) el.classList.add('wrong');
       else if (cs.has(l)) el.classList.add('missed');
     }
-    fb.textContent = rec.isCorrect ? '✅  Správně!' : `❌  Špatně!   Správně: ${rec.correctKeys.join(', ')}`;
+    fb.textContent = rec.isCorrect ? 'Správně' : `Špatně. Správně: ${rec.correctKeys.join(', ')}`;
   }
   fb.className = 'feedback ' + (rec.isCorrect ? 'ok' : 'bad');
   showSolution(q);
   const correct = history.filter(h => h.isCorrect).length;
   $('score-label').textContent = `Úspěšnost: ${Math.round(correct / history.length * 100)} %`;
+  renderChain();
   const btn = $('btn-action');
-  btn.textContent = idx < queue.length - 1 ? 'Další →  (Enter)' : '📊 Výsledky (Enter)';
+  btn.innerHTML = (idx < queue.length - 1 ? 'Další' : 'Výsledky') + '<span class="kh">Enter</span>';
   btn.disabled = false;
   btn.focus();
 }
