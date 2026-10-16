@@ -319,16 +319,43 @@ h2 { margin: 0 0 12px; font-size: 1.05rem; font-weight: 700; letter-spacing: 0; 
   .btn-end { background: #fff3cd; color: #856404; font-size: .9rem; }
   .btn-next { background: #3b82f6; color: white; }
 
-  #results { display: none; text-align: center; padding-top: 40px; }
-  #results h1 { font-size: 2rem; margin-bottom: 8px; }
-  .big-pct { font-size: 5rem; font-weight: 900; margin: 12px 0; }
-  .big-pct.good { color: #22c55e; }
-  .big-pct.bad { color: #ef4444; }
-  .res-detail { color: #6b7280; margin-bottom: 30px; }
-  .res-btns { display: flex; flex-direction: column; align-items: center; gap: 12px; }
-  .res-btns button { width: 300px; padding: 13px; border: none; border-radius: 10px; cursor: pointer; font-size: 1rem; font-weight: 600; background: white; box-shadow: 0 1px 4px rgba(0,0,0,.12); }
-  .res-btns .primary { background: #3b82f6; color: white; }
-  .res-btns .warning-btn { background: #ffebee; }
+  /* BEGIN results */
+  #results { display: none; max-width: 760px; margin: 0 auto; padding-top: 8px; }
+  #results h1 { font-size: clamp(1.5rem, 4vw, 2.1rem); line-height: 1.1; font-weight: 800; letter-spacing: -0.02em; font-variation-settings: "opsz" 72; }
+  .res-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 8px 32px; flex-wrap: wrap; margin-top: 24px; }
+  .big-pct { font-size: clamp(5.5rem, 22vw, 10rem); line-height: .85; font-weight: 800; letter-spacing: -0.05em; font-variation-settings: "opsz" 96; font-variant-numeric: tabular-nums; margin: 0; }
+  .big-pct small { font-size: .38em; letter-spacing: 0; font-weight: 500; margin-left: .12em; color: var(--muted); }
+  .big-pct.good { color: var(--ok); }
+  .big-pct.bad { color: var(--bad); }
+  .res-detail { color: var(--muted); margin: 0; padding-bottom: 4px; max-width: 26ch; }
+  .res-detail b { display: block; color: var(--ink); font-weight: 700; font-size: 1.125rem; }
+  .res-bits { margin-top: 36px; padding: 18px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); display: grid; grid-template-columns: repeat(10, 1ch); justify-content: start; gap: .7em 1em; font: 700 clamp(1.4rem, 5.2vw, 2.2rem)/1 var(--mono); }
+  .res-bits .bit { width: 1ch; text-align: center; }
+  .res-bits.anim .bit { opacity: 0; animation: flip .35s ease-out forwards; }
+  .res-bits .bit.stop { text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: .22em; }
+  .res-note { margin-top: 12px; color: var(--muted); font-size: .9375rem; }
+  .res-meter { position: relative; height: 6px; margin: 28px 0 8px; background: var(--paper-2); border-radius: 3px; }
+  .res-meter i { position: absolute; inset: 0 auto 0 0; border-radius: 3px; background: var(--bad); }
+  .res-meter.good i { background: var(--ok); }
+  .res-meter u { position: absolute; top: -6px; bottom: -6px; width: 2px; background: var(--ink); left: 60%; }
+  .res-meter-lab { position: relative; height: 1.2em; font-size: .8125rem; color: var(--muted); }
+  .res-meter-lab span { position: absolute; left: 60%; transform: translateX(-50%); white-space: nowrap; }
+  .res-btns { display: flex; flex-direction: column; gap: 0; margin-top: 36px; }
+  .res-btns button { display: block; width: 100%; text-align: left; padding: 14px 4px; background: none; border: 0; border-bottom: 1px solid var(--line); font-weight: 700; }
+  .res-btns button:hover { background: var(--paper-2); }
+  .res-btns .primary { background: var(--blue); color: var(--blue-ink); border: 0; border-radius: 14px; padding: 18px 22px; font-size: 1.25rem; font-weight: 800; margin-bottom: 20px; }
+  .res-btns .primary:hover { background: var(--blue); filter: brightness(1.08); }
+  .res-btns .warning-btn { border-top: 1px solid var(--line); color: var(--bad); }
+  .res-btns .warning-btn + button { border-bottom: 1px solid var(--line); }
+  @media (max-width: 600px) { .res-head { margin-top: 16px; } .res-bits { margin-top: 28px; } .res-detail { max-width: none; } }
+  @media (prefers-reduced-motion: reduce) { .res-bits.anim .bit { animation: none; opacity: 1; } }
+
+  /* server zastaven */
+  .bye { max-width: 520px; margin: 0 auto; padding: 96px 24px; }
+  .bye h1 { font-size: clamp(2rem, 6vw, 3rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; font-variation-settings: "opsz" 96; }
+  .bye p { margin-top: 12px; color: var(--muted); }
+  .bye .bits { margin-top: 28px; font: 700 1.5rem/1 var(--mono); letter-spacing: .5em; }
+  /* END results */
 
   @media (max-width: 600px) {
     #app { padding: 12px; }
@@ -343,8 +370,6 @@ h2 { margin: 0 0 12px; font-size: 1.05rem; font-weight: 700; letter-spacing: 0; 
     .nav { flex-wrap: wrap; }
     .nav button { flex: 1 1 auto; padding: 12px 10px; font-size: .9rem; }
     .btn-end { flex-basis: 100%; order: 3; }
-    .big-pct { font-size: 3.5rem; }
-    .res-btns button { width: 100%; }
   }
   </style>
 </head>
@@ -486,12 +511,20 @@ h2 { margin: 0 0 12px; font-size: 1.05rem; font-weight: 700; letter-spacing: 0; 
 
   <div id="results">
     <h1 id="res-title"></h1>
-    <div class="big-pct" id="res-pct"></div>
-    <div class="res-detail" id="res-detail"></div>
+    <div class="res-head">
+      <div class="big-pct" id="res-pct"></div>
+      <p class="res-detail" id="res-detail"></p>
+    </div>
+    <div class="res-bits" id="res-bits" role="img"></div>
+    <p class="res-note" id="res-note"></p>
+    <div id="res-meter-wrap" style="display:none">
+      <div class="res-meter" id="res-meter"><i></i><u></u></div>
+      <div class="res-meter-lab"><span>hranice 60 %</span></div>
+    </div>
     <div class="res-btns">
-      <button class="primary" onclick="restartSame()">🔄 Restartovat stejný výběr</button>
+      <button class="primary" onclick="restartSame()">Restartovat stejný výběr</button>
       <button id="btn-wrong" onclick="practiceWrong()" style="display:none" class="warning-btn"></button>
-      <button onclick="backFromResults()">🏠 Hlavní menu</button>
+      <button onclick="backFromResults()">Hlavní menu</button>
     </div>
   </div>
 
@@ -906,7 +939,7 @@ function confirmAnswer() {
   restoreState(rec);
   saveProgress();
   if (suddenDeath && !rec.isCorrect) {
-    setTimeout(() => { alert(`☠️ GAME OVER!\nSprávně bylo: ${isInput(q) ? q.answer : rec.correctKeys.join(', ')}`); showResults(); }, 600);
+    setTimeout(() => { alert(`Konec hry. Správná odpověď: ${isInput(q) ? q.answer : rec.correctKeys.join(', ')}`); showResults(); }, 600);
   }
 }
 
@@ -947,21 +980,47 @@ function prevQ() {
 function nextQ() { idx++; if (idx < queue.length) { renderQ(); saveProgress(); } else { saveProgress(); showResults(); } }
 
 function finishEarly() {
-  if (!history.length) { if (confirm('Žádné odpovědi. Zpět do menu?')) { clearExamTimer(); examMode = false; backFromResults(); } return; }
-  if (confirm('Ukončit předčasně a uložit progress?')) { clearExamTimer(); saveProgress(); showResults(); }
+  if (!history.length) { if (confirm('Zatím žádné odpovědi. Vrátit se do menu?')) { clearExamTimer(); examMode = false; backFromResults(); } return; }
+  if (confirm('Ukončit sadu předčasně a uložit postup?')) { clearExamTimer(); saveProgress(); showResults(); }
 }
 
 function renderResults() {
+  const n = history.length;
   const correct = history.filter(h => h.isCorrect).length;
-  const pct = Math.round(correct / Math.max(history.length, 1) * 100);
-  $('res-title').textContent = examMode ? (pct >= 60 ? '✅ Ostrý test SPLNĚN' : '❌ Ostrý test NESPLNĚN')
-    : (suddenDeath && pct < 100 ? '☠️ GAME OVER ☠️' : 'Výsledky testu');
-  const p = $('res-pct'); p.textContent = pct + ' %'; p.className = 'big-pct ' + (pct >= 60 ? 'good' : 'bad');
-  $('res-detail').textContent = `Správně ${correct} z ${history.length} zodpovězených` + (examMode ? ' · orientační hranice 60 %' : '');
+  const pct = Math.round(correct / Math.max(n, 1) * 100);
+  const passed = pct >= 60;
+  const sdEnd = suddenDeath && !examMode && pct < 100;
+  $('res-title').textContent = examMode ? (passed ? 'Ostrý test splněn' : 'Ostrý test nesplněn')
+    : sdEnd ? 'Konec hry' : suddenDeath ? 'Sada bez chyby' : 'Výsledky sady';
+  const p = $('res-pct'); p.innerHTML = pct + '<small>%</small>'; p.className = 'big-pct ' + (passed && !sdEnd ? 'good' : 'bad');
+  $('res-detail').innerHTML = `<b>${correct} z ${n}</b>správně ze zodpovězených otázek`;
+  // řetězec 1/0 právě dokončené sady
+  const rb = $('res-bits');
+  rb.className = 'res-bits anim';
+  rb.setAttribute('aria-label', `Průběh: ${correct} správně, ${n - correct} chybně`);
+  rb.innerHTML = history.map((h, i) => {
+    const last = sdEnd && i === n - 1;
+    return `<span class="bit ${h.isCorrect ? 'ok' : 'bad'}${last ? ' stop' : ''}" style="animation-delay:${Math.min(i, 60) * 14}ms">${h.isCorrect ? '1' : '0'}</span>`;
+  }).join('');
+  const note = $('res-note'), mw = $('res-meter-wrap');
+  mw.style.display = examMode ? 'block' : 'none';
+  if (examMode) {
+    const need = Math.ceil(n * 0.6), diff = correct - need;
+    $('res-meter').className = 'res-meter ' + (passed ? 'good' : 'bad');
+    $('res-meter').firstChild.style.width = pct + '%';
+    note.textContent = passed ? `Hranice 60 % je splněná, potřeba bylo ${need} správných.`
+      : `Na hranici 60 % chybí ${-diff} ${-diff === 1 ? 'správná odpověď' : -diff < 5 ? 'správné odpovědi' : 'správných odpovědí'}, potřeba bylo ${need}.`;
+  } else if (sdEnd) {
+    note.textContent = `Hra skončila první chybou po ${correct} správných ${correct === 1 ? 'odpovědi' : 'odpovědích'}.`;
+  } else if (suddenDeath) {
+    note.textContent = 'Všechny otázky zvládnuté bez jediné chyby.';
+  } else {
+    note.textContent = n && correct === n ? 'Bez chyby.' : 'Správně je 1, chybně 0.';
+  }
   const wrongIds = new Set(history.filter(h => !h.isCorrect).map(h => h.id));
   const wrongQ = FULL.filter(q => wrongIds.has(q.id));
   const wb = $('btn-wrong');
-  if (wrongQ.length && !suddenDeath) { wb.style.display = 'block'; wb.textContent = `⚠️ Procvičit jen chyby (${wrongQ.length})`; wb._wrongQ = wrongQ; }
+  if (wrongQ.length && !suddenDeath) { wb.style.display = 'block'; wb.textContent = `Procvičit jen chyby (${wrongQ.length})`; wb._wrongQ = wrongQ; }
   else wb.style.display = 'none';
   examMode = false;
 }
@@ -971,7 +1030,7 @@ function restartSame() { beginSession([...queue], suddenDeath); }
 function practiceWrong() { beginSession([...$('btn-wrong')._wrongQ], false); }
 
 async function clearSourceProgress() {
-  if (!confirm('Smazat progress pro vybranou přednášku?')) return;
+  if (!confirm('Smazat postup u vybrané přednášky? Akci nelze vrátit.')) return;
   const ids = new Set(FULL.map(q => q.id));
   const keep = Object.fromEntries(Object.entries(progress).filter(([k]) => !ids.has(k)));
   await fetch(`/api/progress?source=${encodeURIComponent(currentSource)}`, {
@@ -992,8 +1051,8 @@ document.addEventListener('keydown', e => {
 $('rand-count').addEventListener('keydown', e => { if (e.key === 'Enter') startRandom(); if (e.key === 'Escape') closeModal(); });
 
 async function shutdown() {
-  if (!confirm('Ukončit TZI Trenér server?')) return;
-  document.body.innerHTML = '<div style="text-align:center;padding:80px;font-family:sans-serif"><h2>Server zastaven.</h2><p style="color:#6b7280">Zavři tuto záložku.</p></div>';
+  if (!confirm('Zastavit server TZI Trenér?')) return;
+  document.body.innerHTML = '<main class="bye"><h1>Server je zastavený</h1><p>Tuto záložku můžeš zavřít. Postup je uložený.</p><div class="bits" aria-hidden="true"><span style="color:var(--ok)">1</span><span style="color:var(--bad)">0</span><span style="color:var(--ok)">1</span><span style="color:var(--new)">·</span></div></main>';
   try { await fetch('/shutdown', {method: 'POST', headers: {'X-TZI': '1'}}); } catch {}
 }
 
