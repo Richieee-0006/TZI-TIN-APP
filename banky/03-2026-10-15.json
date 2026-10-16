@@ -1,0 +1,832 @@
+{
+ "title": "Množiny, inkluze a relace",
+ "lecture": 3,
+ "date": "2026-10-15",
+ "questions": [
+  {
+   "type": "choice",
+   "text": "Jak se v zápisu značí množiny a jak jejich prvky?",
+   "options": {
+    "A": "množiny řeckými písmeny, prvky číslicemi",
+    "B": "množiny malými písmeny, prvky velkými",
+    "C": "množiny velkými písmeny, prvky malými",
+    "D": "množiny i prvky velkými písmeny"
+   },
+   "correct": [
+    "C"
+   ],
+   "explanation": "Množiny zadáváme velkými písmeny (A, M, X), jejich prvky malými (a, b, c).",
+   "number": 1,
+   "id": "3-1"
+  },
+  {
+   "type": "choice",
+   "text": "Jaké závorky se používají při výčtu prvků množiny, např. M = {a, b, c}?",
+   "options": {
+    "A": "kulaté",
+    "B": "hranaté",
+    "C": "lomené",
+    "D": "složené"
+   },
+   "correct": [
+    "D"
+   ],
+   "explanation": "Množina má složené závorky. Kulaté závorky patří uspořádané dvojici (x, y).",
+   "number": 2,
+   "id": "3-2"
+  },
+  {
+   "type": "choice",
+   "text": "Co říká zápis d ∉ M, kde M = {a, b, c}?",
+   "options": {
+    "A": "d je podmnožinou M",
+    "B": "d není prvkem množiny M",
+    "C": "d je rovno M",
+    "D": "d je prvkem M"
+   },
+   "correct": [
+    "B"
+   ],
+   "explanation": "∉ čteme „není prvkem“. M obsahuje jen a, b, c.",
+   "number": 3,
+   "id": "3-3"
+  },
+  {
+   "type": "choice",
+   "text": "Kdy je výčet prvků vhodný způsob zadání množiny?",
+   "options": {
+    "A": "nikdy",
+    "B": "jen pro prázdnou množinu",
+    "C": "pro konečné množiny, jejichž prvky nemají společnou vlastnost",
+    "D": "pro každou nekonečnou množinu"
+   },
+   "correct": [
+    "C"
+   ],
+   "explanation": "Výčet {a₁, a₂, …, aₙ} se hodí pro konečné množiny; jinak se zadává vlastností {x ; P(x)}.",
+   "number": 4,
+   "id": "3-4"
+  },
+  {
+   "type": "choice",
+   "text": "Co znamená zápis {x ; P(x)}?",
+   "options": {
+    "A": "množina všech x, pro něž P neplatí",
+    "B": "množina všech x, která mají vlastnost P",
+    "C": "množina, která obsahuje právě jedno x",
+    "D": "dvojice (x, P)"
+   },
+   "correct": [
+    "B"
+   ],
+   "explanation": "Zadání vlastností: do množiny patří právě ta x, pro něž platí P(x).",
+   "number": 5,
+   "id": "3-5"
+  },
+  {
+   "type": "choice",
+   "text": "Jak se definuje inkluze X ⊆ Y?",
+   "options": {
+    "A": "a ∈ X ∨ a ∈ Y",
+    "B": "a ∈ X ⇔ a ∈ Y",
+    "C": "a ∈ X ⇒ a ∈ Y",
+    "D": "a ∈ X ∧ a ∈ Y"
+   },
+   "correct": [
+    "C"
+   ],
+   "explanation": "Každý prvek množiny X leží i v Y. Zápis: X ⊆ Y ⇔ (a ∈ X ⇒ a ∈ Y).",
+   "number": 6,
+   "id": "3-6"
+  },
+  {
+   "type": "choice",
+   "text": "V pravdivostní tabulce inkluze (x: a ∈ X, y: a ∈ Y) je implikace x ⇒ y nepravdivá v řádku",
+   "options": {
+    "A": "x = 0, y = 1",
+    "B": "x = 1, y = 1",
+    "C": "x = 0, y = 0",
+    "D": "x = 1, y = 0"
+   },
+   "correct": [
+    "D"
+   ],
+   "explanation": "Porušení inkluze nastane jen když a ∈ X a a ∉ Y, tedy x = 1, y = 0 (řádek 2). Ostatní řádky inkluzi neporuší.",
+   "number": 7,
+   "id": "3-7"
+  },
+  {
+   "type": "choice",
+   "text": "Proč se inkluze definuje implikací a ne konjunkcí?",
+   "options": {
+    "A": "konjunkce má vždy hodnotu 1",
+    "B": "konjunkce by měla hodnotu 0 i v řádcích 3 a 4, kde prvek v X vůbec není a nic neporušuje",
+    "C": "konjunkce se v logice nesmí použít",
+    "D": "konjunkce by měla hodnotu 0 v řádku 2, který inkluzi porušuje"
+   },
+   "correct": [
+    "B"
+   ],
+   "explanation": "x ∧ y = 0 i pro (0,1) a (0,0), ale prvek, který v X není, inkluzi neporušuje. Jen implikace dává 0 právě na řádku (1,0).",
+   "number": 8,
+   "id": "3-8"
+  },
+  {
+   "type": "choice",
+   "text": "Proč se inkluze definuje implikací a ne disjunkcí?",
+   "options": {
+    "A": "disjunkce by měla hodnotu 0 v řádku (1,1)",
+    "B": "disjunkce je pravdivá jen když jsou obě strany nepravdivé",
+    "C": "disjunkce by měla hodnotu 1 v řádku (1,0), který inkluzi porušuje, a hodnotu 0 v řádku (0,0)",
+    "D": "disjunkce není v tabulce definovaná"
+   },
+   "correct": [
+    "C"
+   ],
+   "explanation": "x ∨ y = 1 pro (1,0), ačkoli právě tam je inkluze porušena, a x ∨ y = 0 pro (0,0), ačkoli ji tam nic neporušuje.",
+   "number": 9,
+   "id": "3-9"
+  },
+  {
+   "type": "choice",
+   "text": "Jaký je rozdíl mezi X ⊆ Y a X ⊂ Y (vlastní podmnožina)?",
+   "options": {
+    "A": "⊆ vyžaduje X ≠ Y, ⊂ rovnost připouští",
+    "B": "⊂ se používá jen pro konečné množiny",
+    "C": "žádný, jsou to dva zápisy téhož",
+    "D": "⊂ vyžaduje navíc X ≠ Y, ⊆ rovnost připouští"
+   },
+   "correct": [
+    "D"
+   ],
+   "explanation": "X ⊂ Y ⇔ X ⊆ Y ∧ X ≠ Y. Podmnožina připouští rovnost, vlastní podmnožina ne.",
+   "number": 10,
+   "id": "3-10"
+  },
+  {
+   "type": "choice",
+   "text": "Jak se dokáže rovnost množin A = B?",
+   "options": {
+    "A": "stačí |A| = |B|",
+    "B": "A ⊆ B a zároveň B ⊆ A",
+    "C": "stačí A ⊆ B",
+    "D": "stačí A ∩ B ≠ ∅"
+   },
+   "correct": [
+    "B"
+   ],
+   "explanation": "A = B ⇔ (x ∈ A ⇒ x ∈ B) ∧ (x ∈ B ⇒ x ∈ A).",
+   "number": 11,
+   "id": "3-11"
+  },
+  {
+   "type": "choice",
+   "text": "Která množina je prázdná?",
+   "options": {
+    "A": "ℕ",
+    "B": "{∅}",
+    "C": "{0}",
+    "D": "∅, neobsahuje žádný prvek"
+   },
+   "correct": [
+    "D"
+   ],
+   "explanation": "Prázdná množina ∅ nemá žádný prvek. {∅} má jeden prvek (prázdnou množinu), {0} má prvek 0.",
+   "number": 12,
+   "id": "3-12"
+  },
+  {
+   "type": "choice",
+   "text": "Které z množin ℕ, ℤ, ℝ jsou nekonečné?",
+   "options": {
+    "A": "žádná",
+    "B": "jen ℕ",
+    "C": "všechny tři",
+    "D": "jen ℝ"
+   },
+   "correct": [
+    "C"
+   ],
+   "explanation": "ℕ, ℤ i ℝ jsou nekonečné (příklady z rukopisu).",
+   "number": 13,
+   "id": "3-13"
+  },
+  {
+   "type": "choice",
+   "text": "Kdy je množina spočetná?",
+   "options": {
+    "A": "má konečný počet prvků",
+    "B": "je podmnožinou ℝ",
+    "C": "existuje vzájemně jednoznačné zobrazení (bijekce) mezi ní a množinou ℕ",
+    "D": "neobsahuje žádný prvek"
+   },
+   "correct": [
+    "C"
+   ],
+   "explanation": "Spočetná: prvky jdou očíslovat přirozenými čísly, tedy seřadit do posloupnosti a₁, a₂, a₃, … (Pozor, někteří autoři zahrnují mezi spočetné i konečné množiny; ověřit u vyučujícího.)",
+   "number": 14,
+   "id": "3-14"
+  },
+  {
+   "type": "choice",
+   "text": "Která z množin je nekonečná, ale nespočetná?",
+   "options": {
+    "A": "ℕ",
+    "B": "{1, 2, 3}",
+    "C": "ℤ",
+    "D": "ℝ"
+   },
+   "correct": [
+    "D"
+   ],
+   "explanation": "ℝ (i interval (0, 1)) nelze očíslovat přirozenými čísly (Cantorův diagonální argument). ℕ a ℤ jsou spočetné.",
+   "number": 15,
+   "id": "3-15"
+  },
+  {
+   "type": "choice",
+   "text": "Jaký je vztah pojmů „spočetná“ a „nekonečná“ množina?",
+   "options": {
+    "A": "každá spočetná nekonečná množina je nekonečná, ale ne každá nekonečná je spočetná",
+    "B": "každá nekonečná množina je spočetná",
+    "C": "jsou to synonyma",
+    "D": "spočetná množina je vždy konečná"
+   },
+   "correct": [
+    "A"
+   ],
+   "explanation": "„Nekonečná“ říká jen, že prvků není konečně mnoho. „Spočetná“ říká, že je lze očíslovat přirozenými čísly. ℝ je nekonečná, ale nespočetná.",
+   "number": 16,
+   "id": "3-16"
+  },
+  {
+   "type": "choice",
+   "text": "Co je průnik A ∩ B?",
+   "options": {
+    "A": "množina prvků, které patří do A i do B",
+    "B": "množina všech dvojic (a, b)",
+    "C": "množina prvků, které patří do A nebo do B",
+    "D": "prvky A, které nejsou v B"
+   },
+   "correct": [
+    "A"
+   ],
+   "explanation": "x ∈ A ∩ B ⇔ x ∈ A ∧ x ∈ B.",
+   "number": 17,
+   "id": "3-17"
+  },
+  {
+   "type": "choice",
+   "text": "Co je sjednocení A ∪ B?",
+   "options": {
+    "A": "množina všech podmnožin",
+    "B": "množina prvků, které patří do A nebo do B",
+    "C": "množina prvků, které patří do A i do B",
+    "D": "prvky A, které nejsou v B"
+   },
+   "correct": [
+    "B"
+   ],
+   "explanation": "x ∈ A ∪ B ⇔ x ∈ A ∨ x ∈ B.",
+   "number": 18,
+   "id": "3-18"
+  },
+  {
+   "type": "choice",
+   "text": "Co je rozdíl A ∖ B?",
+   "options": {
+    "A": "prvky, které neleží ani v A, ani v B",
+    "B": "prvky, které leží v A a neleží v B",
+    "C": "prvky, které leží v A i v B",
+    "D": "prvky, které leží v B a neleží v A"
+   },
+   "correct": [
+    "B"
+   ],
+   "explanation": "x ∈ A ∖ B ⇔ x ∈ A ∧ x ∉ B.",
+   "number": 19,
+   "id": "3-19"
+  },
+  {
+   "type": "choice",
+   "text": "Platí vždy A ∖ B = B ∖ A?",
+   "options": {
+    "A": "ano, pokud A ∩ B = ∅",
+    "B": "ano, vždy",
+    "C": "ano, pokud A ≠ B",
+    "D": "ne, obecně ne"
+   },
+   "correct": [
+    "D"
+   ],
+   "explanation": "Např. A = {a, b}, B = {b}: A ∖ B = {a}, ale B ∖ A = ∅.",
+   "number": 20,
+   "id": "3-20"
+  },
+  {
+   "type": "choice",
+   "text": "Co je univerzum U?",
+   "options": {
+    "A": "množina všech uvažovaných prvků; každá množina, se kterou pracujeme, je jeho podmnožinou",
+    "B": "množina všech množin",
+    "C": "prázdná množina",
+    "D": "největší konečná množina"
+   },
+   "correct": [
+    "A"
+   ],
+   "explanation": "A ⊆ U pro každou uvažovanou množinu A. (Slovní vysvětlení je doplněno z Claude, ověřit u vyučujícího.)",
+   "number": 21,
+   "id": "3-21"
+  },
+  {
+   "type": "choice",
+   "text": "Jak se definuje doplněk A′ množiny A vzhledem k univerzu U?",
+   "options": {
+    "A": "x ∈ A′ ⇔ x ∈ A ∧ x ∈ U",
+    "B": "x ∈ A′ ⇔ x ∈ U ∧ x ∉ A",
+    "C": "A′ = A ∖ U",
+    "D": "x ∈ A′ ⇔ x ∈ A ∨ x ∉ U"
+   },
+   "correct": [
+    "B"
+   ],
+   "explanation": "Doplněk jsou prvky univerza, které do A nepatří: A′ = U ∖ A. (Značení v rukopisu nejasné: A′ nebo Ā; definice doplněná z Claude.)",
+   "number": 22,
+   "id": "3-22"
+  },
+  {
+   "type": "choice",
+   "text": "Čemu se rovná A ∩ A′ a A ∪ A′?",
+   "options": {
+    "A": "obojí U",
+    "B": "A ∩ A′ = U a A ∪ A′ = ∅",
+    "C": "obojí A",
+    "D": "A ∩ A′ = ∅ a A ∪ A′ = U"
+   },
+   "correct": [
+    "D"
+   ],
+   "explanation": "Z definice doplňku: žádný prvek není zároveň v A a mimo A (∅), a každý prvek univerza je buď v A, nebo v A′ (U).",
+   "number": 23,
+   "id": "3-23"
+  },
+  {
+   "type": "choice",
+   "text": "Kdy jsou množiny A, B disjunktní?",
+   "options": {
+    "A": "A ⊆ B",
+    "B": "A ∩ B = ∅",
+    "C": "A = B",
+    "D": "A ∪ B = ∅"
+   },
+   "correct": [
+    "B"
+   ],
+   "explanation": "Disjunktní množiny nemají žádný společný prvek.",
+   "number": 24,
+   "id": "3-24"
+  },
+  {
+   "type": "choice",
+   "text": "Co je potenční množina Pot(A) (značí se i P(A))?",
+   "options": {
+    "A": "množina všech vlastních podmnožin bez ∅",
+    "B": "množina všech podmnožin množiny A",
+    "C": "množina všech prvků množiny A",
+    "D": "A × A"
+   },
+   "correct": [
+    "B"
+   ],
+   "explanation": "P(A) = {B ; B ⊆ A}. Vždy obsahuje ∅ i samotnou A.",
+   "number": 25,
+   "id": "3-25"
+  },
+  {
+   "type": "choice",
+   "text": "Kolik prvků má potenční množina množiny o n prvcích?",
+   "options": {
+    "A": "n!",
+    "B": "n²",
+    "C": "2n",
+    "D": "2ⁿ"
+   },
+   "correct": [
+    "D"
+   ],
+   "explanation": "|Pot(A)| = 2ⁿ. Pro A = {a, b, c} je to 2³ = 8 podmnožin.",
+   "number": 26,
+   "id": "3-26"
+  },
+  {
+   "type": "choice",
+   "text": "Jak vypadá Pot({a, b})?",
+   "options": {
+    "A": "{∅, {a}, {b}, {a, b}}",
+    "B": "{{a}, {b}}",
+    "C": "{a, b}",
+    "D": "{∅, {a, b}}"
+   },
+   "correct": [
+    "A"
+   ],
+   "explanation": "Pot({a, b}) = {∅, {a}, {b}, {a, b}}, tj. 2² = 4 prvky; prvky potenční množiny jsou množiny, ne a, b.",
+   "number": 27,
+   "id": "3-27"
+  },
+  {
+   "type": "choice",
+   "text": "Co je kartézský součin A × B?",
+   "options": {
+    "A": "množina všech uspořádaných dvojic (x, y), kde x ∈ A a y ∈ B",
+    "B": "množina prvků společných A a B",
+    "C": "množina všech podmnožin A a B",
+    "D": "A ∪ B"
+   },
+   "correct": [
+    "A"
+   ],
+   "explanation": "A × B = {(x, y) ; x ∈ A ∧ y ∈ B}.",
+   "number": 28,
+   "id": "3-28"
+  },
+  {
+   "type": "choice",
+   "text": "Co je uspořádaná dvojice (x, y)?",
+   "options": {
+    "A": "množina {x, y}",
+    "B": "dvojice, u které na pořadí nezáleží",
+    "C": "dvojice s x < y",
+    "D": "dvojice, u které záleží na pořadí; píše se do kulatých závorek"
+   },
+   "correct": [
+    "D"
+   ],
+   "explanation": "x je první složka, y druhá. Množina {x, y} = {y, x}, ale (x, y) ≠ (y, x) pro x ≠ y.",
+   "number": 29,
+   "id": "3-29"
+  },
+  {
+   "type": "choice",
+   "text": "Kdy platí (x, y) = (u, v)?",
+   "options": {
+    "A": "když x = v a y = u",
+    "B": "když x = u a zároveň y = v",
+    "C": "když {x, y} = {u, v}",
+    "D": "když x = u nebo y = v"
+   },
+   "correct": [
+    "B"
+   ],
+   "explanation": "Dvě uspořádané dvojice se rovnají, jen když se rovnají obě složky ve stejném pořadí.",
+   "number": 30,
+   "id": "3-30"
+  },
+  {
+   "type": "choice",
+   "text": "Platí obecně A × B = B × A?",
+   "options": {
+    "A": "ano, jen pro disjunktní množiny",
+    "B": "ano, vždy",
+    "C": "ano, jen když |A| = |B|",
+    "D": "ne, obecně ne"
+   },
+   "correct": [
+    "D"
+   ],
+   "explanation": "(x, y) ≠ (y, x) pro x ≠ y, proto A × B ≠ B × A (rovnost jen např. když A = B nebo je některá z nich prázdná).",
+   "number": 31,
+   "id": "3-31"
+  },
+  {
+   "type": "choice",
+   "text": "Kolik prvků má kartézský součin A × B pro konečné množiny?",
+   "options": {
+    "A": "|A| · |B|",
+    "B": "2^(|A|+|B|)",
+    "C": "|A| + |B|",
+    "D": "|A|^|B|"
+   },
+   "correct": [
+    "A"
+   ],
+   "explanation": "|A × B| = |A| · |B|, např. 2 · 3 = 6.",
+   "number": 32,
+   "id": "3-32"
+  },
+  {
+   "type": "choice",
+   "text": "Co je relace mezi prvky množin A a B?",
+   "options": {
+    "A": "libovolná funkce A → B",
+    "B": "prvek množiny A × B",
+    "C": "podmnožina kartézského součinu A × B",
+    "D": "průnik A a B"
+   },
+   "correct": [
+    "C"
+   ],
+   "explanation": "Relace R ⊆ A × B; pravidlo, které u každé uspořádané dvojice (x, y) určí, zda je v relaci či nikoli. (Dokončení věty z rukopisu doplněno z Claude.)",
+   "number": 33,
+   "id": "3-33"
+  },
+  {
+   "type": "choice",
+   "text": "Kdy je relace R na množině A reflexivní?",
+   "options": {
+    "A": "∀x, y ∈ A; xRy ⇒ yRx",
+    "B": "∃x ∈ A; xRx",
+    "C": "∀x ∈ A; xRx",
+    "D": "∀x ∈ A; ¬(xRx)"
+   },
+   "correct": [
+    "C"
+   ],
+   "explanation": "Reflexivní: každý prvek je v relaci sám se sebou. Příklad: x = x.",
+   "number": 34,
+   "id": "3-34"
+  },
+  {
+   "type": "choice",
+   "text": "Kdy je relace R na množině A symetrická?",
+   "options": {
+    "A": "∀x ∈ A; xRx",
+    "B": "∀x, y ∈ A; xRy ∧ yRx ⇒ x = y",
+    "C": "∀x, y ∈ A; xRy ⇒ yRx",
+    "D": "∀x, y, z ∈ A; xRy ∧ yRz ⇒ xRz"
+   },
+   "correct": [
+    "C"
+   ],
+   "explanation": "Symetrická: obrátí-li se dvojice, zůstane v relaci. Příklad: x = y ⇒ y = x.",
+   "number": 35,
+   "id": "3-35"
+  },
+  {
+   "type": "choice",
+   "text": "Kdy je relace R na množině A tranzitivní?",
+   "options": {
+    "A": "∀x, y ∈ A; xRy ⇒ yRx",
+    "B": "∀x, y ∈ A; xRy ∧ yRx ⇒ x = y",
+    "C": "∀x, y, z ∈ A; xRy ∧ yRz ⇒ xRz",
+    "D": "∀x ∈ A; xRx"
+   },
+   "correct": [
+    "C"
+   ],
+   "explanation": "Tranzitivní: z xRy a yRz plyne xRz. Příklady z rukopisu: =, >.",
+   "number": 36,
+   "id": "3-36"
+  },
+  {
+   "type": "choice",
+   "text": "Kdy je relace R na množině A (slabě) antisymetrická?",
+   "options": {
+    "A": "∀x, y ∈ A; xRy ∧ yRx ⇒ x = y",
+    "B": "∀x, y ∈ A; xRy ⇒ ¬(yRx)",
+    "C": "∀x, y ∈ A; xRy ⇒ yRx",
+    "D": "∀x ∈ A; ¬(xRx)"
+   },
+   "correct": [
+    "A"
+   ],
+   "explanation": "Slabá antisymetrie (zápis z rukopisu): xRy ∧ yRx ⇒ x = y, např. ≤ nebo dělitelnost na ℕ. Silná: xRy ⇒ ¬(yRx), např. < na ℕ.",
+   "number": 37,
+   "id": "3-37"
+  },
+  {
+   "type": "choice",
+   "text": "Která relace je relace ekvivalence?",
+   "options": {
+    "A": "jen symetrická",
+    "B": "tranzitivní a antisymetrická",
+    "C": "reflexivní a antisymetrická",
+    "D": "symetrická, reflexivní a tranzitivní (na stejné množině)"
+   },
+   "correct": [
+    "D"
+   ],
+   "explanation": "Ekvivalence = reflexivní + symetrická + tranzitivní. Příklad: stejný zbytek po dělení 3 na ℕ.",
+   "number": 38,
+   "id": "3-38"
+  },
+  {
+   "type": "choice",
+   "text": "Která z relací na ℕ je ekvivalence?",
+   "options": {
+    "A": "xRy ⇔ x a y mají stejný zbytek po dělení 3",
+    "B": "xRy ⇔ x < y",
+    "C": "xRy ⇔ x ≤ y",
+    "D": "xRy ⇔ x dělí y a x ≠ y"
+   },
+   "correct": [
+    "A"
+   ],
+   "explanation": "Stejný zbytek po dělení 3 je reflexivní, symetrická i tranzitivní. <, ≤ a dělitelnost nejsou symetrické.",
+   "number": 39,
+   "id": "3-39"
+  },
+  {
+   "type": "choice",
+   "text": "Jak podle učebnice (Přibyl, Tichá, s. 107) vypadá neostré uspořádání?",
+   "options": {
+    "A": "relace reflexivní, antisymetrická a tranzitivní",
+    "B": "relace antireflexivní, antisymetrická a tranzitivní",
+    "C": "relace symetrická a tranzitivní",
+    "D": "relace jen tranzitivní a antisymetrická"
+   },
+   "correct": [
+    "A"
+   ],
+   "explanation": "Neostré: reflexivní + antisymetrická + tranzitivní (např. ≤ na ℕ). Ostré: antireflexivní + antisymetrická + tranzitivní (např. <). Tištěná poznámka „tranzitivní a antisymetrická“ nestačí, chybí reflexivita nebo antireflexivita.",
+   "number": 40,
+   "id": "3-40"
+  },
+  {
+   "type": "choice",
+   "text": "Co znamená, že relace R je antireflexivní?",
+   "options": {
+    "A": "žádný prvek není v relaci sám se sebou",
+    "B": "některý prvek je v relaci sám se sebou",
+    "C": "každý prvek je v relaci sám se sebou",
+    "D": "relace je prázdná"
+   },
+   "correct": [
+    "A"
+   ],
+   "explanation": "∀x; ¬(xRx). Příklad: < na ℕ. Pozor, antireflexivní není totéž co „není reflexivní“.",
+   "number": 41,
+   "id": "3-41"
+  },
+  {
+   "type": "choice",
+   "text": "Co je uspořádaná množina?",
+   "options": {
+    "A": "libovolná konečná množina",
+    "B": "množina seřazená podle abecedy",
+    "C": "dvojice (M, R), kde R je uspořádání na M",
+    "D": "množina uspořádaných dvojic"
+   },
+   "correct": [
+    "C"
+   ],
+   "explanation": "Dvojice (M, R), kde R je relace uspořádání na M.",
+   "number": 42,
+   "id": "3-42"
+  },
+  {
+   "type": "input",
+   "text": "Urči A ∩ B pro A = {b,d,e,h}, B = {a,e,g,h}.",
+   "hint": "napiš prvky abecedně bez čárek a mezer, např. ace",
+   "answer": "eh",
+   "solution": "A = {b,d,e,h}, B = {a,e,g,h}\nA ∩ B = {e,h} (průnik)",
+   "number": 43,
+   "id": "3-43"
+  },
+  {
+   "type": "input",
+   "text": "Urči A ∪ B pro A = {a,b,e,f}, B = {a,d,g,h}.",
+   "hint": "napiš prvky abecedně bez čárek a mezer, např. ace",
+   "answer": "abdefgh",
+   "solution": "A = {a,b,e,f}, B = {a,d,g,h}\nA ∪ B = {a,b,d,e,f,g,h} (sjednocení)",
+   "number": 44,
+   "id": "3-44"
+  },
+  {
+   "type": "input",
+   "text": "Urči A ∖ B pro A = {a,b,g}, B = {e,g,h}.",
+   "hint": "napiš prvky abecedně bez čárek a mezer, např. ace",
+   "answer": "ab",
+   "solution": "A = {a,b,g}, B = {e,g,h}\nA ∖ B = {a,b} (rozdíl)",
+   "number": 45,
+   "id": "3-45"
+  },
+  {
+   "type": "input",
+   "text": "Urči A ∖ B pro A = {b,c,d,e}, B = {a,b,c,h}.",
+   "hint": "napiš prvky abecedně bez čárek a mezer, např. ace",
+   "answer": "de",
+   "solution": "A = {b,c,d,e}, B = {a,b,c,h}\nA ∖ B = {d,e} (rozdíl)",
+   "number": 46,
+   "id": "3-46"
+  },
+  {
+   "type": "input",
+   "text": "Urči doplněk A′ vzhledem k univerzu U = {1,2,3,4,5} pro A = {3,4,5}.",
+   "hint": "napiš prvky vzestupně bez čárek a mezer, např. 135",
+   "answer": "12",
+   "solution": "A′ = U ∖ A = {1,2} (prvky U, které nejsou v A)",
+   "number": 47,
+   "id": "3-47"
+  },
+  {
+   "type": "input",
+   "text": "Kolik podmnožin má množina o 3 prvcích (tj. |Pot(A)|, kde |A| = 3)?",
+   "hint": "číslo",
+   "answer": "8",
+   "solution": "|Pot(A)| = 2^3 = 8",
+   "number": 48,
+   "id": "3-48"
+  },
+  {
+   "type": "input",
+   "text": "Kolik podmnožin má množina o 4 prvcích (tj. |Pot(A)|, kde |A| = 4)?",
+   "hint": "číslo",
+   "answer": "16",
+   "solution": "|Pot(A)| = 2^4 = 16",
+   "number": 49,
+   "id": "3-49"
+  },
+  {
+   "type": "input",
+   "text": "Kolik podmnožin má množina o 5 prvcích (tj. |Pot(A)|, kde |A| = 5)?",
+   "hint": "číslo",
+   "answer": "32",
+   "solution": "|Pot(A)| = 2^5 = 32",
+   "number": 50,
+   "id": "3-50"
+  },
+  {
+   "type": "input",
+   "text": "Kolik prvků má A × B, když |A| = 2 a |B| = 3?",
+   "hint": "číslo",
+   "answer": "6",
+   "solution": "|A × B| = |A| · |B| = 2 · 3 = 6",
+   "number": 51,
+   "id": "3-51"
+  },
+  {
+   "type": "input",
+   "text": "Kolik prvků má A × B, když |A| = 3 a |B| = 4?",
+   "hint": "číslo",
+   "answer": "12",
+   "solution": "|A × B| = |A| · |B| = 3 · 4 = 12",
+   "number": 52,
+   "id": "3-52"
+  },
+  {
+   "type": "input",
+   "text": "Kolik prvků má A × B, když |A| = 4 a |B| = 5?",
+   "hint": "číslo",
+   "answer": "20",
+   "solution": "|A × B| = |A| · |B| = 4 · 5 = 20",
+   "number": 53,
+   "id": "3-53"
+  },
+  {
+   "type": "input",
+   "text": "Relace R = {(1,1), (2,2), (3,3), (1,2), (2,1)} na M = {1,2,3}. Zjisti, zda je reflexivní, symetrická, tranzitivní a (slabě) antisymetrická. Výsledek napiš jako čtyři cifry v tomto pořadí.",
+   "hint": "1 = ano, 0 = ne; pořadí reflexivní, symetrická, tranzitivní, antisymetrická, např. 1010",
+   "answer": "1110",
+   "solution": "reflexivní: ano\nsymetrická: ano\ntranzitivní: ano\n(slabě) antisymetrická: ne\nOdpověď: 1110",
+   "number": 54,
+   "id": "3-54"
+  },
+  {
+   "type": "input",
+   "text": "Relace R = {(1,1), (2,2), (3,3), (1,2), (2,3), (1,3)} na M = {1,2,3}. Zjisti, zda je reflexivní, symetrická, tranzitivní a (slabě) antisymetrická. Výsledek napiš jako čtyři cifry v tomto pořadí.",
+   "hint": "1 = ano, 0 = ne; pořadí reflexivní, symetrická, tranzitivní, antisymetrická, např. 1010",
+   "answer": "1011",
+   "solution": "reflexivní: ano\nsymetrická: ne\ntranzitivní: ano\n(slabě) antisymetrická: ano\nOdpověď: 1011",
+   "number": 55,
+   "id": "3-55"
+  },
+  {
+   "type": "input",
+   "text": "Relace R = {(1,2), (2,3), (1,3)} na M = {1,2,3}. Zjisti, zda je reflexivní, symetrická, tranzitivní a (slabě) antisymetrická. Výsledek napiš jako čtyři cifry v tomto pořadí.",
+   "hint": "1 = ano, 0 = ne; pořadí reflexivní, symetrická, tranzitivní, antisymetrická, např. 1010",
+   "answer": "0011",
+   "solution": "reflexivní: ne\nsymetrická: ne\ntranzitivní: ano\n(slabě) antisymetrická: ano\nOdpověď: 0011",
+   "number": 56,
+   "id": "3-56"
+  },
+  {
+   "type": "input",
+   "text": "Relace R = {(1,1), (2,1), (1,2), (2,3), (3,4), (4,3), (4,4), (5,5)} na M = {1,2,3,4,5}. Zjisti, zda je reflexivní, symetrická, tranzitivní a (slabě) antisymetrická. Výsledek napiš jako čtyři cifry v tomto pořadí.",
+   "hint": "1 = ano, 0 = ne; pořadí reflexivní, symetrická, tranzitivní, antisymetrická, např. 1010",
+   "answer": "0000",
+   "solution": "reflexivní: ne\nsymetrická: ne\ntranzitivní: ne\n(slabě) antisymetrická: ne\nOdpověď: 0000",
+   "number": 57,
+   "id": "3-57"
+  },
+  {
+   "type": "input",
+   "text": "Relace R = {(1,1), (2,2), (3,3)} na M = {1,2,3}. Zjisti, zda je reflexivní, symetrická, tranzitivní a (slabě) antisymetrická. Výsledek napiš jako čtyři cifry v tomto pořadí.",
+   "hint": "1 = ano, 0 = ne; pořadí reflexivní, symetrická, tranzitivní, antisymetrická, např. 1010",
+   "answer": "1111",
+   "solution": "reflexivní: ano\nsymetrická: ano\ntranzitivní: ano\n(slabě) antisymetrická: ano\nOdpověď: 1111",
+   "number": 58,
+   "id": "3-58"
+  },
+  {
+   "type": "input",
+   "text": "Relace R = {(1,2), (2,1)} na M = {1,2}. Zjisti, zda je reflexivní, symetrická, tranzitivní a (slabě) antisymetrická. Výsledek napiš jako čtyři cifry v tomto pořadí.",
+   "hint": "1 = ano, 0 = ne; pořadí reflexivní, symetrická, tranzitivní, antisymetrická, např. 1010",
+   "answer": "0100",
+   "solution": "reflexivní: ne\nsymetrická: ano\ntranzitivní: ne\n(slabě) antisymetrická: ne\nOdpověď: 0100",
+   "number": 59,
+   "id": "3-59"
+  }
+ ]
+}
