@@ -212,47 +212,65 @@ h2 { margin: 0 0 12px; font-size: 1.05rem; font-weight: 700; letter-spacing: 0; 
   .ps-bad  { color: #dc2626; font-weight: 700; }
   .ps-new  { color: #6b7280; }
 /* ===== SCREEN:chunks / chunk-detail / modal / quiz / results ===== */
-  #chunks { display: none; padding-top: 24px; }
-  #chunks h1 { font-size: 1.6rem; color: #3b82f6; text-align: center; margin-bottom: 16px; }
-  .chunk-list { display: flex; flex-direction: column; gap: 10px; max-width: 420px; margin: 0 auto; }
-  .chunk-btn {
-    display: flex; justify-content: space-between; align-items: center; gap: 8px;
-    background: white; border: none; border-radius: 10px; padding: 14px 18px;
-    cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,.12); font-size: 1rem; text-align: left;
-  }
-  .chunk-btn:hover { box-shadow: 0 4px 12px rgba(0,0,0,.15); }
+  /* BEGIN chunks */
+  #chunks, #chunk-detail { display: none; max-width: 760px; margin: 0 auto; padding-top: 8px; }
+  #chunks h1, #chunk-detail h1 { font-size: clamp(1.9rem, 5vw, 2.8rem); line-height: 1.05; font-weight: 800; letter-spacing: -0.03em; font-variation-settings: "opsz" 96; margin-bottom: 20px; }
+  .chunk-back { display: inline-block; background: none; border: 0; padding: 4px 0; margin-top: 28px; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
+  .chunk-back:hover { color: var(--ink); }
+  .chunk-size-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 12px; margin-bottom: 28px; color: var(--muted); font-size: .9375rem; }
+  .chunk-size-row input { width: 72px; background: var(--paper); color: var(--ink); border: 0; border-bottom: 2px solid var(--ink); border-radius: 0; padding: 4px 6px; font: 700 1.125rem/1.2 var(--mono); text-align: center; }
+  .chunk-size-row input:focus-visible { outline-offset: 2px; }
+  .chunk-size-row button { background: var(--blue); color: var(--blue-ink); border: 0; border-radius: 8px; padding: 8px 16px; font-weight: 700; }
+  .chunk-size-row button:hover { filter: brightness(1.1); }
+
+  .chunk-list { border-top: 1px solid var(--line); }
+  .chunk-btn { display: grid; grid-template-columns: 8.5rem 1fr auto; gap: 4px 20px; align-items: baseline; width: 100%; padding: 14px 8px; background: none; border: 0; border-bottom: 1px solid var(--line); text-align: left; }
+  .chunk-btn:hover { background: var(--paper-2); }
   .chunk-name { font-weight: 700; }
-  .chunk-stats { font-size: .85rem; white-space: nowrap; }
-  .chunk-stats span { margin-left: 8px; }
-  .chunk-back { display: block; margin: 20px auto 0; padding: 10px 20px; border: none; border-radius: 8px; background: #e5e7eb; cursor: pointer; }
-  .chunk-size-row { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 16px; font-size: .9rem; }
-  .chunk-size-row input { width: 70px; padding: 6px 8px; border-radius: 8px; border: 2px solid #d1d5db; font-size: 1rem; text-align: center; }
-  .chunk-size-row button { padding: 7px 14px; border: none; border-radius: 8px; cursor: pointer; background: #3b82f6; color: white; font-weight: 600; }
+  .chunk-name small { display: block; font-weight: 400; color: var(--muted); font-size: .8125rem; }
+  .chunk-bits { font: 700 1.05rem/1.25 var(--mono); display: flex; flex-wrap: wrap; gap: 0 .45em; }
+  .chunk-bits .bit { width: 1ch; }
+  .chunk-stats { font: 700 .9375rem/1 var(--mono); white-space: nowrap; display: flex; gap: 12px; }
+  .chunk-stats .ok { color: var(--ok); } .chunk-stats .bad { color: var(--bad); } .chunk-stats .new { color: var(--new); }
 
-  #chunk-detail { display: none; padding-top: 24px; }
-  #chunk-detail h1 { font-size: 1.4rem; color: #3b82f6; text-align: center; margin-bottom: 16px; }
-  .chunk-detail-wrap { max-width: 480px; margin: 0 auto; }
-  .chunk-detail-btns { display: flex; gap: 8px; justify-content: center; margin-bottom: 18px; flex-wrap: wrap; }
-  .chunk-detail-btns button { padding: 8px 14px; border: none; border-radius: 8px; cursor: pointer; font-size: .85rem; background: white; box-shadow: 0 1px 4px rgba(0,0,0,.12); }
-  .cd-section { margin-bottom: 14px; }
-  .cd-section h3 { font-size: .9rem; margin: 0 0 6px; }
-  .cd-section.good h3 { color: #16a34a; }
-  .cd-section.bad h3 { color: #dc2626; }
-  .cd-section.new h3 { color: #6b7280; }
-  .cd-qlist { display: flex; flex-wrap: wrap; gap: 6px; }
-  .cd-qlist span { background: white; border-radius: 6px; padding: 3px 8px; font-size: .8rem; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
-  .cd-qlist .q-pill { border: none; cursor: pointer; font: inherit; background: white; border-radius: 6px; padding: 3px 8px; font-size: .8rem; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
-  .cd-qlist .q-pill:hover { background: #dbeafe; }
+  .chunk-detail-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 36px; }
+  .chunk-detail-btns button { background: none; border: 1px solid var(--line); border-radius: 8px; padding: 9px 16px; font-weight: 500; }
+  .chunk-detail-btns button:hover { border-color: var(--ink); }
+  .chunk-detail-btns button:first-child { background: var(--blue); color: var(--blue-ink); border-color: var(--blue); font-weight: 700; }
+  .chunk-detail-btns button:first-child:hover { filter: brightness(1.1); }
+  .cd-section { padding: 16px 0; border-top: 1px solid var(--line); }
+  .cd-section h3 { font-size: 1rem; font-weight: 700; margin: 0 0 10px; display: flex; align-items: baseline; gap: 10px; }
+  .cd-section h3 i { font: 700 1.1rem/1 var(--mono); font-style: normal; width: 1ch; }
+  .cd-section h3 em { font: 500 .875rem var(--mono); font-style: normal; color: var(--muted); }
+  .cd-section.good h3 i { color: var(--ok); } .cd-section.bad h3 i { color: var(--bad); } .cd-section.new h3 i { color: var(--new); }
+  .cd-qlist { display: flex; flex-wrap: wrap; gap: 4px 6px; }
+  .cd-empty { color: var(--muted); font-size: .9375rem; }
+  .cd-qlist .q-pill { background: none; border: 0; border-bottom: 2px solid currentColor; border-radius: 0; min-width: 2.6rem; padding: 6px 6px 3px; font: 700 1.05rem/1.2 var(--mono); text-align: center; }
+  .cd-section.good .q-pill { color: var(--ok); } .cd-section.bad .q-pill { color: var(--bad); } .cd-section.new .q-pill { color: var(--muted); }
+  .cd-qlist .q-pill.calc { border-bottom-style: dotted; }
+  .cd-qlist .q-pill:hover { background: var(--paper-2); }
 
-  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 100; align-items: center; justify-content: center; }
+  .overlay { display: none; position: fixed; inset: 0; background: color-mix(in srgb, var(--ink) 55%, transparent); z-index: 100; align-items: center; justify-content: center; padding: 16px; }
   .overlay.show { display: flex; }
-  .modal { background: white; padding: 32px; border-radius: 14px; min-width: 320px; text-align: center; }
-  .modal h2 { margin-bottom: 20px; }
-  .modal input[type=number] { width: 120px; font-size: 1.3rem; text-align: center; padding: 8px; border: 2px solid #d1d5db; border-radius: 8px; }
-  .modal-btns { display: flex; gap: 12px; justify-content: center; margin-top: 20px; }
-  .modal-btns button { padding: 10px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; }
-  .btn-ok { background: #3b82f6; color: white; }
-  .btn-cancel { background: #e5e7eb; }
+  .overlay.show .modal { animation: modal-in .18s ease-out; }
+  @keyframes modal-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .modal { background: var(--paper); color: var(--ink); border: 1px solid var(--line); padding: 28px; border-radius: 14px; width: min(100%, 360px); }
+  .modal h2 { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 20px; }
+  .modal input[type=number] { width: 100%; background: var(--paper); color: var(--ink); font: 700 2rem/1.2 var(--mono); padding: 4px 0; border: 0; border-bottom: 2px solid var(--ink); border-radius: 0; }
+  .modal input[type=number]:focus-visible { outline-offset: 4px; }
+  .modal-btns { display: flex; gap: 12px; justify-content: flex-end; margin-top: 28px; }
+  .modal-btns button { padding: 10px 20px; border: 0; border-radius: 8px; font-weight: 700; }
+  .btn-ok { background: var(--blue); color: var(--blue-ink); }
+  .btn-ok:hover { filter: brightness(1.1); }
+  .btn-cancel { background: none; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; font-weight: 500 !important; }
+  .btn-cancel:hover { color: var(--ink); }
+  @media (prefers-reduced-motion: reduce) { .overlay.show .modal { animation: none; } }
+  @media (max-width: 600px) {
+    .chunk-btn { grid-template-columns: 1fr auto; }
+    .chunk-bits { grid-column: 1 / -1; grid-row: 2; }
+    .modal { padding: 24px 18px; }
+  }
+  /* END chunks */
 
   #quiz { display: none; }
   .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 8px; }
@@ -318,7 +336,6 @@ h2 { margin: 0 0 12px; font-size: 1.05rem; font-weight: 700; letter-spacing: 0; 
     #menu h1 { font-size: 1.6rem; }
     .menu-btn, .menu-sep { width: 100%; }
     .source-row { flex-wrap: wrap; }
-    .modal { min-width: unset; width: 90vw; padding: 24px 16px; }
     .question-box { padding: 16px; }
     .question-text { font-size: 1rem; }
     .question-text.calc { font-size: 1.2rem; }
@@ -406,31 +423,31 @@ h2 { margin: 0 0 12px; font-size: 1.05rem; font-weight: 700; letter-spacing: 0; 
   </div>
 
   <div id="chunks">
-    <h1>📦 Otázky po <span id="chunks-size-label">10</span></h1>
+    <h1>Otázky po <span id="chunks-size-label">10</span></h1>
     <div class="chunk-size-row">
-      <label for="chunk-size-input">Velikost úseku:</label>
+      <label for="chunk-size-input">Velikost bloku</label>
       <input type="number" id="chunk-size-input" min="1" step="1">
       <button onclick="applyChunkSize()">Použít</button>
     </div>
     <div class="chunk-list" id="chunk-list"></div>
-    <button class="chunk-back" onclick="showMenu()">← Zpět do menu</button>
+    <button class="chunk-back" onclick="showMenu()">Zpět do menu</button>
   </div>
 
   <div id="chunk-detail">
     <h1 id="chunk-detail-title"></h1>
     <div class="chunk-detail-wrap">
       <div class="chunk-detail-btns">
-        <button onclick="startChunkSubset('all')">🚀 Vše</button>
-        <button onclick="startChunkSubset(undefined)">🆕 Neznámé</button>
-        <button onclick="startChunkSubset('wrong')">⚠️ Chybné</button>
-        <button onclick="startChunkSubset('correct')">✅ Správné</button>
-        <button onclick="startChunkStudy()">📖 Studuj pak testuj</button>
+        <button onclick="startChunkSubset('all')">Vše</button>
+        <button onclick="startChunkSubset(undefined)">Neznámé</button>
+        <button onclick="startChunkSubset('wrong')">Chybné</button>
+        <button onclick="startChunkSubset('correct')">Správné</button>
+        <button onclick="startChunkStudy()">Studuj, pak testuj</button>
       </div>
-      <div class="cd-section good"><h3>✅ Správné</h3><div class="cd-qlist" id="cd-good"></div></div>
-      <div class="cd-section bad"><h3>✗ Chybné</h3><div class="cd-qlist" id="cd-bad"></div></div>
-      <div class="cd-section new"><h3>— Neznámé</h3><div class="cd-qlist" id="cd-new"></div></div>
+      <div class="cd-section good"><h3><i>1</i>Správné</h3><div class="cd-qlist" id="cd-good"></div></div>
+      <div class="cd-section bad"><h3><i>0</i>Chybné</h3><div class="cd-qlist" id="cd-bad"></div></div>
+      <div class="cd-section new"><h3><i>·</i>Neznámé</h3><div class="cd-qlist" id="cd-new"></div></div>
     </div>
-    <button class="chunk-back" onclick="showChunks()">← Zpět na bloky</button>
+    <button class="chunk-back" onclick="showChunks()">Zpět na bloky</button>
   </div>
 
   <div class="overlay" id="random-modal">
@@ -651,8 +668,10 @@ function renderChunks() {
     const wrong = qs.filter(q => progress[q.id] === 'wrong').length;
     const btn = document.createElement('button');
     btn.className = 'chunk-btn';
-    btn.innerHTML = `<span class="chunk-name">Blok ${i + 1} (${i * CHUNK_SIZE + 1}–${i * CHUNK_SIZE + qs.length})</span>` +
-      `<span class="chunk-stats"><span class="ps-new">— ${qs.length - done - wrong}</span><span class="ps-bad">✗ ${wrong}</span><span class="ps-good">✓ ${done}</span></span>`;
+    const bit = q => progress[q.id] === 'correct' ? '<span class="bit ok">1</span>' : progress[q.id] === 'wrong' ? '<span class="bit bad">0</span>' : '<span class="bit new">·</span>';
+    btn.innerHTML = `<span class="chunk-name">Blok ${i + 1}<small>otázky ${i * CHUNK_SIZE + 1} až ${i * CHUNK_SIZE + qs.length}</small></span>` +
+      `<span class="chunk-bits" aria-hidden="true">${qs.map(bit).join('')}</span>` +
+      `<span class="chunk-stats"><span class="ok" title="Správně">${done}</span><span class="bad" title="Chybně">${wrong}</span><span class="new" title="Nové">${qs.length - done - wrong}</span></span>`;
     btn.onclick = () => showChunkDetail(qs, i);
     list.appendChild(btn);
   });
@@ -660,8 +679,8 @@ function renderChunks() {
 let currentChunk = [];
 function showChunkDetail(qs, i) {
   currentChunk = qs;
-  $('chunk-detail-title').textContent = `Blok ${i + 1} (${i * CHUNK_SIZE + 1}–${i * CHUNK_SIZE + qs.length})`;
-  const pills = (el, list) => $(el).innerHTML = list.map(q => `<button class="q-pill" onclick="startChunkQuestion('${q.id}')">${q.number}${isInput(q) ? ' ✎' : ''}</button>`).join('') || '<span>—</span>';
+  $('chunk-detail-title').textContent = `Blok ${i + 1}, otázky ${i * CHUNK_SIZE + 1} až ${i * CHUNK_SIZE + qs.length}`;
+  const pills = (el, list) => $(el).innerHTML = list.map(q => `<button class="q-pill${isInput(q) ? ' calc' : ''}" ${isInput(q) ? 'title="Příklad na výpočet" ' : ''}onclick="startChunkQuestion('${q.id}')">${q.number}</button>`).join('') || '<span class="cd-empty">Žádné otázky</span>';
   pills('cd-good', qs.filter(q => progress[q.id] === 'correct'));
   pills('cd-bad', qs.filter(q => progress[q.id] === 'wrong'));
   pills('cd-new', qs.filter(q => !progress[q.id]));
