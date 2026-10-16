@@ -101,12 +101,12 @@
   },
   {
    "type": "choice",
-   "text": "V pravdivostní tabulce inkluze (x: a ∈ X, y: a ∈ Y) je implikace x ⇒ y nepravdivá v řádku",
+   "text": "Pravdivostní tabulka inkluze: x značí „a ∈ X“, y značí „a ∈ Y“. Kdy je implikace x ⇒ y nepravdivá?",
    "options": {
-    "A": "x = 0, y = 1",
-    "B": "x = 1, y = 1",
-    "C": "x = 0, y = 0",
-    "D": "x = 1, y = 0"
+    "A": "když x = 0 a y = 1",
+    "B": "když x = 1 a y = 1",
+    "C": "když x = 0 a y = 0",
+    "D": "když x = 1 a y = 0"
    },
    "correct": [
     "D"
@@ -117,7 +117,7 @@
   },
   {
    "type": "choice",
-   "text": "Proč se inkluze definuje implikací a ne konjunkcí?",
+   "text": "Proč je inkluze definovaná implikací, a ne konjunkcí?",
    "options": {
     "A": "konjunkce má vždy hodnotu 1",
     "B": "konjunkce by měla hodnotu 0 i v řádcích 3 a 4, kde prvek v X vůbec není a nic neporušuje",
@@ -133,7 +133,7 @@
   },
   {
    "type": "choice",
-   "text": "Proč se inkluze definuje implikací a ne disjunkcí?",
+   "text": "Proč je inkluze definovaná implikací, a ne disjunkcí?",
    "options": {
     "A": "disjunkce by měla hodnotu 0 v řádku (1,1)",
     "B": "disjunkce je pravdivá jen když jsou obě strany nepravdivé",
@@ -181,12 +181,12 @@
   },
   {
    "type": "choice",
-   "text": "Která množina je prázdná?",
+   "text": "Která z možností popisuje prázdnou množinu?",
    "options": {
     "A": "ℕ",
     "B": "{∅}",
     "C": "{0}",
-    "D": "∅, neobsahuje žádný prvek"
+    "D": "∅ (neobsahuje žádný prvek)"
    },
    "correct": [
     "D"
@@ -357,7 +357,7 @@
   },
   {
    "type": "choice",
-   "text": "Čemu se rovná A ∩ A′ a A ∪ A′?",
+   "text": "Čemu se rovná průnik A ∩ A′ a sjednocení A ∪ A′?",
    "options": {
     "A": "obojí U",
     "B": "A ∩ A′ = U a A ∪ A′ = ∅",
@@ -421,7 +421,7 @@
   },
   {
    "type": "choice",
-   "text": "Jak vypadá Pot({a, b})?",
+   "text": "Které množině se rovná Pot({a, b})?",
    "options": {
     "A": "{∅, {a}, {b}, {a, b}}",
     "B": "{{a}, {b}}",
@@ -597,7 +597,7 @@
   },
   {
    "type": "choice",
-   "text": "Která relace je relace ekvivalence?",
+   "text": "Jaké vlastnosti musí mít relace ekvivalence?",
    "options": {
     "A": "jen symetrická",
     "B": "tranzitivní a antisymetrická",
@@ -629,7 +629,7 @@
   },
   {
    "type": "choice",
-   "text": "Jak podle učebnice (Přibyl, Tichá, s. 107) vypadá neostré uspořádání?",
+   "text": "Jaké vlastnosti má neostré uspořádání podle učebnice (Přibyl, Tichá, s. 107)?",
    "options": {
     "A": "relace reflexivní, antisymetrická a tranzitivní",
     "B": "relace antireflexivní, antisymetrická a tranzitivní",
