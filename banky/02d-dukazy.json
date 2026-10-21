@@ -21,39 +21,39 @@
   },
   {
    "type": "choice",
-   "text": "Přímý důkaz (x > 5) ⇒ (x > 3) vede řetězcem",
+   "text": "Přímý důkaz (x > 8) ⇒ (x > 2): který zápis je správný?",
    "options": {
-    "A": "x < 5 < 3, tedy x < 3",
-    "B": "x ≤ 3 < 5, tedy x ≤ 5",
-    "C": "x > 3 > 5, tedy x > 5",
-    "D": "x > 5 > 3, tedy x > 3"
+    "A": "x ≤ 2 ∧ 2 ≤ 8 ⇒ x ≤ 8",
+    "B": "x > 8 ∧ x ≤ 2",
+    "C": "x > 2 ∧ 2 > 8 ⇒ x > 8",
+    "D": "x > 8 ∧ 8 > 2 ⇒ x > 2"
    },
    "correct": [
     "D"
    ],
-   "explanation": "Z x > 5 a 5 > 3 plyne x > 3.",
+   "explanation": "Přímý důkaz vyjde z předpokladu x > 8, využije 8 > 2 a dojde k x > 2: x > 8 > 2.",
    "number": 2,
    "id": "2d-2"
   },
   {
    "type": "choice",
-   "text": "Nepřímý důkaz (x > 5) ⇒ (x > 3): jakou implikaci dokazujeme?",
+   "text": "Dokazujeme (x > 0) ⇒ (x + 2 > 2) přímo. Jak se postupuje?",
    "options": {
-    "A": "x ≤ 5 ⇒ x ≤ 3",
-    "B": "x > 3 ⇒ x > 5",
-    "C": "x ≥ 3 ⇒ x ≥ 5",
-    "D": "x ≤ 3 ⇒ x ≤ 5"
+    "A": "z x > 0 odečteme na obou stranách 2 a dostaneme x − 2 > 2",
+    "B": "z x > 0 vynásobíme obě strany dvěma a dostaneme 2x > 2",
+    "C": "dosadíme x = 1 a ověříme, že 3 > 2",
+    "D": "z x > 0 přičteme na obou stranách 2 a dostaneme x + 2 > 2"
    },
    "correct": [
     "D"
    ],
-   "explanation": "Vzorec x ⇒ y ⇔ ¬y ⇒ ¬x. ¬(x > 3) je x ≤ 3 a ¬(x > 5) je x ≤ 5. Obměna: x ≤ 3 ⇒ x ≤ 5.",
+   "explanation": "Přičtením 2 k nerovnosti x > 0 vznikne x + 2 > 0 + 2 = 2. Dosazení jedné hodnoty nic nedokazuje.",
    "number": 3,
    "id": "2d-3"
   },
   {
    "type": "choice",
-   "text": "Nepřímý důkaz (x > 5) ⇒ (x > 3): který zápis dokazuje obměnu?",
+   "text": "Nepřímý důkaz (x > 5) ⇒ (x > 3): jakou implikaci dokazujeme?",
    "options": {
     "A": "x ≤ 3 ∧ 3 > 5 ⇒ x ≤ 5",
     "B": "x ≤ 3 ∧ 3 ≤ 5 ⇒ x ≤ 5",
@@ -63,356 +63,137 @@
    "correct": [
     "B"
    ],
-   "explanation": "Z x ≤ 3 a 3 ≤ 5 plyne x ≤ 5. To je obměna, takže platí i původní implikace.",
+   "explanation": "Vzorec x ⇒ y ⇔ ¬y ⇒ ¬x. ¬(x > 3) je x ≤ 3 a ¬(x > 5) je x ≤ 5. Z x ≤ 3 ≤ 5 plyne x ≤ 5.",
    "number": 4,
    "id": "2d-4"
   },
   {
    "type": "choice",
-   "text": "Důkaz sporem (x > 5) ⇒ (x > 3): jaký je předpoklad sporu?",
-   "options": {
-    "A": "x ≤ 5 ∧ x > 3",
-    "B": "x > 5 ∧ x ≤ 3",
-    "C": "x > 5 ∧ x > 3",
-    "D": "x ≤ 5 ∧ x ≤ 3"
-   },
-   "correct": [
-    "B"
-   ],
-   "explanation": "Vzorec x ⇒ y se dokazuje sporem z x ∧ ¬y. Tady x > 5 ∧ x ≤ 3.",
-   "number": 5,
-   "id": "2d-5"
-  },
-  {
-   "type": "choice",
-   "text": "Důkaz sporem (x > 5) ⇒ (x > 3): z x > 5 > 3 plyne x > 3. Jaký je spor?",
-   "options": {
-    "A": "žádný spor nevznikl",
-    "B": "x > 5 ∧ x > 3",
-    "C": "x > 3 ∧ x ≤ 3",
-    "D": "5 > 3"
-   },
-   "correct": [
-    "C"
-   ],
-   "explanation": "Předpoklad dal x ≤ 3 a odvodili jsme x > 3. Obojí zároveň platit nemůže.",
-   "number": 6,
-   "id": "2d-6"
-  },
-  {
-   "type": "choice",
-   "text": "Přímý důkaz (x > 8) ⇒ (x > 2): který zápis je správný?",
-   "options": {
-    "A": "x ≤ 2 ∧ 2 ≤ 8 ⇒ x ≤ 8",
-    "B": "x > 8 ∧ 8 > 2 ⇒ x > 2",
-    "C": "x > 2 ∧ 2 > 8 ⇒ x > 8",
-    "D": "x > 8 ∧ x ≤ 2"
-   },
-   "correct": [
-    "B"
-   ],
-   "explanation": "Přímý důkaz vyjde z předpokladu x > 8, využije 8 > 2 a dojde k x > 2: x > 8 > 2.",
-   "number": 7,
-   "id": "2d-7"
-  },
-  {
-   "type": "choice",
-   "text": "Přímý důkaz (x > 8) ⇒ (x > 2) vede řetězcem",
-   "options": {
-    "A": "x > 2 > 8, tedy x > 8",
-    "B": "x < 8 < 2, tedy x < 2",
-    "C": "x > 8 > 2, tedy x > 2",
-    "D": "x ≤ 2 < 8, tedy x ≤ 8"
-   },
-   "correct": [
-    "C"
-   ],
-   "explanation": "Z x > 8 a 8 > 2 plyne x > 2.",
-   "number": 8,
-   "id": "2d-8"
-  },
-  {
-   "type": "choice",
    "text": "Nepřímý důkaz (x > 8) ⇒ (x > 2): jakou implikaci dokazujeme?",
    "options": {
-    "A": "x ≤ 2 ⇒ x ≤ 8",
-    "B": "x ≥ 2 ⇒ x ≥ 8",
-    "C": "x > 2 ⇒ x > 8",
-    "D": "x ≤ 8 ⇒ x ≤ 2"
+    "A": "x ≤ 8 ∧ 8 ≤ 2 ⇒ x ≤ 2",
+    "B": "x ≤ 2 ∧ 2 ≤ 8 ⇒ x ≤ 8",
+    "C": "x > 2 ∧ 2 > 8 ⇒ x > 8",
+    "D": "x ≤ 2 ∧ 2 > 8 ⇒ x ≤ 8"
    },
    "correct": [
-    "A"
+    "B"
    ],
-   "explanation": "Vzorec x ⇒ y ⇔ ¬y ⇒ ¬x. ¬(x > 2) je x ≤ 2 a ¬(x > 8) je x ≤ 8. Obměna: x ≤ 2 ⇒ x ≤ 8.",
-   "number": 9,
-   "id": "2d-9"
-  },
-  {
-   "type": "choice",
-   "text": "Nepřímý důkaz (x > 8) ⇒ (x > 2): který zápis dokazuje obměnu?",
-   "options": {
-    "A": "x ≤ 2 ∧ 2 > 8 ⇒ x ≤ 8",
-    "B": "x > 2 ∧ 2 > 8 ⇒ x > 8",
-    "C": "x ≤ 2 ∧ 2 ≤ 8 ⇒ x ≤ 8",
-    "D": "x ≤ 8 ∧ 8 ≤ 2 ⇒ x ≤ 2"
-   },
-   "correct": [
-    "C"
-   ],
-   "explanation": "Z x ≤ 2 a 2 ≤ 8 plyne x ≤ 8. To je obměna, takže platí i původní implikace.",
-   "number": 10,
-   "id": "2d-10"
-  },
-  {
-   "type": "choice",
-   "text": "Důkaz sporem (x > 8) ⇒ (x > 2): jaký je předpoklad sporu?",
-   "options": {
-    "A": "x ≤ 8 ∧ x > 2",
-    "B": "x > 8 ∧ x > 2",
-    "C": "x ≤ 8 ∧ x ≤ 2",
-    "D": "x > 8 ∧ x ≤ 2"
-   },
-   "correct": [
-    "D"
-   ],
-   "explanation": "Vzorec x ⇒ y se dokazuje sporem z x ∧ ¬y. Tady x > 8 ∧ x ≤ 2.",
-   "number": 11,
-   "id": "2d-11"
-  },
-  {
-   "type": "choice",
-   "text": "Důkaz sporem (x > 8) ⇒ (x > 2): z x > 8 > 2 plyne x > 2. Jaký je spor?",
-   "options": {
-    "A": "x > 8 ∧ x > 2",
-    "B": "žádný spor nevznikl",
-    "C": "x > 2 ∧ x ≤ 2",
-    "D": "8 > 2"
-   },
-   "correct": [
-    "C"
-   ],
-   "explanation": "Předpoklad dal x ≤ 2 a odvodili jsme x > 2. Obojí zároveň platit nemůže.",
-   "number": 12,
-   "id": "2d-12"
-  },
-  {
-   "type": "choice",
-   "text": "Dokazujeme (x > 0) ⇒ (x + 2 > 2) přímo. Jak se postupuje?",
-   "options": {
-    "A": "z x > 0 odečteme na obou stranách 2 a dostaneme x − 2 > 2",
-    "B": "dosadíme x = 1 a ověříme, že 3 > 2",
-    "C": "z x > 0 přičteme na obou stranách 2 a dostaneme x + 2 > 2",
-    "D": "z x > 0 vynásobíme obě strany dvěma a dostaneme 2x > 2"
-   },
-   "correct": [
-    "C"
-   ],
-   "explanation": "Přičtením 2 k nerovnosti x > 0 vznikne x + 2 > 0 + 2 = 2. Dosazení jedné hodnoty nic nedokazuje.",
-   "number": 13,
-   "id": "2d-13"
+   "explanation": "Vzorec x ⇒ y ⇔ ¬y ⇒ ¬x. ¬(x > 2) je x ≤ 2 a ¬(x > 8) je x ≤ 8. Z x ≤ 2 ≤ 8 plyne x ≤ 8.",
+   "number": 5,
+   "id": "2d-5"
   },
   {
    "type": "choice",
    "text": "Dokazujeme (x > 0) ⇒ (x + 2 > 2) nepřímo. Jakou implikaci dokážeme?",
    "options": {
     "A": "x ≤ 2 ⇒ x + 2 ≤ 0",
-    "B": "x + 2 ≤ 2 ⇒ x ≤ 0",
-    "C": "x + 2 > 2 ⇒ x > 0",
+    "B": "x + 2 > 2 ⇒ x > 0",
+    "C": "x + 2 ≤ 2 ⇒ x ≤ 0",
     "D": "x ≤ 0 ⇒ x + 2 > 2"
+   },
+   "correct": [
+    "C"
+   ],
+   "explanation": "Obměna ¬y ⇒ ¬x. ¬(x + 2 > 2) je x + 2 ≤ 2 a ¬(x > 0) je x ≤ 0. Odečtením 2 z x + 2 ≤ 2 vyjde x ≤ 0.",
+   "number": 6,
+   "id": "2d-6"
+  },
+  {
+   "type": "choice",
+   "text": "Důkaz sporem (x > 5) ⇒ (x > 3): jaký je předpoklad sporu a v čem je spor?",
+   "options": {
+    "A": "x > 5 ∧ x > 3; spor vznikne dosazením x = 6",
+    "B": "x > 5 ∧ x ≤ 3; z x > 5 > 3 plyne x > 3, spor s x ≤ 3",
+    "C": "x ≤ 5 ∧ x > 3; z x ≤ 5 plyne x ≤ 3, spor s x > 3",
+    "D": "x ≤ 5 ∧ x ≤ 3; spor nevznikne"
    },
    "correct": [
     "B"
    ],
-   "explanation": "Obměna ¬y ⇒ ¬x. ¬(x + 2 > 2) je x + 2 ≤ 2 a ¬(x > 0) je x ≤ 0. Odečtením 2 z x + 2 ≤ 2 vyjde x ≤ 0.",
-   "number": 14,
-   "id": "2d-14"
+   "explanation": "Předpoklad je x ∧ ¬y, tedy x > 5 ∧ x ≤ 3. Z x > 5 > 3 vyjde x > 3, tedy x > 3 ∧ x ≤ 3.",
+   "number": 7,
+   "id": "2d-7"
+  },
+  {
+   "type": "choice",
+   "text": "Důkaz sporem (x > 8) ⇒ (x > 2): jaký je předpoklad sporu a v čem je spor?",
+   "options": {
+    "A": "x ≤ 8 ∧ x > 2; z x ≤ 8 plyne x ≤ 2, spor s x > 2",
+    "B": "x > 8 ∧ x > 2; spor vznikne dosazením x = 9",
+    "C": "x > 8 ∧ x ≤ 2; z x > 8 > 2 plyne x > 2, spor s x ≤ 2",
+    "D": "x ≤ 8 ∧ x ≤ 2; spor nevznikne"
+   },
+   "correct": [
+    "C"
+   ],
+   "explanation": "Předpoklad je x ∧ ¬y, tedy x > 8 ∧ x ≤ 2. Z x > 8 > 2 vyjde x > 2, tedy x > 2 ∧ x ≤ 2.",
+   "number": 8,
+   "id": "2d-8"
   },
   {
    "type": "choice",
    "text": "Dokazujeme (x > 0) ⇒ (x + 2 > 2) sporem. Jaký je předpoklad a v čem je spor?",
    "options": {
-    "A": "x > 0 ∧ x + 2 > 2; spor vznikne dosazením x = 1",
-    "B": "x > 0 ∧ x + 2 ≤ 2; z x + 2 ≤ 2 plyne x ≤ 0, což je spor s x > 0",
-    "C": "x ≤ 0 ∧ x + 2 > 2; z x + 2 > 2 plyne x > 0, což je spor s x ≤ 0",
-    "D": "x ≤ 0 ∧ x + 2 ≤ 2; spor nevznikne"
-   },
-   "correct": [
-    "B"
-   ],
-   "explanation": "Předpoklad x ∧ ¬y je x > 0 ∧ x + 2 ≤ 2. Odečtením 2 vyjde x ≤ 0, tedy x > 0 ∧ x ≤ 0, spor.",
-   "number": 15,
-   "id": "2d-15"
-  },
-  {
-   "type": "choice",
-   "text": "Jaký zápis vyjadřuje, že nepřímý důkaz je možný?",
-   "options": {
-    "A": "x ⇒ y ⇔ x ∧ ¬y",
-    "B": "x ⇒ y ⇔ ¬y ⇒ ¬x",
-    "C": "x ⇒ y ⇔ y ⇒ x",
-    "D": "x ⇒ y ⇔ ¬x ⇒ ¬y"
-   },
-   "correct": [
-    "B"
-   ],
-   "explanation": "Implikace a její obměna mají vždy totožnou pravdivostní hodnotu. Obrácená y ⇒ x a ¬x ⇒ ¬y ne.",
-   "number": 16,
-   "id": "2d-16"
-  },
-  {
-   "type": "choice",
-   "text": "Jak se zapisuje důkaz sporem implikace x ⇒ y?",
-   "options": {
-    "A": "(x ∧ y) ⇒ spor",
-    "B": "(x ∧ ¬y) ⇒ spor",
-    "C": "(¬x ∧ ¬y) ⇒ spor",
-    "D": "(¬x ∧ y) ⇒ spor"
-   },
-   "correct": [
-    "B"
-   ],
-   "explanation": "Předpokládáme x a zároveň ¬y, tedy opak implikace, a odvodíme spor.",
-   "number": 17,
-   "id": "2d-17"
-  },
-  {
-   "type": "choice",
-   "text": "Které z tvrzení se dokazuje matematickou indukcí?",
-   "options": {
-    "A": "5 > 3",
-    "B": "1 + 2 + ... + n = n(n + 1)/2 pro všechna n ≥ 1",
-    "C": "(x > 5) ⇒ (x > 3)",
-    "D": "(x > 0) ⇒ (x + 2 > 2)"
-   },
-   "correct": [
-    "B"
-   ],
-   "explanation": "Indukce je na tvrzení P(n) pro všechna přirozená n ≥ 1. Nerovnosti o x se dokazují přímo, nepřímo nebo sporem.",
-   "number": 18,
-   "id": "2d-18"
-  },
-  {
-   "type": "choice",
-   "text": "Indukční důkaz 1 + 2 + ... + n = n(n + 1)/2, n ≥ 1: základní krok je",
-   "options": {
-    "A": "dosadit n = k + 1 a upravit",
-    "B": "n = 0: levá strana 0, pravá 0",
-    "C": "n = 1: levá strana 1, pravá 1 · 2 / 2 = 1, rovnost platí",
-    "D": "n = 1: levá strana 1, pravá 1 · 2 = 2"
-   },
-   "correct": [
-    "C"
-   ],
-   "explanation": "Základní krok ověří P(1): 1 = 1 · (1 + 1) / 2 = 1.",
-   "number": 19,
-   "id": "2d-19"
-  },
-  {
-   "type": "choice",
-   "text": "Indukční důkaz 1 + 2 + ... + n = n(n + 1)/2: v indukčním kroku k předpokladu přičteme k + 1 a dostaneme",
-   "options": {
-    "A": "k(k + 1)/2 + (k + 1) = (k + 1)(k + 2)/2",
-    "B": "k(k + 1)/2 + (k + 1) = (k + 1)(k + 1)/2",
-    "C": "k(k + 1)/2 + (k + 1) = k(k + 2)/2",
-    "D": "k(k + 1)/2 + k = (k + 1)(k + 2)/2"
+    "A": "x > 0 ∧ x + 2 ≤ 2; z x + 2 ≤ 2 plyne x ≤ 0, což je spor s x > 0",
+    "B": "x ≤ 0 ∧ x + 2 ≤ 2; spor nevznikne",
+    "C": "x > 0 ∧ x + 2 > 2; spor vznikne dosazením x = 1",
+    "D": "x ≤ 0 ∧ x + 2 > 2; z x + 2 > 2 plyne x > 0, což je spor s x ≤ 0"
    },
    "correct": [
     "A"
    ],
-   "explanation": "k(k + 1)/2 + (k + 1) = (k + 1)(k/2 + 1) = (k + 1)(k + 2)/2, což je vzorec pro n = k + 1.",
-   "number": 20,
-   "id": "2d-20"
+   "explanation": "Předpoklad x ∧ ¬y je x > 0 ∧ x + 2 ≤ 2. Odečtením 2 vyjde x ≤ 0, tedy x > 0 ∧ x ≤ 0, spor.",
+   "number": 9,
+   "id": "2d-9"
   },
   {
    "type": "choice",
-   "text": "Indukční důkaz 1 + 3 + 5 + ... + (2n − 1) = n², n ≥ 1: základní krok je",
+   "text": "Indukce, 1 + 2 + ... + n = n(n + 1)/2: v indukčním kroku k předpokladu přičteme k + 1 a dostaneme",
    "options": {
-    "A": "dosadit n = k + 1 a upravit",
-    "B": "n = 1: levá strana 1, pravá 2",
-    "C": "n = 1: levá strana 1, pravá 1² = 1, rovnost platí",
-    "D": "n = 0: levá strana 0, pravá 0² = 0"
+    "A": "k(k + 1)/2 + (k + 1) = (k + 1)(k + 1)/2",
+    "B": "k(k + 1)/2 + k = (k + 1)(k + 2)/2",
+    "C": "k(k + 1)/2 + (k + 1) = (k + 1)(k + 2)/2",
+    "D": "k(k + 1)/2 + (k + 1) = k(k + 2)/2"
    },
    "correct": [
     "C"
    ],
-   "explanation": "P(1): součet má jediný sčítanec 2 · 1 − 1 = 1 a 1² = 1.",
-   "number": 21,
-   "id": "2d-21"
+   "explanation": "Základní krok: n = 1, 1 = 1 · 2 / 2. Krok: k(k + 1)/2 + (k + 1) = (k + 1)(k + 2)/2, vzorec pro n = k + 1.",
+   "number": 10,
+   "id": "2d-10"
   },
   {
    "type": "choice",
-   "text": "Indukční důkaz 1 + 3 + 5 + ... + (2n − 1) = n²: v indukčním kroku k předpokladu přičteme 2(k + 1) − 1 = 2k + 1 a dostaneme",
+   "text": "Indukce, 1 + 3 + 5 + ... + (2n − 1) = n²: v indukčním kroku k předpokladu přičteme 2k + 1 a dostaneme",
    "options": {
     "A": "k² + (2k + 1) = k² + 1",
-    "B": "k² + (2k + 1) = (k + 1)²",
-    "C": "k² + (2k − 1) = (k + 1)²",
-    "D": "k² + 2k = (k + 1)²"
-   },
-   "correct": [
-    "B"
-   ],
-   "explanation": "k² + 2k + 1 = (k + 1)², což je vzorec pro n = k + 1.",
-   "number": 22,
-   "id": "2d-22"
-  },
-  {
-   "type": "choice",
-   "text": "Indukční důkaz 2 + 4 + 6 + ... + 2n = n(n + 1), n ≥ 1: základní krok je",
-   "options": {
-    "A": "n = 0: levá strana 0, pravá 1",
-    "B": "dosadit n = k + 1 a upravit",
-    "C": "n = 1: levá strana 2, pravá 1",
-    "D": "n = 1: levá strana 2, pravá 1 · 2 = 2, rovnost platí"
+    "B": "k² + (2k − 1) = (k + 1)²",
+    "C": "k² + 2k = (k + 1)²",
+    "D": "k² + (2k + 1) = (k + 1)²"
    },
    "correct": [
     "D"
    ],
-   "explanation": "P(1): součet má jediný sčítanec 2 a 1 · (1 + 1) = 2.",
-   "number": 23,
-   "id": "2d-23"
+   "explanation": "Základní krok: n = 1, 1 = 1². Krok: k² + 2k + 1 = (k + 1)², vzorec pro n = k + 1.",
+   "number": 11,
+   "id": "2d-11"
   },
   {
    "type": "choice",
-   "text": "Indukční důkaz 2 + 4 + 6 + ... + 2n = n(n + 1): v indukčním kroku k předpokladu přičteme 2(k + 1) a dostaneme",
+   "text": "Indukce, 2 + 4 + 6 + ... + 2n = n(n + 1): v indukčním kroku k předpokladu přičteme 2(k + 1) a dostaneme",
    "options": {
-    "A": "k(k + 1) + (k + 1) = (k + 1)(k + 2)",
-    "B": "k(k + 1) + 2(k + 1) = (k + 1)(k + 2)",
-    "C": "k(k + 1) + 2k = (k + 1)(k + 2)",
-    "D": "k(k + 1) + 2(k + 1) = (k + 1)(k + 1)"
+    "A": "k(k + 1) + 2(k + 1) = (k + 1)(k + 1)",
+    "B": "k(k + 1) + (k + 1) = (k + 1)(k + 2)",
+    "C": "k(k + 1) + 2(k + 1) = (k + 1)(k + 2)",
+    "D": "k(k + 1) + 2k = (k + 1)(k + 2)"
    },
    "correct": [
-    "B"
+    "C"
    ],
-   "explanation": "k(k + 1) + 2(k + 1) = (k + 1)(k + 2), což je vzorec pro n = k + 1.",
-   "number": 24,
-   "id": "2d-24"
-  },
-  {
-   "type": "input",
-   "text": "Kolik je 1 + 2 + ... + 10? (n(n + 1)/2 pro n = 10)",
-   "hint": "celé číslo",
-   "answer": "55",
-   "solution": "10 · 11 / 2 = 55",
-   "number": 25,
-   "id": "2d-25"
-  },
-  {
-   "type": "input",
-   "text": "Kolik je 1 + 3 + 5 + ... + 19? (n² pro n = 10)",
-   "hint": "celé číslo",
-   "answer": "100",
-   "solution": "Je to 10 lichých čísel, tedy 10² = 100",
-   "number": 26,
-   "id": "2d-26"
-  },
-  {
-   "type": "input",
-   "text": "Kolik je 2 + 4 + 6 + ... + 20? (n(n + 1) pro n = 10)",
-   "hint": "celé číslo",
-   "answer": "110",
-   "solution": "10 · 11 = 110",
-   "number": 27,
-   "id": "2d-27"
+   "explanation": "Základní krok: n = 1, 2 = 1 · 2. Krok: k(k + 1) + 2(k + 1) = (k + 1)(k + 2), vzorec pro n = k + 1.",
+   "number": 12,
+   "id": "2d-12"
   }
  ]
 }

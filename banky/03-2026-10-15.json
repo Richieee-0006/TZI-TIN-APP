@@ -101,49 +101,49 @@
   },
   {
    "type": "choice",
-   "text": "V pravdivostní tabulce podmnožiny (inkluze) X ⊆ Y (x: a ∈ X, y: a ∈ Y) je implikace x ⇒ y nepravdivá v řádku",
+   "text": "Kdy NEPLATÍ X ⊆ Y?",
    "options": {
-    "A": "x = 0, y = 1",
-    "B": "x = 1, y = 1",
-    "C": "x = 0, y = 0",
-    "D": "x = 1, y = 0"
+    "A": "když existuje prvek a ∈ Y, který není v X",
+    "B": "když X a Y mají stejné prvky",
+    "C": "když X a Y nemají žádný společný prvek",
+    "D": "když existuje prvek a ∈ X, který není v Y"
    },
    "correct": [
     "D"
    ],
-   "explanation": "Porušení vztahu X ⊆ Y nastane jen když a ∈ X a a ∉ Y, tedy x = 1, y = 0 (řádek 2). Ostatní řádky vztah X ⊆ Y neporuší.",
+   "explanation": "X ⊆ Y je porušeno jen prvkem a ∈ X, a ∉ Y, v tabulce řádek x = 1, y = 0. Proto implikace x ⇒ y. Prvek, který v X není, nic neporušuje.",
    "number": 7,
    "id": "3-7"
   },
   {
    "type": "choice",
-   "text": "Proč se podmnožina (inkluze) X ⊆ Y definuje implikací a ne konjunkcí?",
+   "text": "Proč se podmnožina (inkluze) X ⊆ Y definuje implikací a ne konjunkcí? (x: a ∈ X, y: a ∈ Y; řádky x,y = 11, 10, 01, 00)",
    "options": {
-    "A": "konjunkce má vždy hodnotu 1",
-    "B": "konjunkce by měla hodnotu 0 i v řádcích 3 a 4, kde prvek v X vůbec není a nic neporušuje",
-    "C": "konjunkce se v logice nesmí použít",
-    "D": "konjunkce by měla hodnotu 0 v řádku 2, který X ⊆ Y porušuje"
+    "A": "x ∧ y se pro prvky mimo X nedá spočítat",
+    "B": "x ∧ y dává 1, 0, 0, 0, ale pro prvky mimo X (řádky 01 a 00) má být X ⊆ Y splněno, tedy 1",
+    "C": "x ∧ y dává 0 v řádku 11, ačkoli tam X ⊆ Y platí",
+    "D": "x ∧ y dává 1 i v řádku 10, ačkoli ten X ⊆ Y porušuje"
    },
    "correct": [
     "B"
    ],
-   "explanation": "x ∧ y = 0 i pro (0,1) a (0,0), ale prvek, který v X není, vztah X ⊆ Y neporušuje. Jen implikace dává 0 právě na řádku (1,0).",
+   "explanation": "X ⊆ Y porušuje jen prvek v X, který není v Y (řádek 10). Prvek mimo X (řádky 01 a 00) nic neporušuje, takže tam má být 1. Konjunkce tam dává 0, jen implikace dává 0 právě v řádku 10.",
    "number": 8,
    "id": "3-8"
   },
   {
    "type": "choice",
-   "text": "Proč se podmnožina (inkluze) X ⊆ Y definuje implikací a ne disjunkcí?",
+   "text": "Proč se podmnožina (inkluze) X ⊆ Y definuje implikací a ne disjunkcí? (x: a ∈ X, y: a ∈ Y; řádky x,y = 11, 10, 01, 00)",
    "options": {
-    "A": "disjunkce by měla hodnotu 0 v řádku (1,1)",
-    "B": "disjunkce je pravdivá jen když jsou obě strany nepravdivé",
-    "C": "disjunkce by měla hodnotu 1 v řádku (1,0), který X ⊆ Y porušuje, a hodnotu 0 v řádku (0,0)",
-    "D": "disjunkce není v tabulce definovaná"
+    "A": "x ∨ y dává 0 v řádku 10, ačkoli ten X ⊆ Y neporušuje",
+    "B": "x ∨ y dává 0 v řádku 11, ačkoli tam X ⊆ Y platí",
+    "C": "x ∨ y dává 1, 1, 1, 0: v řádku 10, který X ⊆ Y porušuje, je 1, a v řádku 00, kde nic neporušuje X ⊆ Y, je 0",
+    "D": "x ∨ y dává 1 v řádku 00, ačkoli tam X ⊆ Y neplatí"
    },
    "correct": [
     "C"
    ],
-   "explanation": "x ∨ y = 1 pro (1,0), ačkoli právě tam je X ⊆ Y porušena, a x ∨ y = 0 pro (0,0), ačkoli ji tam nic neporušuje.",
+   "explanation": "X ⊆ Y porušuje jen řádek 10, tam má být 0, a ostatní řádky mají být 1. Disjunkce dává 1 v řádku 10 a 0 v řádku 00, tedy obojí naopak. Jen implikace dává 1, 0, 1, 1.",
    "number": 9,
    "id": "3-9"
   },
