@@ -1,5 +1,5 @@
 {
- "title": "Množiny, inkluze a relace",
+ "title": "Množiny, podmnožiny (inkluze) a relace",
  "lecture": 3,
  "date": "2026-10-15",
  "questions": [
@@ -85,7 +85,7 @@
   },
   {
    "type": "choice",
-   "text": "Jak se definuje inkluze X ⊆ Y?",
+   "text": "Jak se definuje podmnožina (inkluze) X ⊆ Y?",
    "options": {
     "A": "a ∈ X ∨ a ∈ Y",
     "B": "a ∈ X ⇔ a ∈ Y",
@@ -95,13 +95,13 @@
    "correct": [
     "C"
    ],
-   "explanation": "Každý prvek množiny X leží i v Y. Zápis: X ⊆ Y ⇔ (a ∈ X ⇒ a ∈ Y).",
+   "explanation": "Podmnožina = inkluze: každý prvek množiny X leží i v Y. Zápis: X ⊆ Y ⇔ (a ∈ X ⇒ a ∈ Y).",
    "number": 6,
    "id": "3-6"
   },
   {
    "type": "choice",
-   "text": "V pravdivostní tabulce inkluze (x: a ∈ X, y: a ∈ Y) je implikace x ⇒ y nepravdivá v řádku",
+   "text": "V pravdivostní tabulce podmnožiny (inkluze) X ⊆ Y (x: a ∈ X, y: a ∈ Y) je implikace x ⇒ y nepravdivá v řádku",
    "options": {
     "A": "x = 0, y = 1",
     "B": "x = 1, y = 1",
@@ -111,39 +111,39 @@
    "correct": [
     "D"
    ],
-   "explanation": "Porušení inkluze nastane jen když a ∈ X a a ∉ Y, tedy x = 1, y = 0 (řádek 2). Ostatní řádky inkluzi neporuší.",
+   "explanation": "Porušení vztahu X ⊆ Y nastane jen když a ∈ X a a ∉ Y, tedy x = 1, y = 0 (řádek 2). Ostatní řádky vztah X ⊆ Y neporuší.",
    "number": 7,
    "id": "3-7"
   },
   {
    "type": "choice",
-   "text": "Proč se inkluze definuje implikací a ne konjunkcí?",
+   "text": "Proč se podmnožina (inkluze) X ⊆ Y definuje implikací a ne konjunkcí?",
    "options": {
     "A": "konjunkce má vždy hodnotu 1",
     "B": "konjunkce by měla hodnotu 0 i v řádcích 3 a 4, kde prvek v X vůbec není a nic neporušuje",
     "C": "konjunkce se v logice nesmí použít",
-    "D": "konjunkce by měla hodnotu 0 v řádku 2, který inkluzi porušuje"
+    "D": "konjunkce by měla hodnotu 0 v řádku 2, který X ⊆ Y porušuje"
    },
    "correct": [
     "B"
    ],
-   "explanation": "x ∧ y = 0 i pro (0,1) a (0,0), ale prvek, který v X není, inkluzi neporušuje. Jen implikace dává 0 právě na řádku (1,0).",
+   "explanation": "x ∧ y = 0 i pro (0,1) a (0,0), ale prvek, který v X není, vztah X ⊆ Y neporušuje. Jen implikace dává 0 právě na řádku (1,0).",
    "number": 8,
    "id": "3-8"
   },
   {
    "type": "choice",
-   "text": "Proč se inkluze definuje implikací a ne disjunkcí?",
+   "text": "Proč se podmnožina (inkluze) X ⊆ Y definuje implikací a ne disjunkcí?",
    "options": {
     "A": "disjunkce by měla hodnotu 0 v řádku (1,1)",
     "B": "disjunkce je pravdivá jen když jsou obě strany nepravdivé",
-    "C": "disjunkce by měla hodnotu 1 v řádku (1,0), který inkluzi porušuje, a hodnotu 0 v řádku (0,0)",
+    "C": "disjunkce by měla hodnotu 1 v řádku (1,0), který X ⊆ Y porušuje, a hodnotu 0 v řádku (0,0)",
     "D": "disjunkce není v tabulce definovaná"
    },
    "correct": [
     "C"
    ],
-   "explanation": "x ∨ y = 1 pro (1,0), ačkoli právě tam je inkluze porušena, a x ∨ y = 0 pro (0,0), ačkoli ji tam nic neporušuje.",
+   "explanation": "x ∨ y = 1 pro (1,0), ačkoli právě tam je X ⊆ Y porušena, a x ∨ y = 0 pro (0,0), ačkoli ji tam nic neporušuje.",
    "number": 9,
    "id": "3-9"
   },

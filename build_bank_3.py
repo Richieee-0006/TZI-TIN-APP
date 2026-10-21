@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Vygeneruje banku otázek pro 3. přednášku (množiny, inkluze, relace) do banky/.
+"""Vygeneruje banku otázek pro 3. přednášku (množiny, podmnožiny, relace) do banky/.
 
 Deklarace využití AI: vytvořeno s pomocí nástroje Claude Sonnet 5.5 (Anthropic, 2026),
 uvedeno v souladu se Směrnicí rektora UJEP č. 7/2026 (dobrovolně).
@@ -34,22 +34,22 @@ CHOICE = [
      ["množina všech x, která mají vlastnost P", "množina, která obsahuje právě jedno x",
       "množina všech x, pro něž P neplatí", "dvojice (x, P)"], [0],
      "Zadání vlastností: do množiny patří právě ta x, pro něž platí P(x)."),
-    ("Jak se definuje inkluze X ⊆ Y?",
+    ("Jak se definuje podmnožina (inkluze) X ⊆ Y?",
      ["a ∈ X ⇒ a ∈ Y", "a ∈ X ∧ a ∈ Y", "a ∈ X ∨ a ∈ Y", "a ∈ X ⇔ a ∈ Y"], [0],
-     "Každý prvek množiny X leží i v Y. Zápis: X ⊆ Y ⇔ (a ∈ X ⇒ a ∈ Y)."),
-    ("V pravdivostní tabulce inkluze (x: a ∈ X, y: a ∈ Y) je implikace x ⇒ y nepravdivá v řádku",
+     "Podmnožina = inkluze: každý prvek množiny X leží i v Y. Zápis: X ⊆ Y ⇔ (a ∈ X ⇒ a ∈ Y)."),
+    ("V pravdivostní tabulce podmnožiny (inkluze) X ⊆ Y (x: a ∈ X, y: a ∈ Y) je implikace x ⇒ y nepravdivá v řádku",
      ["x = 1, y = 0", "x = 0, y = 1", "x = 0, y = 0", "x = 1, y = 1"], [0],
-     "Porušení inkluze nastane jen když a ∈ X a a ∉ Y, tedy x = 1, y = 0 (řádek 2). Ostatní řádky inkluzi neporuší."),
-    ("Proč se inkluze definuje implikací a ne konjunkcí?",
+     "Porušení vztahu X ⊆ Y nastane jen když a ∈ X a a ∉ Y, tedy x = 1, y = 0 (řádek 2). Ostatní řádky vztah X ⊆ Y neporuší."),
+    ("Proč se podmnožina (inkluze) X ⊆ Y definuje implikací a ne konjunkcí?",
      ["konjunkce by měla hodnotu 0 i v řádcích 3 a 4, kde prvek v X vůbec není a nic neporušuje",
-      "konjunkce by měla hodnotu 0 v řádku 2, který inkluzi porušuje",
+      "konjunkce by měla hodnotu 0 v řádku 2, který X ⊆ Y porušuje",
       "konjunkce se v logice nesmí použít", "konjunkce má vždy hodnotu 1"], [0],
-     "x ∧ y = 0 i pro (0,1) a (0,0), ale prvek, který v X není, inkluzi neporušuje. Jen implikace dává 0 právě na řádku (1,0)."),
-    ("Proč se inkluze definuje implikací a ne disjunkcí?",
-     ["disjunkce by měla hodnotu 1 v řádku (1,0), který inkluzi porušuje, a hodnotu 0 v řádku (0,0)",
+     "x ∧ y = 0 i pro (0,1) a (0,0), ale prvek, který v X není, vztah X ⊆ Y neporušuje. Jen implikace dává 0 právě na řádku (1,0)."),
+    ("Proč se podmnožina (inkluze) X ⊆ Y definuje implikací a ne disjunkcí?",
+     ["disjunkce by měla hodnotu 1 v řádku (1,0), který X ⊆ Y porušuje, a hodnotu 0 v řádku (0,0)",
       "disjunkce by měla hodnotu 0 v řádku (1,1)", "disjunkce je pravdivá jen když jsou obě strany nepravdivé",
       "disjunkce není v tabulce definovaná"], [0],
-     "x ∨ y = 1 pro (1,0), ačkoli právě tam je inkluze porušena, a x ∨ y = 0 pro (0,0), ačkoli ji tam nic neporušuje."),
+     "x ∨ y = 1 pro (1,0), ačkoli právě tam je X ⊆ Y porušena, a x ∨ y = 0 pro (0,0), ačkoli ji tam nic neporušuje."),
     ("Jaký je rozdíl mezi X ⊆ Y a X ⊂ Y (vlastní podmnožina)?",
      ["⊂ vyžaduje navíc X ≠ Y, ⊆ rovnost připouští", "⊆ vyžaduje X ≠ Y, ⊂ rovnost připouští",
       "žádný, jsou to dva zápisy téhož", "⊂ se používá jen pro konečné množiny"], [0],
@@ -260,7 +260,7 @@ def relation_questions():
     m5 = range(1, 6)
     lt = {(x, y) for x in m5 for y in m5 if x < y}
     assert rel_props(lt, m5) == (False, False, True, True) and not any((x, x) in lt for x in m5)
-    # inkluze: implikace dává 0 právě v řádku (1,0), ∧ a ∨ ne
+    # podmnožina: implikace dává 0 právě v řádku (1,0), ∧ a ∨ ne
     rows = list(itertools.product((1, 0), repeat=2))
     assert [int((not x) or y) for x, y in rows] == [1, 0, 1, 1]
     assert [int(x and y) for x, y in rows] != [1, 0, 1, 1]
@@ -284,7 +284,7 @@ def main():
     for i, q in enumerate(qs, 1):
         q["number"] = i
         q["id"] = f"3-{i}"
-    out = {"title": "Množiny, inkluze a relace", "lecture": 3, "date": "2026-10-15", "questions": qs}
+    out = {"title": "Množiny, podmnožiny (inkluze) a relace", "lecture": 3, "date": "2026-10-15", "questions": qs}
     path = Path(__file__).parent / "banky" / "03-2026-10-15.json"
     path.parent.mkdir(exist_ok=True)
     path.write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
