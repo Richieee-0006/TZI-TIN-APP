@@ -70,11 +70,11 @@ Soubory: `ui/novy.html`, `ui/klasicky.html`. Záloha celého původního skriptu
 
 ### Doplňovačka (na paměť)
 
-Odpověď píšeš z hlavy. Kategorie se vybírají napříč přednáškami, u otázky je napsáno, kolik slov se čeká, a uznává se víc variant (synonyma, bez diakritiky, jeden překlep). Špatně vyhodnocenou odpověď si můžeš ručně opravit.
+Čtvrtý filtr vedle Vše / Teorie / Příklady. Po jeho zapnutí pracují všechny režimy (Po 10, Vše popořadě, Náhodný výběr, Jen chybné, Ostrý test, Sudden Death) s doplňovacími otázkami napříč přednáškami; místo přednášek se vlevo vybírá kategorie (matematický zápis, soustavy, logika, důkazy, množiny, relace, zobrazení, kombinatorika, nebo všechny). Odpověď píšeš z hlavy, u otázky je napsáno, kolik slov se čeká, a uznává se víc variant (synonyma, bez diakritiky, jeden překlep). Špatně vyhodnocenou odpověď si můžeš ručně opravit.
 
 <table>
 <tr>
-<td align="center"><b>Výběr kategorií</b><br><img src="docs/screenshots/desktop-recall-categories.png" width="420"></td>
+<td align="center"><b>Filtr Doplňovačka v menu</b><br><img src="docs/screenshots/desktop-recall-menu.png" width="420"></td>
 <td align="center"><b>Otázka</b><br><img src="docs/screenshots/desktop-recall-question.png" width="420"></td>
 </tr>
 <tr>

@@ -213,8 +213,8 @@ h2 { margin: 0 0 12px; font-size: 1.05rem; font-weight: 700; letter-spacing: 0; 
   .ps-new  { color: #6b7280; }
 /* ===== SCREEN:chunks / chunk-detail / modal / quiz / results ===== */
   /* BEGIN chunks */
-  #chunks, #chunk-detail, #recall { display: none; max-width: 760px; margin: 0 auto; padding-top: 8px; }
-  #chunks h1, #chunk-detail h1, #recall h1 { font-size: clamp(1.9rem, 5vw, 2.8rem); line-height: 1.05; font-weight: 800; letter-spacing: -0.03em; font-variation-settings: "opsz" 96; margin-bottom: 20px; }
+  #chunks, #chunk-detail { display: none; max-width: 760px; margin: 0 auto; padding-top: 8px; }
+  #chunks h1, #chunk-detail h1 { font-size: clamp(1.9rem, 5vw, 2.8rem); line-height: 1.05; font-weight: 800; letter-spacing: -0.03em; font-variation-settings: "opsz" 96; margin-bottom: 20px; }
   .chunk-back { display: inline-block; background: none; border: 0; padding: 4px 0; margin-top: 28px; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
   .chunk-back:hover { color: var(--ink); }
   .chunk-size-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 12px; margin-bottom: 28px; color: var(--muted); font-size: .9375rem; }
@@ -232,10 +232,6 @@ h2 { margin: 0 0 12px; font-size: 1.05rem; font-weight: 700; letter-spacing: 0; 
   .chunk-bits .bit { width: 1ch; }
   .chunk-stats { font: 700 .9375rem/1 var(--mono); white-space: nowrap; display: flex; gap: 12px; }
   .chunk-stats .ok { color: var(--ok); } .chunk-stats .bad { color: var(--bad); } .chunk-stats .new { color: var(--new); }
-  /* doplňovačka: výběr kategorií */
-  .rc-cat { display: grid; grid-template-columns: auto 1fr auto; gap: 4px 14px; align-items: baseline; padding: 14px 8px; border-bottom: 1px solid var(--line); cursor: pointer; }
-  .rc-cat:hover { background: var(--paper-2); }
-  .rc-cat input { accent-color: var(--blue); width: 1.1rem; height: 1.1rem; align-self: center; }
 
   .chunk-detail-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 36px; }
   .chunk-detail-btns button { background: none; border: 1px solid var(--line); border-radius: 8px; padding: 9px 16px; font-weight: 500; }
@@ -439,6 +435,7 @@ h2 { margin: 0 0 12px; font-size: 1.05rem; font-weight: 700; letter-spacing: 0; 
           <button data-t="all" aria-pressed="true" onclick="setType('all')">Vše</button>
           <button data-t="choice" aria-pressed="false" onclick="setType('choice')">Teorie (A/B/C/D)</button>
           <button data-t="input" aria-pressed="false" onclick="setType('input')">Příklady (výsledek)</button>
+          <button data-t="recall" id="btn-recall" aria-pressed="false" onclick="setType('recall')">Doplňovačka</button>
         </div>
 
         <button class="go" id="go" onclick="goPrimary()">
@@ -453,7 +450,6 @@ h2 { margin: 0 0 12px; font-size: 1.05rem; font-weight: 700; letter-spacing: 0; 
             <li><button class="mode" onclick="startAll()"><span class="name">Vše popořadě</span><span class="desc">Celá banka od první otázky</span><span class="count" id="c-all"></span></button></li>
             <li><button class="mode" onclick="showRandomModal('random')"><span class="name">Náhodný výběr</span><span class="desc">Zadáš kolik otázek chceš</span><span class="count">?</span></button></li>
             <li><button class="mode" onclick="showRandomModal('study')"><span class="name">Studuj, pak testuj</span><span class="desc">Nejdřív otázky s odpovědí a postupem, potom test</span><span class="count"></span></button></li>
-            <li><button class="mode" id="btn-recall" onclick="showRecall()"><span class="name">Doplňovačka (na paměť)</span><span class="desc">Odpověď píšeš z hlavy, kategorie napříč přednáškami</span><span class="count" id="c-recall"></span></button></li>
           </ul>
         </div>
 
@@ -509,14 +505,6 @@ h2 { margin: 0 0 12px; font-size: 1.05rem; font-weight: 700; letter-spacing: 0; 
       <div class="cd-section new"><h3><i>·</i>Neznámé</h3><div class="cd-qlist" id="cd-new"></div></div>
     </div>
     <button class="chunk-back" onclick="showChunks()">Zpět na bloky</button>
-  </div>
-
-  <div id="recall">
-    <h1>Doplňovačka (na paměť)</h1>
-    <div class="chunk-size-row">Odpověď píšeš z hlavy, bez možností. Vyber kategorie, pak počet otázek.</div>
-    <div class="chunk-list" id="rc-cats"></div>
-    <div class="chunk-size-row" style="margin-top:24px"><button onclick="startRecallPick()">Pokračovat</button></div>
-    <button class="chunk-back" onclick="showMenu()">Zpět do menu</button>
   </div>
 
   <div class="overlay" id="random-modal">
@@ -577,6 +565,7 @@ h2 { margin: 0 0 12px; font-size: 1.05rem; font-weight: 700; letter-spacing: 0; 
 <script>
 let FULL = [];        // všechny otázky zdroje
 let ALL = [];         // po filtru typu
+let recallCat = '';   // vybraná kategorie doplňovačky, '' = všechny
 let RECALL = [];      // doplňovačka (type recall), napříč přednáškami, mimo FULL/ALL
 let currentSource = '';
 let sources = [];
@@ -592,7 +581,7 @@ let optOrder = {};    // q.id → zamíchané původní klíče možností, stá
 const $ = id => document.getElementById(id);
 const plural = (n, one, few, many) => n === 1 ? one : (n >= 2 && n <= 4 ? few : many);
 const show = id => {
-  for (const s of ['menu','chunks','chunk-detail','recall','quiz','results']) $(s).style.display = (s === id) ? 'block' : 'none';
+  for (const s of ['menu','chunks','chunk-detail','quiz','results']) $(s).style.display = (s === id) ? 'block' : 'none';
 };
 const norm = s => { s = (s || '').toUpperCase().replace(/[\s_]/g, ''); return s.replace(/^0+(?=.)/, ''); };
 const isRecall = q => q.type === 'recall';
@@ -630,7 +619,18 @@ function parseSource(s) {
   const m = /^(\d+)\. přednáška \((.+?)\): (.*)$/.exec(s.label);
   return m ? {n: m[1], date: m[2], title: m[3]} : {n: 'Σ', date: '', title: s.label};
 }
+const recallCats = () => [...new Set(RECALL.map(q => q.category))];
+function selectRecallCat(i) { recallCat = i < 0 ? '' : recallCats()[i]; renderLectures(); applyFilter(); }
 function renderLectures() {
+  const rc = typeFilter === 'recall';
+  $('h-lec').textContent = rc ? 'Kategorie' : 'Přednáška';
+  if (rc) { // doplňovačka: místo přednášek kategorie
+    const row = (i, n, name, count, on) => `<li><button class="lec" onclick="selectRecallCat(${i})" aria-pressed="${on}">` +
+      `<span class="n">${n}</span><span class="t">${esc(name)}</span><span class="d">${count}</span></button></li>`;
+    $('lectures').innerHTML = recallCats().map((c, i) => row(i, i + 1, c, RECALL.filter(q => q.category === c).length, c === recallCat)).join('')
+      + row(-1, 'Σ', 'Všechny kategorie', RECALL.length, !recallCat);
+    return;
+  }
   $('lectures').innerHTML = sources.map(s => {
     const p = parseSource(s);
     return `<li><button class="lec" onclick="selectSource('${esc(s.id)}')" aria-pressed="${s.id === currentSource}">` +
@@ -653,11 +653,12 @@ async function loadSource(source) {
 function setType(t) {
   typeFilter = t;
   document.querySelectorAll('#type-row button').forEach(b => b.setAttribute('aria-pressed', b.dataset.t === t));
+  renderLectures();
   applyFilter();
 }
 
 function applyFilter() {
-  ALL = typeFilter === 'all' ? FULL : FULL.filter(q => q.type === typeFilter);
+  ALL = typeFilter === 'recall' ? RECALL.filter(q => !recallCat || q.category === recallCat) : typeFilter === 'all' ? FULL : FULL.filter(q => q.type === typeFilter); // doplňovačka: napříč přednáškami, místo přednášky se vybírá kategorie
   $('rand-count').max = ALL.length;
   $('rand-count').value = Math.min(10, ALL.length);
   updateMenuStats(true);
@@ -679,13 +680,12 @@ function updateMenuStats(animate) {
   $('btn-unseen').disabled = unseen === 0;
   $('btn-wrongs').disabled = bad === 0;
   $('btn-correct').disabled = good === 0;
-  $('c-recall').textContent = RECALL.length;
-  $('btn-recall').disabled = !RECALL.length;
+  $('btn-recall').style.display = RECALL.length ? '' : 'none'; // starý server /api/recall nemá
   const n = Math.min(15, total), min = Math.max(5, Math.round(n * 2));
   $('exam-n').textContent = n;
   $('exam-min').textContent = min;
   $('exam-clock').textContent = String(min).padStart(2, '0') + ':00';
-  const q = session && session.idx < session.queue_ids.length ? FULL.find(x => x.id === session.queue_ids[session.idx]) : null;
+  const q = typeFilter !== 'recall' && session && session.idx < session.queue_ids.length ? FULL.find(x => x.id === session.queue_ids[session.idx]) : null;
   resumable = !!q;
   if (q) {
     $('go-title').textContent = `Pokračovat od otázky ${q.number}`;
@@ -860,23 +860,6 @@ function beginSession(qs, sd) {
 }
 
 // ── doplňovačka ──
-function showRecall() {
-  fromChunks = false;
-  const cats = [...new Set(RECALL.map(q => q.category))];
-  $('rc-cats').innerHTML = cats.map(c => {
-    const qs = RECALL.filter(q => q.category === c);
-    const ok = qs.filter(q => progress[q.id] === 'correct').length, bad = qs.filter(q => progress[q.id] === 'wrong').length;
-    return `<label class="rc-cat"><input type="checkbox" value="${esc(c)}" checked>` +
-      `<span class="chunk-name">${esc(c)}<small>${qs.length} ${plural(qs.length, 'otázka', 'otázky', 'otázek')}</small></span>` +
-      `<span class="chunk-stats"><span class="ok" title="Správně">${ok}</span><span class="bad" title="Chybně">${bad}</span><span class="new" title="Nové">${qs.length - ok - bad}</span></span></label>`;
-  }).join('');
-  show('recall');
-}
-function startRecallPick() {
-  const on = new Set([...document.querySelectorAll('#rc-cats input:checked')].map(i => i.value));
-  const pool = RECALL.filter(q => on.has(q.category));
-  if (pool.length) showRandomModal('recall', pool);
-}
 // "2" → "2 slova", "1-2" → "1 až 2 slova"
 function wordsLabel(w) {
   const [a, b = a] = String(w).split('-').map(Number);
@@ -1007,7 +990,7 @@ function renderStudy(q) {
   $('prog-label').textContent = `Studium ${idx + 1} z ${queue.length}`;
   $('score-label').textContent = '';
   if (isInput(q)) {
-    $('ans-input').value = q.answer; $('ans-input').disabled = true; $('ans-input').classList.add('correct');
+    $('ans-input').value = isRecall(q) ? q.accept[0] : q.answer; $('ans-input').disabled = true; $('ans-input').classList.add('correct');
     showSolution(q);
   } else {
     const cs = new Set(q.correct);
@@ -1097,7 +1080,7 @@ function confirmAnswer() {
   restoreState(rec);
   saveProgress();
   if (suddenDeath && !rec.isCorrect) {
-    setTimeout(() => { alert(`Konec hry. Správná odpověď: ${isInput(q) ? q.answer : letters(q, rec.correctKeys)}`); showResults(); }, 600);
+    setTimeout(() => { alert(`Konec hry. Správná odpověď: ${isRecall(q) ? q.accept[0] : isInput(q) ? q.answer : letters(q, rec.correctKeys)}`); showResults(); }, 600);
   }
 }
 
