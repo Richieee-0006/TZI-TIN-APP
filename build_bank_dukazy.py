@@ -5,69 +5,56 @@ Deklarace využití AI: vytvořeno s pomocí nástroje Claude Sonnet 5.5 (Anthro
 uvedeno v souladu se Směrnicí rektora UJEP č. 7/2026 (dobrovolně).
 
 Obsah vychází z příkladů z cvičení (x > 5 ⇒ x > 3 přímo, nepřímo a sporem, součet 1 + 2 + ... + n
-indukcí). Ke každé metodě jsou další dva podobné příklady, vždy jedna otázka na příklad. Teorii je třeba kontrolovat proti sylabu KI/TIN.
+indukcí). Ke každé metodě jsou další dva podobné příklady, vždy jedno zadání na příklad (bez ABCD, student počítá sám). Teorii je třeba kontrolovat proti sylabu KI/TIN.
 Spuštění:  python3 build_bank_dukazy.py
 """
 import json
-import random
 from pathlib import Path
 
 
 def ineq(a, b):
-    """Tři otázky k (x > a) ⇒ (x > b), a > b: přímý, nepřímý, sporem (jako na cvičení pro a = 5, b = 3)."""
+    """Tři zadání k (x > a) ⇒ (x > b), a > b: přímý, nepřímý, sporem (jako na cvičení pro a = 5, b = 3).
+    Tvar: (text, hint, answer, solution). Odpověď se píše ASCII (>, <=, =>, &), mezery se ignorují."""
     return [
-        (f"Přímý důkaz (x > {a}) ⇒ (x > {b}): který zápis je správný?",
-         [f"x > {a} ∧ {a} > {b} ⇒ x > {b}", f"x > {b} ∧ {b} > {a} ⇒ x > {a}",
-          f"x ≤ {b} ∧ {b} ≤ {a} ⇒ x ≤ {a}", f"x > {a} ∧ x ≤ {b}"],
+        (f"Dokaž přímo: (x > {a}) ⇒ (x > {b}). Napiš řetězec nerovností od x k závěru.",
+         f"např. x>9>4", f"x>{a}>{b}",
          f"Přímý důkaz vyjde z předpokladu x > {a}, využije {a} > {b} a dojde k x > {b}: x > {a} > {b}."),
-        (f"Nepřímý důkaz (x > {a}) ⇒ (x > {b}): jakou implikaci dokazujeme?",
-         [f"x ≤ {b} ∧ {b} ≤ {a} ⇒ x ≤ {a}", f"x ≤ {a} ∧ {a} ≤ {b} ⇒ x ≤ {b}",
-          f"x > {b} ∧ {b} > {a} ⇒ x > {a}", f"x ≤ {b} ∧ {b} > {a} ⇒ x ≤ {a}"],
+        (f"Dokaž nepřímo: (x > {a}) ⇒ (x > {b}). Napiš implikaci, kterou dokazuješ (obměnu).",
+         "např. x<=4=>x<=9 (<= je ≤, => je ⇒)", f"x<={b}=>x<={a}",
          f"Vzorec x ⇒ y ⇔ ¬y ⇒ ¬x. ¬(x > {b}) je x ≤ {b} a ¬(x > {a}) je x ≤ {a}. Z x ≤ {b} ≤ {a} plyne x ≤ {a}."),
-        (f"Důkaz sporem (x > {a}) ⇒ (x > {b}): jaký je předpoklad sporu a v čem je spor?",
-         [f"x > {a} ∧ x ≤ {b}; z x > {a} > {b} plyne x > {b}, spor s x ≤ {b}",
-          f"x ≤ {a} ∧ x > {b}; z x ≤ {a} plyne x ≤ {b}, spor s x > {b}",
-          f"x > {a} ∧ x > {b}; spor vznikne dosazením x = {a + 1}",
-          f"x ≤ {a} ∧ x ≤ {b}; spor nevznikne"],
-         f"Předpoklad je x ∧ ¬y, tedy x > {a} ∧ x ≤ {b}. Z x > {a} > {b} vyjde x > {b}, tedy x > {b} ∧ x ≤ {b}."),
+        (f"Dokaž sporem: (x > {a}) ⇒ (x > {b}). Napiš předpoklad sporu (x ∧ ¬y).",
+         "např. x>9&x<=4 (& je ∧)", f"x>{a}&x<={b}",
+         f"Předpoklad je x ∧ ¬y, tedy x > {a} ∧ x ≤ {b}. Z x > {a} > {b} vyjde x > {b}, tedy x > {b} ∧ x ≤ {b}, spor."),
     ]
 
 
 X0 = [
-    ("Dokazujeme (x > 0) ⇒ (x + 2 > 2) přímo. Jak se postupuje?",
-     ["z x > 0 přičteme na obou stranách 2 a dostaneme x + 2 > 2",
-      "z x > 0 odečteme na obou stranách 2 a dostaneme x − 2 > 2",
-      "z x > 0 vynásobíme obě strany dvěma a dostaneme 2x > 2",
-      "dosadíme x = 1 a ověříme, že 3 > 2"],
+    ("Dokaž přímo: (x > 0) ⇒ (x + 2 > 2). K x > 0 přičti na obou stranách 2, napiš výsledek.",
+     "např. x+5>5", "x+2>2",
      "Přičtením 2 k nerovnosti x > 0 vznikne x + 2 > 0 + 2 = 2. Dosazení jedné hodnoty nic nedokazuje."),
-    ("Dokazujeme (x > 0) ⇒ (x + 2 > 2) nepřímo. Jakou implikaci dokážeme?",
-     ["x + 2 ≤ 2 ⇒ x ≤ 0", "x ≤ 0 ⇒ x + 2 > 2", "x + 2 > 2 ⇒ x > 0", "x ≤ 2 ⇒ x + 2 ≤ 0"],
+    ("Dokaž nepřímo: (x > 0) ⇒ (x + 2 > 2). Napiš implikaci, kterou dokazuješ (obměnu).",
+     "např. x<=4=>x<=9 (<= je ≤, => je ⇒)", "x+2<=2=>x<=0",
      "Obměna ¬y ⇒ ¬x. ¬(x + 2 > 2) je x + 2 ≤ 2 a ¬(x > 0) je x ≤ 0. Odečtením 2 z x + 2 ≤ 2 vyjde x ≤ 0."),
-    ("Dokazujeme (x > 0) ⇒ (x + 2 > 2) sporem. Jaký je předpoklad a v čem je spor?",
-     ["x > 0 ∧ x + 2 ≤ 2; z x + 2 ≤ 2 plyne x ≤ 0, což je spor s x > 0",
-      "x ≤ 0 ∧ x + 2 > 2; z x + 2 > 2 plyne x > 0, což je spor s x ≤ 0",
-      "x > 0 ∧ x + 2 > 2; spor vznikne dosazením x = 1",
-      "x ≤ 0 ∧ x + 2 ≤ 2; spor nevznikne"],
+    ("Dokaž sporem: (x > 0) ⇒ (x + 2 > 2). Napiš předpoklad sporu (x ∧ ¬y).",
+     "např. x>9&x<=4 (& je ∧)", "x>0&x+2<=2",
      "Předpoklad x ∧ ¬y je x > 0 ∧ x + 2 ≤ 2. Odečtením 2 vyjde x ≤ 0, tedy x > 0 ∧ x ≤ 0, spor."),
 ]
 
 INDUKCE = [
-    ("Indukce, 1 + 2 + ... + n = n(n + 1)/2: v indukčním kroku k předpokladu přičteme k + 1 a dostaneme",
-     ["k(k + 1)/2 + (k + 1) = (k + 1)(k + 2)/2", "k(k + 1)/2 + (k + 1) = k(k + 2)/2",
-      "k(k + 1)/2 + k = (k + 1)(k + 2)/2", "k(k + 1)/2 + (k + 1) = (k + 1)(k + 1)/2"],
+    ("Indukce, 1 + 2 + ... + n = n(n + 1)/2. V indukčním kroku k předpokladu pro k přičti k + 1. Napiš výsledný zlomek (pravá strana pro n = k + 1).",
+     "např. (k+1)(k+2)/2", "(k+1)(k+2)/2",
      "Základní krok: n = 1, 1 = 1 · 2 / 2. Krok: k(k + 1)/2 + (k + 1) = (k + 1)(k + 2)/2, vzorec pro n = k + 1."),
-    ("Indukce, 1 + 3 + 5 + ... + (2n − 1) = n²: v indukčním kroku k předpokladu přičteme 2k + 1 a dostaneme",
-     ["k² + (2k + 1) = (k + 1)²", "k² + (2k + 1) = k² + 1", "k² + (2k − 1) = (k + 1)²", "k² + 2k = (k + 1)²"],
+    ("Indukce, 1 + 3 + 5 + ... + (2n − 1) = n². V indukčním kroku k předpokladu pro k přičti 2k + 1. Napiš výsledek (pravá strana pro n = k + 1).",
+     "např. (k+1)^2", "(k+1)^2",
      "Základní krok: n = 1, 1 = 1². Krok: k² + 2k + 1 = (k + 1)², vzorec pro n = k + 1."),
-    ("Indukce, 2 + 4 + 6 + ... + 2n = n(n + 1): v indukčním kroku k předpokladu přičteme 2(k + 1) a dostaneme",
-     ["k(k + 1) + 2(k + 1) = (k + 1)(k + 2)", "k(k + 1) + 2k = (k + 1)(k + 2)",
-      "k(k + 1) + 2(k + 1) = (k + 1)(k + 1)", "k(k + 1) + (k + 1) = (k + 1)(k + 2)"],
+    ("Indukce, 2 + 4 + 6 + ... + 2n = n(n + 1). V indukčním kroku k předpokladu pro k přičti 2(k + 1). Napiš výsledek (pravá strana pro n = k + 1).",
+     "např. (k+1)(k+2)", "(k+1)(k+2)",
      "Základní krok: n = 1, 2 = 1 · 2. Krok: k(k + 1) + 2(k + 1) = (k + 1)(k + 2), vzorec pro n = k + 1."),
 ]
 
 # pořadí: přímý ×3, nepřímý ×3, sporem ×3, indukce ×3
 _I = [ineq(5, 3), ineq(8, 2), X0]
-CHOICE = [ex[m] for m in range(3) for ex in _I] + INDUKCE
+TASKS = [ex[m] for m in range(3) for ex in _I] + INDUKCE
 
 
 def self_check():
@@ -92,14 +79,8 @@ def self_check():
 
 def main():
     self_check()
-    rnd = random.Random(5)  # pevné pořadí, aby správná odpověď nebyla pořád A
-    qs = []
-    for text, opts, expl in CHOICE:
-        order = list(range(len(opts)))
-        rnd.shuffle(order)
-        qs.append({"type": "choice", "text": text,
-                   "options": {"ABCD"[i]: opts[j] for i, j in enumerate(order)},
-                   "correct": ["ABCD"[order.index(0)]], "explanation": expl})
+    qs = [{"type": "input", "text": t, "hint": h, "answer": a, "solution": sol}
+          for t, h, a, sol in TASKS]
     for i, q in enumerate(qs, 1):
         q["number"] = i
         q["id"] = f"2d-{i}"
@@ -107,8 +88,7 @@ def main():
     path = Path(__file__).parent / "banky" / "02d-dukazy.json"
     path.parent.mkdir(exist_ok=True)
     path.write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
-    n_c = sum(q["type"] == "choice" for q in qs)
-    print(f"{path.name}: {len(qs)} otázek ({n_c} výběrových, {len(qs) - n_c} na výsledek)")
+    print(f"{path.name}: {len(qs)} zadání (bez výběru ABCD)")
 
 
 if __name__ == "__main__":
