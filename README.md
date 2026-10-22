@@ -68,6 +68,21 @@ Soubory: `ui/novy.html`, `ui/klasicky.html`. Záloha celého původního skriptu
 </tr>
 </table>
 
+### Doplňovačka (na paměť)
+
+Odpověď píšeš z hlavy. Kategorie se vybírají napříč přednáškami, u otázky je napsáno, kolik slov se čeká, a uznává se víc variant (synonyma, bez diakritiky, jeden překlep). Špatně vyhodnocenou odpověď si můžeš ručně opravit.
+
+<table>
+<tr>
+<td align="center"><b>Výběr kategorií</b><br><img src="docs/screenshots/desktop-recall-categories.png" width="420"></td>
+<td align="center"><b>Otázka</b><br><img src="docs/screenshots/desktop-recall-question.png" width="420"></td>
+</tr>
+<tr>
+<td align="center"><b>Odpověď uznána jako překlep</b><br><img src="docs/screenshots/desktop-recall-answered.png" width="420"></td>
+<td align="center"><b>Na mobilu</b><br><img src="docs/screenshots/mobile-recall-answered.png" width="260"></td>
+</tr>
+</table>
+
 ### Mobil (`--lan`)
 
 <table>
