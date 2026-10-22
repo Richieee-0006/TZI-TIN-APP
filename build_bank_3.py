@@ -80,7 +80,7 @@ CHOICE = [
      ["ℝ", "ℕ", "ℤ", "{1, 2, 3}"], [0],
      "ℝ (i interval (0, 1)) nelze očíslovat přirozenými čísly (Cantorův diagonální argument). ℕ a ℤ jsou spočetné."),
     ("Jaký je vztah pojmů „spočetná“ a „nekonečná“ množina?",
-     ["každá spočetná nekonečná množina je nekonečná, ale ne každá nekonečná je spočetná",
+     ["každá spočetná množina je nekonečná, ale ne každá nekonečná je spočetná",
       "každá nekonečná množina je spočetná", "jsou to synonyma", "spočetná množina je vždy konečná"], [0],
      "„Nekonečná“ říká jen, že prvků není konečně mnoho. „Spočetná“ říká, že je lze očíslovat přirozenými čísly. ℝ je nekonečná, ale nespočetná."),
     ("Co je průnik A ∩ B?",

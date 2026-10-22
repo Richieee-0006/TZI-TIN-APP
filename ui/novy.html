@@ -213,8 +213,8 @@ h2 { margin: 0 0 12px; font-size: 1.05rem; font-weight: 700; letter-spacing: 0; 
   .ps-new  { color: #6b7280; }
 /* ===== SCREEN:chunks / chunk-detail / modal / quiz / results ===== */
   /* BEGIN chunks */
-  #chunks, #chunk-detail { display: none; max-width: 760px; margin: 0 auto; padding-top: 8px; }
-  #chunks h1, #chunk-detail h1 { font-size: clamp(1.9rem, 5vw, 2.8rem); line-height: 1.05; font-weight: 800; letter-spacing: -0.03em; font-variation-settings: "opsz" 96; margin-bottom: 20px; }
+  #chunks, #chunk-detail, #recall { display: none; max-width: 760px; margin: 0 auto; padding-top: 8px; }
+  #chunks h1, #chunk-detail h1, #recall h1 { font-size: clamp(1.9rem, 5vw, 2.8rem); line-height: 1.05; font-weight: 800; letter-spacing: -0.03em; font-variation-settings: "opsz" 96; margin-bottom: 20px; }
   .chunk-back { display: inline-block; background: none; border: 0; padding: 4px 0; margin-top: 28px; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
   .chunk-back:hover { color: var(--ink); }
   .chunk-size-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 12px; margin-bottom: 28px; color: var(--muted); font-size: .9375rem; }
@@ -232,6 +232,10 @@ h2 { margin: 0 0 12px; font-size: 1.05rem; font-weight: 700; letter-spacing: 0; 
   .chunk-bits .bit { width: 1ch; }
   .chunk-stats { font: 700 .9375rem/1 var(--mono); white-space: nowrap; display: flex; gap: 12px; }
   .chunk-stats .ok { color: var(--ok); } .chunk-stats .bad { color: var(--bad); } .chunk-stats .new { color: var(--new); }
+  /* doplňovačka: výběr kategorií */
+  .rc-cat { display: grid; grid-template-columns: auto 1fr auto; gap: 4px 14px; align-items: baseline; padding: 14px 8px; border-bottom: 1px solid var(--line); cursor: pointer; }
+  .rc-cat:hover { background: var(--paper-2); }
+  .rc-cat input { accent-color: var(--blue); width: 1.1rem; height: 1.1rem; align-self: center; }
 
   .chunk-detail-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 36px; }
   .chunk-detail-btns button { background: none; border: 1px solid var(--line); border-radius: 8px; padding: 9px 16px; font-weight: 500; }
@@ -449,6 +453,7 @@ h2 { margin: 0 0 12px; font-size: 1.05rem; font-weight: 700; letter-spacing: 0; 
             <li><button class="mode" onclick="startAll()"><span class="name">Vše popořadě</span><span class="desc">Celá banka od první otázky</span><span class="count" id="c-all"></span></button></li>
             <li><button class="mode" onclick="showRandomModal('random')"><span class="name">Náhodný výběr</span><span class="desc">Zadáš kolik otázek chceš</span><span class="count">?</span></button></li>
             <li><button class="mode" onclick="showRandomModal('study')"><span class="name">Studuj, pak testuj</span><span class="desc">Nejdřív otázky s odpovědí a postupem, potom test</span><span class="count"></span></button></li>
+            <li><button class="mode" id="btn-recall" onclick="showRecall()"><span class="name">Doplňovačka (na paměť)</span><span class="desc">Odpověď píšeš z hlavy, kategorie napříč přednáškami</span><span class="count" id="c-recall"></span></button></li>
           </ul>
         </div>
 
@@ -504,6 +509,14 @@ h2 { margin: 0 0 12px; font-size: 1.05rem; font-weight: 700; letter-spacing: 0; 
       <div class="cd-section new"><h3><i>·</i>Neznámé</h3><div class="cd-qlist" id="cd-new"></div></div>
     </div>
     <button class="chunk-back" onclick="showChunks()">Zpět na bloky</button>
+  </div>
+
+  <div id="recall">
+    <h1>Doplňovačka (na paměť)</h1>
+    <div class="chunk-size-row">Odpověď píšeš z hlavy, bez možností. Vyber kategorie, pak počet otázek.</div>
+    <div class="chunk-list" id="rc-cats"></div>
+    <div class="chunk-size-row" style="margin-top:24px"><button onclick="startRecallPick()">Pokračovat</button></div>
+    <button class="chunk-back" onclick="showMenu()">Zpět do menu</button>
   </div>
 
   <div class="overlay" id="random-modal">
@@ -564,6 +577,7 @@ h2 { margin: 0 0 12px; font-size: 1.05rem; font-weight: 700; letter-spacing: 0; 
 <script>
 let FULL = [];        // všechny otázky zdroje
 let ALL = [];         // po filtru typu
+let RECALL = [];      // doplňovačka (type recall), napříč přednáškami, mimo FULL/ALL
 let currentSource = '';
 let sources = [];
 let progress = {};    // {qid: "correct"|"wrong"}
@@ -573,16 +587,22 @@ let typeFilter = 'all';
 let queue = [], idx = 0, history = [], checked = false, suddenDeath = false;
 let selected = new Set(), modalMode = 'random', studyMode = false, studyPicks = [];
 let examMode = false, examTimer = null, examEndTime = 0;
+let optOrder = {};    // q.id → zamíchané původní klíče možností, stálé po celou sadu (i po „Předchozí“)
 
 const $ = id => document.getElementById(id);
 const plural = (n, one, few, many) => n === 1 ? one : (n >= 2 && n <= 4 ? few : many);
 const show = id => {
-  for (const s of ['menu','chunks','chunk-detail','quiz','results']) $(s).style.display = (s === id) ? 'block' : 'none';
+  for (const s of ['menu','chunks','chunk-detail','recall','quiz','results']) $(s).style.display = (s === id) ? 'block' : 'none';
 };
 const norm = s => { s = (s || '').toUpperCase().replace(/[\s_]/g, ''); return s.replace(/^0+(?=.)/, ''); };
-const isInput = q => q.type === 'input';
+const isRecall = q => q.type === 'recall';
+const isInput = q => q.type === 'input' || isRecall(q); // recall = psaná odpověď z paměti
+const isReveal = q => q.reveal === true; // zadání bez políčka, řešení se jen odhalí
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-const shuffle = a => [...a].sort(() => Math.random() - .5);
+const shuffle = a => { a = [...a]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }; // Fisher-Yates
+// Možnosti se zobrazují zamíchané, ale všude uvnitř (selected, history, id opt-*) zůstávají původní klíče.
+const LETTERS = 'ABCDEFGH';
+const letters = (q, keys) => keys.map(k => LETTERS[optOrder[q.id].indexOf(k)]).sort().join(', ');
 // Zápis z banky (a_n, Z^n, a_(n-1), ->) převede na HTML s dolními/horními indexy a šipkami.
 function fmt(s) {
   s = String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -598,6 +618,7 @@ async function init() {
   const data = await r.json();
   sources = data.sources;
   currentSource = data.default;
+  RECALL = await fetch('/api/recall').then(r => r.ok ? r.json() : []).catch(() => []); // starý server endpoint nemá
   renderLectures();
   await loadSource(currentSource);
 }
@@ -658,6 +679,8 @@ function updateMenuStats(animate) {
   $('btn-unseen').disabled = unseen === 0;
   $('btn-wrongs').disabled = bad === 0;
   $('btn-correct').disabled = good === 0;
+  $('c-recall').textContent = RECALL.length;
+  $('btn-recall').disabled = !RECALL.length;
   const n = Math.min(15, total), min = Math.max(5, Math.round(n * 2));
   $('exam-n').textContent = n;
   $('exam-min').textContent = min;
@@ -699,12 +722,13 @@ async function saveProgress() {
   const m = {};
   for (const h of history) m[h.id] = h.isCorrect ? 'correct' : 'wrong';
   const newProgress = Object.assign({}, progress, m);
-  const newSession = (idx < queue.length && !examMode) ? {queue_ids: queue.map(q => q.id), idx, sudden_death: suddenDeath, history} : null;
-  await fetch(`/api/progress?source=${encodeURIComponent(currentSource)}`, {
+  const recall = queue.length > 0 && isRecall(queue[0]); // doplňovačka: bez rozdělané sady, nesmí přepsat sadu přednášky
+  const newSession = (idx < queue.length && !examMode && !recall) ? {queue_ids: queue.map(q => q.id), idx, sudden_death: suddenDeath, history} : null;
+  await fetch(`/api/progress?source=${encodeURIComponent(recall ? '_recall' : currentSource)}`, {
     method: 'POST', headers: {'Content-Type': 'application/json', 'X-TZI': '1'},
     body: JSON.stringify({seen: newProgress, session: newSession})
   });
-  progress = newProgress; session = newSession;
+  progress = newProgress; if (!recall) session = newSession;
 }
 
 let fromChunks = false;
@@ -799,12 +823,12 @@ function startRandom() {
   const n = Math.min(Math.max(1, parseInt($('rand-count').value) || 1), maxN);
   closeModal();
   if (modalMode === 'study' || modalMode === 'chunk-study') startStudy(shuffle(modalPool || ALL).slice(0, n));
-  else beginSession(shuffle(ALL).slice(0, n), false);
+  else beginSession(shuffle(modalPool || ALL).slice(0, n), false);
 }
 function startStudy(qs) {
   if (!qs.length) return;
   studyPicks = [...qs]; studyMode = true; examMode = false;
-  queue = [...qs]; idx = 0; history = []; suddenDeath = false;
+  queue = [...qs]; idx = 0; history = []; optOrder = {}; suddenDeath = false;
   $('sudden-banner').style.display = 'none';
   show('quiz'); renderQ();
 }
@@ -814,7 +838,7 @@ function startExam() {
   const n = Math.min(15, ALL.length);
   if (!n) return;
   examMode = true; studyMode = false;
-  queue = shuffle(ALL).slice(0, n); idx = 0; history = []; suddenDeath = false;
+  queue = shuffle(ALL).slice(0, n); idx = 0; history = []; optOrder = {}; suddenDeath = false;
   $('sudden-banner').style.display = 'none';
   show('quiz');
   startExamTimer(Math.max(5, n * 2) * 60);
@@ -830,13 +854,67 @@ function updateExamTimer() {
 
 function beginSession(qs, sd) {
   if (!qs.length) return;
-  queue = qs; idx = 0; history = []; suddenDeath = sd; studyMode = false; examMode = false;
+  queue = qs; idx = 0; history = []; optOrder = {}; suddenDeath = sd; studyMode = false; examMode = false;
   $('sudden-banner').style.display = sd ? 'block' : 'none';
   show('quiz'); renderQ();
 }
 
+// ── doplňovačka ──
+function showRecall() {
+  fromChunks = false;
+  const cats = [...new Set(RECALL.map(q => q.category))];
+  $('rc-cats').innerHTML = cats.map(c => {
+    const qs = RECALL.filter(q => q.category === c);
+    const ok = qs.filter(q => progress[q.id] === 'correct').length, bad = qs.filter(q => progress[q.id] === 'wrong').length;
+    return `<label class="rc-cat"><input type="checkbox" value="${esc(c)}" checked>` +
+      `<span class="chunk-name">${esc(c)}<small>${qs.length} ${plural(qs.length, 'otázka', 'otázky', 'otázek')}</small></span>` +
+      `<span class="chunk-stats"><span class="ok" title="Správně">${ok}</span><span class="bad" title="Chybně">${bad}</span><span class="new" title="Nové">${qs.length - ok - bad}</span></span></label>`;
+  }).join('');
+  show('recall');
+}
+function startRecallPick() {
+  const on = new Set([...document.querySelectorAll('#rc-cats input:checked')].map(i => i.value));
+  const pool = RECALL.filter(q => on.has(q.category));
+  if (pool.length) showRandomModal('recall', pool);
+}
+// "2" → "2 slova", "1-2" → "1 až 2 slova"
+function wordsLabel(w) {
+  const [a, b = a] = String(w).split('-').map(Number);
+  return (a === b ? a : `${a} až ${b}`) + ' ' + plural(b, 'slovo', 'slova', 'slov');
+}
+
+// ── doplňovačka: porovnání odpovědi ──
+// malá písmena, bez diakritiky, interpunkce a pomlčky na mezery, jedna mezera mezi slovy
+const recallNorm = s => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+  .replace(/[.,;:!?'"„“”‚‘’()\[\]{}_\/…\-–—−]/g, ' ').replace(/\s+/g, ' ').trim();
+// Levenshtein ≤ 1: jedna záměna, vložení nebo vypuštění znaku
+function lev1(a, b) {
+  if (Math.abs(a.length - b.length) > 1) return false;
+  let i = 0; while (i < a.length && a[i] === b[i]) i++;
+  if (a.length === b.length) return a.slice(i + 1) === b.slice(i + 1);
+  return a.length > b.length ? a.slice(i + 1) === b.slice(i) : a.slice(i) === b.slice(i + 1);
+}
+// {variant, typo} nebo null. Překlep jen u slov delších než 5 písmen (bez číslic) a se stejným
+// prvním písmenem, ať neprojde symetrická × asymetrická nebo reflexivní × ireflexivní.
+function matchRecall(answer, accept) {
+  const a = recallNorm(answer);
+  if (!a) return null;
+  for (const v of accept) if (recallNorm(v) === a) return {variant: v, typo: false};
+  const aw = a.split(' ');
+  for (const v of accept) {
+    const vw = recallNorm(v).split(' ');
+    if (vw.length === aw.length && vw.every((w, i) => w === aw[i] ||
+      (w.length > 5 && /^[a-z]+$/.test(w) && w[0] === aw[i][0] && lev1(w, aw[i])))) return {variant: v, typo: true};
+  }
+  return null;
+}
+
 // ── otázka ──
 function evaluate(q) {
+  if (isRecall(q)) {
+    const v = $('ans-input').value.trim(), m = matchRecall(v, q.accept);
+    return {userKeys: [v], correctKeys: [q.accept[0]], isCorrect: !!m, typo: m && m.typo ? m.variant : null};
+  }
   if (isInput(q)) {
     const v = norm($('ans-input').value);
     return {userKeys: [v], correctKeys: [norm(q.answer)], isCorrect: v === norm(q.answer)};
@@ -846,12 +924,13 @@ function evaluate(q) {
     isCorrect: selected.size === cs.size && [...selected].every(k => cs.has(k))};
 }
 function record(q) {
+  if (isReveal(q)) return null; // bez vyhodnocení, do výsledků se nezapočítá
   const rec = Object.assign({id: q.id}, evaluate(q));
   const i = history.findIndex(h => h.id === q.id);
   if (i >= 0) history[i] = rec; else history.push(rec);
   return rec;
 }
-function hasAnswer() { return isInput(queue[idx]) ? $('ans-input').value.trim() !== '' : selected.size > 0; }
+function hasAnswer() { return isReveal(queue[idx]) || (isInput(queue[idx]) ? $('ans-input').value.trim() !== '' : selected.size > 0); }
 function syncAction() { $('btn-action').disabled = !hasAnswer(); }
 function onInput() { if (!checked && !studyMode) syncAction(); }
 
@@ -868,29 +947,34 @@ function renderQ() {
 
   const src = sources.find(s => s.id === currentSource);
   const lec = q.id.split('-')[0];
-  $('q-src').textContent = `${lec}. přednáška · otázka ${q.number}` + (isInput(q) ? ' · příklad na výsledek' : ' · teorie');
-  const t = $('q-text'); t.innerHTML = fmt(q.text); t.className = 'question-text' + (isInput(q) ? ' calc' : '');
-  $('q-hint').textContent = isInput(q) ? (q.hint || '') : (q.correct.length > 1 ? '(Vyberte více správných odpovědí)' : '');
+  $('q-src').textContent = isRecall(q) ? `Doplňovačka · ${q.category} · otázka ${q.number}`
+    : `${lec}. přednáška · otázka ${q.number}` + (isReveal(q) ? ' · zadání na rozbor' : isInput(q) ? ' · příklad na výsledek' : ' · teorie');
+  const t = $('q-text'); t.innerHTML = fmt(q.text); t.className = 'question-text' + (q.type === 'input' ? ' calc' : '');
+  $('q-hint').textContent = isRecall(q) ? `Očekáváno: ${wordsLabel(q.words)}` + (q.hint ? `. ${q.hint}` : '')
+    : isInput(q) ? (q.hint || '') : (q.correct.length > 1 ? '(Vyberte více správných odpovědí)' : '');
   $('feedback').textContent = ''; $('feedback').className = 'feedback';
   const sol = $('solution'); sol.style.display = 'none'; sol.textContent = '';
 
   const optsEl = $('opts'); optsEl.innerHTML = '';
   const inp = $('ans-input'); inp.value = ''; inp.disabled = false; inp.className = 'ans-input';
-  inp.style.display = isInput(q) ? 'block' : 'none';
+  inp.style.display = isInput(q) && !isReveal(q) ? 'block' : 'none';
+  inp.setAttribute('autocapitalize', isRecall(q) ? 'off' : 'characters');
   if (!isInput(q)) {
-    for (const [letter, text] of Object.entries(q.options)) {
+    const keys = optOrder[q.id] || (optOrder[q.id] = shuffle(Object.keys(q.options)));
+    keys.forEach((letter, i) => {
       const div = document.createElement('div');
       div.className = 'opt'; div.id = 'opt-' + letter;
-      div.innerHTML = `<span class="letter">${letter}</span><span>${fmt(text)}</span>`;
+      div.innerHTML = `<span class="letter">${LETTERS[i]}</span><span>${fmt(q.options[letter])}</span>`;
       div.addEventListener('click', () => toggleOpt(letter));
       optsEl.appendChild(div);
-    }
+    });
   }
 
   $('btn-prev').disabled = (idx === 0) || suddenDeath || studyMode;
   $('btn-action').innerHTML = 'Potvrdit<span class="kh">Enter</span>';
   renderChain();
   $('btn-action').disabled = true;
+  if (isReveal(q)) { $('btn-action').disabled = false; $('btn-action').innerHTML = 'Ukázat řešení<span class="kh">Enter</span>'; }
 
   if (studyMode) { renderStudy(q); return; }
   const rec = history.find(h => h.id === q.id);
@@ -904,7 +988,7 @@ function renderQ() {
     if (isInput(q)) inp.focus();
     return;
   }
-  if (rec) restoreState(rec); else if (isInput(q)) inp.focus();
+  if (rec && isReveal(q)) revealTask(q); else if (rec) restoreState(rec); else if (isInput(q)) inp.focus();
 }
 
 function renderChain() {
@@ -938,9 +1022,10 @@ function renderStudy(q) {
 
 function showSolution(q) {
   const el = $('solution');
-  const text = isInput(q) ? q.solution : q.explanation;
+  const text = isRecall(q) ? `Odpověď: ${q.accept[0]}\nUznává se i: ${q.accept.slice(1).join(', ') || '–'}` + (q.explanation ? `\n\n${q.explanation}` : '')
+    : isInput(q) ? q.solution : q.explanation;
   if (!text) return;
-  el.className = 'solution' + (isInput(q) ? '' : ' explain');
+  el.className = 'solution' + (q.type === 'input' && !isReveal(q) ? '' : ' explain');
   el.innerHTML = fmt(text); el.style.display = 'block';
 }
 
@@ -959,13 +1044,13 @@ function toggleOpt(letter) {
 function handleAction() {
   if (studyMode) { studyNext(); return; }
   if (examMode) { examNext(); return; }
-  if (!checked) confirmAnswer(); else nextQ();
+  if (!checked) confirmAnswer(); else if (isReveal(queue[idx])) gradeTask(true); else nextQ();
 }
 
 function studyNext() {
   idx++;
   if (idx < queue.length) renderQ();
-  else { studyMode = false; queue = shuffle(studyPicks); idx = 0; history = []; renderQ(); }
+  else { studyMode = false; queue = shuffle(studyPicks); idx = 0; history = []; optOrder = {}; renderQ(); }
 }
 
 function examNext() {
@@ -976,15 +1061,43 @@ function examNext() {
   else { clearExamTimer(); saveProgress(); showResults(); }
 }
 
+function toggleSolution(btn) {
+  const el = $('solution'), hide = el.style.display !== 'none';
+  el.style.display = hide ? 'none' : 'block';
+  btn.textContent = hide ? 'Ukázat řešení' : 'Skrýt řešení';
+}
+
+function revealTask(q) {
+  checked = true;
+  showSolution(q);
+  const rec = history.find(h => h.id === q.id);
+  const mark = rec ? (rec.isCorrect ? 'Označeno: zvládl jsem. ' : 'Označeno: nezvládl jsem. ') : '';
+  $('feedback').innerHTML = mark + '<button class="btn-end" onclick="toggleSolution(this)">Skrýt řešení</button> <button class="btn-end" onclick="gradeTask(false)">Nezvládl jsem</button>';
+  $('btn-action').innerHTML = 'Zvládl jsem<span class="kh">Enter</span>';
+  $('btn-action').focus();
+}
+
+// vlastní hodnocení člověka: Zvládl jsem = správně, Nezvládl jsem = špatně
+// (u doplňovačky ruční oprava verdiktu, napsaná odpověď zůstane)
+function gradeTask(ok) {
+  const q = queue[idx];
+  const i = history.findIndex(h => h.id === q.id);
+  const rec = isRecall(q) && i >= 0 ? Object.assign({}, history[i], {isCorrect: ok, manual: true, typo: null})
+    : {id: q.id, userKeys: [], correctKeys: [], isCorrect: ok};
+  if (i >= 0) history[i] = rec; else history.push(rec);
+  nextQ();
+}
+
 function confirmAnswer() {
   if (!hasAnswer()) return;
   checked = true;
   const q = queue[idx];
+  if (isReveal(q)) { revealTask(q); return; }
   const rec = record(q);
   restoreState(rec);
   saveProgress();
   if (suddenDeath && !rec.isCorrect) {
-    setTimeout(() => { alert(`Konec hry. Správná odpověď: ${isInput(q) ? q.answer : rec.correctKeys.join(', ')}`); showResults(); }, 600);
+    setTimeout(() => { alert(`Konec hry. Správná odpověď: ${isInput(q) ? q.answer : letters(q, rec.correctKeys)}`); showResults(); }, 600);
   }
 }
 
@@ -995,7 +1108,10 @@ function restoreState(rec) {
   if (isInput(q)) {
     const inp = $('ans-input'); inp.value = rec.userKeys[0] || ''; inp.disabled = true;
     inp.classList.add(rec.isCorrect ? 'correct' : 'wrong');
-    fb.textContent = rec.isCorrect ? 'Správně' : `Špatně. Správně: ${q.answer}`;
+    if (isRecall(q)) fb.innerHTML = esc(rec.manual ? (rec.isCorrect ? 'Uznáno ručně' : 'Ručně označeno jako špatně')
+        : rec.typo ? `Správně, uznáno jako překlep (${rec.typo})` : rec.isCorrect ? 'Správně' : `Špatně. Správně: ${q.accept[0]}`) +
+      ` <button class="btn-end" onclick="gradeTask(${!rec.isCorrect})">${rec.isCorrect ? 'Označit jako špatně' : 'Uznat jako správně'}</button>`;
+    else fb.textContent = rec.isCorrect ? 'Správně' : `Špatně. Správně: ${q.answer}`;
   } else {
     const cs = new Set(rec.correctKeys), us = new Set(rec.userKeys);
     for (const l of Object.keys(q.options)) {
@@ -1005,7 +1121,7 @@ function restoreState(rec) {
       else if (us.has(l)) el.classList.add('wrong');
       else if (cs.has(l)) el.classList.add('missed');
     }
-    fb.textContent = rec.isCorrect ? 'Správně' : `Špatně. Správně: ${rec.correctKeys.join(', ')}`;
+    fb.textContent = rec.isCorrect ? 'Správně' : `Špatně. Správně: ${letters(q, rec.correctKeys)}`;
   }
   fb.className = 'feedback ' + (rec.isCorrect ? 'ok' : 'bad');
   showSolution(q);
@@ -1064,7 +1180,7 @@ function renderResults() {
     note.textContent = n && correct === n ? 'Bez chyby.' : 'Správně je 1, chybně 0.';
   }
   const wrongIds = new Set(history.filter(h => !h.isCorrect).map(h => h.id));
-  const wrongQ = FULL.filter(q => wrongIds.has(q.id));
+  const wrongQ = FULL.concat(RECALL).filter(q => wrongIds.has(q.id));
   const wb = $('btn-wrong');
   if (wrongQ.length && !suddenDeath) { wb.style.display = 'block'; wb.textContent = `Procvičit jen chyby (${wrongQ.length})`; wb._wrongQ = wrongQ; }
   else wb.style.display = 'none';
@@ -1092,7 +1208,7 @@ document.addEventListener('keydown', e => {
   else if (inField) return;
   else if (e.key === 'ArrowRight') { if (!$('btn-action').disabled) handleAction(); }
   else if (e.key === 'ArrowLeft') { if (!$('btn-prev').disabled) prevQ(); }
-  else { const k = e.key.toUpperCase(); if (/^[A-D]$/.test(k)) toggleOpt(k); }
+  else { const k = e.key.toUpperCase(), key = /^[A-D]$/.test(k) && (optOrder[queue[idx]?.id] || [])[LETTERS.indexOf(k)]; if (key) toggleOpt(key); }
 });
 $('rand-count').addEventListener('keydown', e => { if (e.key === 'Enter') startRandom(); if (e.key === 'Escape') closeModal(); });
 

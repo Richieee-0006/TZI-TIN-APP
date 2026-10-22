@@ -14,42 +14,74 @@ from pathlib import Path
 
 def ineq(a, b):
     """Tři zadání k (x > a) ⇒ (x > b), a > b: přímý, nepřímý, sporem (jako na cvičení pro a = 5, b = 3).
-    Tvar: (text, hint, answer, solution). Odpověď se píše ASCII (>, <=, =>, &), mezery se ignorují."""
+    Tvar: (zadání, podrobné řešení). Student počítá sám, řešení se odhalí tlačítkem."""
     return [
-        (f"Dokaž přímo: (x > {a}) ⇒ (x > {b}). Napiš řetězec nerovností od x k závěru.",
-         f"např. x>9>4", f"x>{a}>{b}",
-         f"Přímý důkaz vyjde z předpokladu x > {a}, využije {a} > {b} a dojde k x > {b}: x > {a} > {b}."),
-        (f"Dokaž nepřímo: (x > {a}) ⇒ (x > {b}). Napiš implikaci, kterou dokazuješ (obměnu).",
-         "např. x<=4=>x<=9 (<= je ≤, => je ⇒)", f"x<={b}=>x<={a}",
-         f"Vzorec x ⇒ y ⇔ ¬y ⇒ ¬x. ¬(x > {b}) je x ≤ {b} a ¬(x > {a}) je x ≤ {a}. Z x ≤ {b} ≤ {a} plyne x ≤ {a}."),
-        (f"Dokaž sporem: (x > {a}) ⇒ (x > {b}). Napiš předpoklad sporu (x ∧ ¬y).",
-         "např. x>9&x<=4 (& je ∧)", f"x>{a}&x<={b}",
-         f"Předpoklad je x ∧ ¬y, tedy x > {a} ∧ x ≤ {b}. Z x > {a} > {b} vyjde x > {b}, tedy x > {b} ∧ x ≤ {b}, spor."),
+        (f"Dokaž přímo: (x > {a}) ⇒ (x > {b}).",
+         f"Přímý důkaz: předpokládáme, že platí x > {a}, a po krocích dojdeme k x > {b}.\n"
+         f"1. Předpoklad: x > {a}.\n"
+         f"2. Číselná nerovnost {a} > {b} platí.\n"
+         f"3. Nerovnost je tranzitivní: z x > {a} a {a} > {b} plyne x > {b}.\n"
+         f"Zápis: (x > {a}) ∧ ({a} > {b}) ⇒ (x > {b}), tedy x > {a} > {b}. Hotovo."),
+        (f"Dokaž nepřímo: (x > {a}) ⇒ (x > {b}).",
+         f"Nepřímý důkaz: místo x ⇒ y dokážeme obměnu ¬y ⇒ ¬x (platí x ⇒ y ⇔ ¬y ⇒ ¬x).\n"
+         f"1. x je x > {a}, y je x > {b}.\n"
+         f"2. ¬y je x ≤ {b} a ¬x je x ≤ {a}.\n"
+         f"3. Dokazujeme obměnu: (x ≤ {b}) ⇒ (x ≤ {a}).\n"
+         f"4. Předpokládáme x ≤ {b}. Protože {b} ≤ {a}, plyne x ≤ {b} ≤ {a}, tedy x ≤ {a}.\n"
+         f"Zápis: (x ≤ {b}) ∧ ({b} ≤ {a}) ⇒ (x ≤ {a}). Obměna platí, tedy platí i původní implikace."),
+        (f"Dokaž sporem: (x > {a}) ⇒ (x > {b}).",
+         f"Důkaz sporem: předpokládáme, že implikace neplatí, tedy platí x ∧ ¬y, a odvodíme spor.\n"
+         f"1. Předpoklad sporu: x > {a} ∧ x ≤ {b}.\n"
+         f"2. Z x > {a} a {a} > {b} plyne x > {b}.\n"
+         f"3. Máme x > {b} ∧ x ≤ {b}, to je spor.\n"
+         f"4. Předpoklad sporu neplatí, takže implikace (x > {a}) ⇒ (x > {b}) platí."),
     ]
 
 
 X0 = [
-    ("Dokaž přímo: (x > 0) ⇒ (x + 2 > 2). K x > 0 přičti na obou stranách 2, napiš výsledek.",
-     "např. x+5>5", "x+2>2",
-     "Přičtením 2 k nerovnosti x > 0 vznikne x + 2 > 0 + 2 = 2. Dosazení jedné hodnoty nic nedokazuje."),
-    ("Dokaž nepřímo: (x > 0) ⇒ (x + 2 > 2). Napiš implikaci, kterou dokazuješ (obměnu).",
-     "např. x<=4=>x<=9 (<= je ≤, => je ⇒)", "x+2<=2=>x<=0",
-     "Obměna ¬y ⇒ ¬x. ¬(x + 2 > 2) je x + 2 ≤ 2 a ¬(x > 0) je x ≤ 0. Odečtením 2 z x + 2 ≤ 2 vyjde x ≤ 0."),
-    ("Dokaž sporem: (x > 0) ⇒ (x + 2 > 2). Napiš předpoklad sporu (x ∧ ¬y).",
-     "např. x>9&x<=4 (& je ∧)", "x>0&x+2<=2",
-     "Předpoklad x ∧ ¬y je x > 0 ∧ x + 2 ≤ 2. Odečtením 2 vyjde x ≤ 0, tedy x > 0 ∧ x ≤ 0, spor."),
+    ("Dokaž přímo: (x > 0) ⇒ (x + 2 > 2).",
+     "Přímý důkaz: předpokládáme x > 0 a dojdeme k x + 2 > 2.\n"
+     "1. Předpoklad: x > 0.\n"
+     "2. K oběma stranám přičteme 2 (nerovnost se nezmění): x + 2 > 0 + 2.\n"
+     "3. Tedy x + 2 > 2. Hotovo.\n"
+     "Dosazení jedné hodnoty (třeba x = 1) by nic nedokázalo, x je libovolné."),
+    ("Dokaž nepřímo: (x > 0) ⇒ (x + 2 > 2).",
+     "Nepřímý důkaz: dokážeme obměnu ¬y ⇒ ¬x.\n"
+     "1. x je x > 0, y je x + 2 > 2.\n"
+     "2. ¬y je x + 2 ≤ 2 a ¬x je x ≤ 0.\n"
+     "3. Dokazujeme obměnu: (x + 2 ≤ 2) ⇒ (x ≤ 0).\n"
+     "4. Předpokládáme x + 2 ≤ 2. Odečteme 2 od obou stran: x ≤ 0.\n"
+     "Obměna platí, tedy platí i původní implikace."),
+    ("Dokaž sporem: (x > 0) ⇒ (x + 2 > 2).",
+     "Důkaz sporem: předpokládáme x ∧ ¬y a odvodíme spor.\n"
+     "1. Předpoklad sporu: x > 0 ∧ x + 2 ≤ 2.\n"
+     "2. Z x + 2 ≤ 2 odečtením 2 plyne x ≤ 0.\n"
+     "3. Máme x > 0 ∧ x ≤ 0, to je spor.\n"
+     "4. Předpoklad sporu neplatí, takže implikace platí."),
 ]
 
 INDUKCE = [
-    ("Indukce, 1 + 2 + ... + n = n(n + 1)/2. V indukčním kroku k předpokladu pro k přičti k + 1. Napiš výsledný zlomek (pravá strana pro n = k + 1).",
-     "např. (k+1)(k+2)/2", "(k+1)(k+2)/2",
-     "Základní krok: n = 1, 1 = 1 · 2 / 2. Krok: k(k + 1)/2 + (k + 1) = (k + 1)(k + 2)/2, vzorec pro n = k + 1."),
-    ("Indukce, 1 + 3 + 5 + ... + (2n − 1) = n². V indukčním kroku k předpokladu pro k přičti 2k + 1. Napiš výsledek (pravá strana pro n = k + 1).",
-     "např. (k+1)^2", "(k+1)^2",
-     "Základní krok: n = 1, 1 = 1². Krok: k² + 2k + 1 = (k + 1)², vzorec pro n = k + 1."),
-    ("Indukce, 2 + 4 + 6 + ... + 2n = n(n + 1). V indukčním kroku k předpokladu pro k přičti 2(k + 1). Napiš výsledek (pravá strana pro n = k + 1).",
-     "např. (k+1)(k+2)", "(k+1)(k+2)",
-     "Základní krok: n = 1, 2 = 1 · 2. Krok: k(k + 1) + 2(k + 1) = (k + 1)(k + 2), vzorec pro n = k + 1."),
+    ("Dokaž indukcí: 1 + 2 + ... + n = n(n + 1)/2 pro všechna n ≥ 1.",
+     "1. Základní krok (n = 1): levá strana je 1, pravá 1 · 2 / 2 = 1. Platí.\n"
+     "2. Indukční předpoklad: pro nějaké k platí 1 + 2 + ... + k = k(k + 1)/2.\n"
+     "3. Indukční krok: chceme 1 + 2 + ... + k + (k + 1) = (k + 1)(k + 2)/2.\n"
+     "   Levá strana = k(k + 1)/2 + (k + 1)            (použili jsme předpoklad)\n"
+     "   = (k + 1) · (k/2 + 1) = (k + 1)(k + 2)/2.     (vytkli jsme k + 1)\n"
+     "To je pravá strana pro n = k + 1. Podle principu matematické indukce vzorec platí pro všechna n ≥ 1."),
+    ("Dokaž indukcí: 1 + 3 + 5 + ... + (2n − 1) = n² pro všechna n ≥ 1.",
+     "1. Základní krok (n = 1): levá strana je 1, pravá 1² = 1. Platí.\n"
+     "2. Indukční předpoklad: pro nějaké k platí 1 + 3 + ... + (2k − 1) = k².\n"
+     "3. Indukční krok: přidáme další člen 2(k + 1) − 1 = 2k + 1.\n"
+     "   Levá strana = k² + (2k + 1)                   (použili jsme předpoklad)\n"
+     "   = (k + 1)².                                   (vzorec (a + b)²)\n"
+     "To je pravá strana pro n = k + 1. Podle principu matematické indukce vzorec platí pro všechna n ≥ 1."),
+    ("Dokaž indukcí: 2 + 4 + 6 + ... + 2n = n(n + 1) pro všechna n ≥ 1.",
+     "1. Základní krok (n = 1): levá strana je 2, pravá 1 · 2 = 2. Platí.\n"
+     "2. Indukční předpoklad: pro nějaké k platí 2 + 4 + ... + 2k = k(k + 1).\n"
+     "3. Indukční krok: přidáme další člen 2(k + 1).\n"
+     "   Levá strana = k(k + 1) + 2(k + 1)             (použili jsme předpoklad)\n"
+     "   = (k + 1)(k + 2).                             (vytkli jsme k + 1)\n"
+     "To je pravá strana pro n = k + 1. Podle principu matematické indukce vzorec platí pro všechna n ≥ 1."),
 ]
 
 # pořadí: přímý ×3, nepřímý ×3, sporem ×3, indukce ×3
@@ -79,8 +111,8 @@ def self_check():
 
 def main():
     self_check()
-    qs = [{"type": "input", "text": t, "hint": h, "answer": a, "solution": sol}
-          for t, h, a, sol in TASKS]
+    # reveal: bez políčka na odpověď, řešení se odhalí tlačítkem (UI: isReveal)
+    qs = [{"type": "input", "reveal": True, "text": t, "solution": sol} for t, sol in TASKS]
     for i, q in enumerate(qs, 1):
         q["number"] = i
         q["id"] = f"2d-{i}"

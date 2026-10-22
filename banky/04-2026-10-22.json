@@ -1,0 +1,465 @@
+{
+ "title": "Rozklad, třídy ekvivalence a zobrazení",
+ "lecture": 4,
+ "date": "2026-10-22",
+ "questions": [
+  {
+   "type": "choice",
+   "text": "Jak je definován disjunktní rozklad množiny A?",
+   "options": {
+    "A": "systém podmnožin A, které jsou disjunktní, ale nemusí dát dohromady A",
+    "B": "systém neprázdných podmnožin A, jejichž sjednocením je A, ale mohou se překrývat",
+    "C": "systém neprázdných podmnožin A, jejichž sjednocením je A a každé dvě různé jsou disjunktní",
+    "D": "systém podmnožin A, jejichž průnikem je A"
+   },
+   "correct": [
+    "C"
+   ],
+   "explanation": "Rozklad (přednáška 22. 10.): a) A₁ ∪ … ∪ Aₙ = A a b) Aᵢ ∩ Aⱼ = ∅ pro i ≠ j. Podskupiny jsou neprázdné.",
+   "number": 1,
+   "id": "4-1"
+  },
+  {
+   "type": "choice",
+   "text": "Který systém je rozkladem množiny A = {1, 2, 3, 4, 5}?",
+   "options": {
+    "A": "{{1,2}, {2,3}, {4,5}}",
+    "B": "{{1,2}, {4,5}}",
+    "C": "{{1,2}, {3}, {4,5}}",
+    "D": "{{1,2}, {3}, {4,5}, ∅}"
+   },
+   "correct": [
+    "C"
+   ],
+   "explanation": "{{1,2},{2,3},{4,5}}: číslo 2 je ve dvou skupinách (překrývají se). {{1,2},{4,5}}: chybí 3 (sjednocení není A). {{1,2},{3},{4,5},∅} má prázdnou skupinu, ta v rozkladu být nesmí.",
+   "number": 2,
+   "id": "4-2"
+  },
+  {
+   "type": "choice",
+   "text": "Co říká podmínka b) u rozkladu, Aᵢ ∩ Aⱼ = ∅ pro i ≠ j?",
+   "options": {
+    "A": "sjednocení všech skupin je celá množina A",
+    "B": "každá skupina rozkladu má aspoň dva prvky",
+    "C": "žádné dvě různé skupiny rozkladu nemají společný prvek",
+    "D": "žádná skupina rozkladu není prázdná"
+   },
+   "correct": [
+    "C"
+   ],
+   "explanation": "b) = disjunktnost (nepřekrývání). Sjednocení je podmínka a), neprázdnost skupin patří do definice zvlášť.",
+   "number": 3,
+   "id": "4-3"
+  },
+  {
+   "type": "choice",
+   "text": "Která z množin je rozkladem M = {a, b, c, d, e, f}?",
+   "options": {
+    "A": "{{a,b}, {c,d}, {e}}",
+    "B": "{{a,b}, {c,e,f}, {a,b}}",
+    "C": "{{a,d}, {c,e,f}, {b}}",
+    "D": "{{a,b,c}, {d,f}}"
+   },
+   "correct": [
+    "C"
+   ],
+   "explanation": "Správně je {{a,d},{c,e,f},{b}} (skripta, s. 121). {{a,b},{c,e,f},{a,b}} opakuje {a,b} a chybí d. {{a,b,c},{d,f}} vynechává e. {{a,b},{c,d},{e}} vynechává f.",
+   "number": 4,
+   "id": "4-4"
+  },
+  {
+   "type": "choice",
+   "text": "Která trojice vlastností musí platit, aby relace byla ekvivalencí?",
+   "options": {
+    "A": "reflexivní, symetrická, tranzitivní",
+    "B": "antireflexivní, symetrická, tranzitivní",
+    "C": "symetrická, antisymetrická, tranzitivní",
+    "D": "reflexivní, antisymetrická, tranzitivní"
+   },
+   "correct": [
+    "A"
+   ],
+   "explanation": "Ekvivalence = reflexivní + symetrická + tranzitivní. Reflexivní, antisymetrická a tranzitivní je neostré uspořádání.",
+   "number": 5,
+   "id": "4-5"
+  },
+  {
+   "type": "choice",
+   "text": "Co tvoří jednu třídu ekvivalence?",
+   "options": {
+    "A": "všechny prvky celé množiny",
+    "B": "prvky, které spolu nejsou ekvivalentní",
+    "C": "libovolné dva prvky množiny",
+    "D": "všechny prvky, které jsou spolu navzájem ekvivalentní"
+   },
+   "correct": [
+    "D"
+   ],
+   "explanation": "Třídu ekvivalence tvoří prvky, které jsou spolu vždy ekvivalentní (a každý prvek ekvivalentní s nimi do třídy patří).",
+   "number": 6,
+   "id": "4-6"
+  },
+  {
+   "type": "choice",
+   "text": "Co říká podmínka 3) u třídy ekvivalence A′: x ∈ A′ ∧ x ∼ y ⇒ y ∈ A′?",
+   "options": {
+    "A": "každý prvek ekvivalentní s prvkem třídy patří do téže třídy",
+    "B": "třída A′ není prázdná",
+    "C": "každé dva prvky třídy jsou ekvivalentní",
+    "D": "třída A′ je podmnožinou A"
+   },
+   "correct": [
+    "A"
+   ],
+   "explanation": "Podmínka 3) znamená, že třídu nelze „rozšířit“: co je ekvivalentní s prvkem třídy, už v ní je. „Každé dva prvky třídy jsou ekvivalentní“ je podmínka 2), „A′ je podmnožinou A“ je podmínka 1).",
+   "number": 7,
+   "id": "4-7"
+  },
+  {
+   "type": "choice",
+   "text": "Jak souvisí relace ekvivalence a rozklad množiny?",
+   "options": {
+    "A": "rozklad určuje ekvivalenci jen u konečných množin",
+    "B": "ekvivalence nikdy nedá rozklad",
+    "C": "třídy ekvivalence tvoří rozklad a každý rozklad určuje ekvivalenci (prvky ve stejné třídě jsou ekvivalentní)",
+    "D": "třídy ekvivalence se mohou překrývat, rozklad ne"
+   },
+   "correct": [
+    "C"
+   ],
+   "explanation": "Skripta, s. 106 až 107: třídy ekvivalence tvoří rozklad a každý rozklad určuje relaci ekvivalence.",
+   "number": 8,
+   "id": "4-8"
+  },
+  {
+   "type": "choice",
+   "text": "Co je podílová (faktorová) množina A/∼?",
+   "options": {
+    "A": "největší třída ekvivalence",
+    "B": "množina všech prvků A",
+    "C": "množina všech dvojic ekvivalentních prvků",
+    "D": "množina všech tříd rozkladu (tříd ekvivalence) množiny A"
+   },
+   "correct": [
+    "D"
+   ],
+   "explanation": "A/∼ je množina, jejímiž prvky jsou třídy. Např. pro M = {1,…,8} a stejný zbytek po dělení 3 má 3 prvky, ačkoli M má 8 prvků. (Ve skriptech se jí říká faktorová množina, značí se M/E.)",
+   "number": 9,
+   "id": "4-9"
+  },
+  {
+   "type": "choice",
+   "text": "Co je zobrazení množiny M do množiny P?",
+   "options": {
+    "A": "předpis, který některým x nepřiřadí nic",
+    "B": "předpis, který každému prvku x z M přiřadí právě jeden prvek y z P",
+    "C": "předpis, který každému x z M přiřadí aspoň jeden prvek y z P",
+    "D": "libovolná relace mezi M a P"
+   },
+   "correct": [
+    "B"
+   ],
+   "explanation": "Zobrazení: ∀x ∈ M ∃! y ∈ P; x ↦ y. „Právě jeden“ je klíčové.",
+   "number": 10,
+   "id": "4-10"
+  },
+  {
+   "type": "choice",
+   "text": "Která relace je zobrazením množiny M = {1, 2, 3} do M (každé x ∈ M musí mít právě jeden obraz)?",
+   "options": {
+    "A": "{(1,1), (2,2)}",
+    "B": "{(1,2), (2,2), (3,1)}",
+    "C": "{(1,2), (1,3), (2,2), (3,1)}",
+    "D": "{(1,2), (2,3), (2,1), (3,3)}"
+   },
+   "correct": [
+    "B"
+   ],
+   "explanation": "Každé x ∈ M musí mít právě jeden obraz. V {(1,2), (1,3), (2,2), (3,1)} má 1 dva obrazy, v {(1,1), (2,2)} nemá obraz 3, v {(1,2), (2,3), (2,1), (3,3)} má 2 dva obrazy.",
+   "number": 11,
+   "id": "4-11"
+  },
+  {
+   "type": "choice",
+   "text": "Jak se nazývá x a y u zobrazení f(x) = y?",
+   "options": {
+    "A": "x i y jsou obrazy",
+    "B": "x je vzor prvku y, y je obraz prvku x",
+    "C": "x je obraz prvku y, y je vzor prvku x",
+    "D": "x je obor hodnot, y definiční obor"
+   },
+   "correct": [
+    "B"
+   ],
+   "explanation": "Rukopis: x se nazývá vzor prvku y, y se nazývá obraz prvku x.",
+   "number": 12,
+   "id": "4-12"
+  },
+  {
+   "type": "choice",
+   "text": "Co označují D_f a H_f u zobrazení f: M → P?",
+   "options": {
+    "A": "D_f = P a H_f = M",
+    "B": "D_f je obor hodnot, H_f je definiční obor",
+    "C": "D_f je definiční obor (D_f = M), H_f je obor hodnot (H_f ⊆ P)",
+    "D": "D_f i H_f jsou vždy rovno P"
+   },
+   "correct": [
+    "C"
+   ],
+   "explanation": "D_f = M (všechna x, která mají obraz), H_f ⊆ P (všechna y, která jsou něčím obrazem).",
+   "number": 13,
+   "id": "4-13"
+  },
+  {
+   "type": "choice",
+   "text": "Kdy je zobrazení f: M → P zobrazením na množinu P (surjektivní)?",
+   "options": {
+    "A": "když H_f je vlastní podmnožinou P",
+    "B": "když x₁ ≠ x₂ ⇒ f(x₁) ≠ f(x₂)",
+    "C": "když D_f = P",
+    "D": "když H_f = P"
+   },
+   "correct": [
+    "D"
+   ],
+   "explanation": "Na P: obor hodnot je celé P (každé y má aspoň jeden vzor). x₁ ≠ x₂ ⇒ f(x₁) ≠ f(x₂) je prosté zobrazení. H_f jako vlastní podmnožina P je zobrazení do P, které na P není.",
+   "number": 14,
+   "id": "4-14"
+  },
+  {
+   "type": "choice",
+   "text": "Kdy je zobrazení f prosté (injektivní)?",
+   "options": {
+    "A": "když x₁ ≠ x₂ ⇒ f(x₁) ≠ f(x₂)",
+    "B": "když H_f = P",
+    "C": "když D_f = P",
+    "D": "když x₁ = x₂ ⇒ f(x₁) ≠ f(x₂)"
+   },
+   "correct": [
+    "A"
+   ],
+   "explanation": "Prosté: různé prvky mají různé obrazy (žádné dvě šipky nekončí ve stejném bodě).",
+   "number": 15,
+   "id": "4-15"
+  },
+  {
+   "type": "choice",
+   "text": "Co je vzájemně jednoznačné zobrazení (bijekce)?",
+   "options": {
+    "A": "zobrazení, které je jen prosté",
+    "B": "zobrazení, které je prosté a zároveň na P (D_f = M, H_f = P)",
+    "C": "zobrazení, které je jen na P",
+    "D": "zobrazení, kde H_f je vlastní podmnožinou P"
+   },
+   "correct": [
+    "B"
+   ],
+   "explanation": "Bijekce = prosté + na. Pak má každé y ∈ P právě jeden vzor.",
+   "number": 16,
+   "id": "4-16"
+  },
+  {
+   "type": "choice",
+   "text": "Zobrazení f: {1,2,3} → {a,b,c,d} je dáno f(1) = a, f(2) = b, f(3) = c. Je:",
+   "options": {
+    "A": "prosté, ale není na",
+    "B": "na, ale není prosté",
+    "C": "není zobrazení",
+    "D": "prosté i na (bijekce)"
+   },
+   "correct": [
+    "A"
+   ],
+   "explanation": "Obrazy a, b, c jsou různé (prosté). Prvek d nemá vzor, takže f není na množinu {a,b,c,d}.",
+   "number": 17,
+   "id": "4-17"
+  },
+  {
+   "type": "choice",
+   "text": "Zobrazení f: {1,2,3,4} → {a,b} je dáno f(1) = f(2) = a, f(3) = f(4) = b. Je:",
+   "options": {
+    "A": "prosté, ale není na",
+    "B": "na, ale není prosté",
+    "C": "bijekce",
+    "D": "není ani na, ani prosté"
+   },
+   "correct": [
+    "B"
+   ],
+   "explanation": "Oba prvky a, b mají vzor (na). Ale f(1) = f(2) = a, takže různé prvky mají stejný obraz (není prosté).",
+   "number": 18,
+   "id": "4-18"
+  },
+  {
+   "type": "choice",
+   "text": "Kdy k zobrazení f existuje inverzní zobrazení f⁻¹?",
+   "options": {
+    "A": "když je f vzájemně jednoznačné (bijekce)",
+    "B": "vždy",
+    "C": "když D_f = H_f",
+    "D": "když je f jen zobrazením do P"
+   },
+   "correct": [
+    "A"
+   ],
+   "explanation": "Inverzní zobrazení existuje, když je f bijekce (prosté a na). Skripta: F je prosté ⇔ F⁻¹ je zobrazení.",
+   "number": 19,
+   "id": "4-19"
+  },
+  {
+   "type": "choice",
+   "text": "Co platí pro inverzní zobrazení f⁻¹?",
+   "options": {
+    "A": "D(f⁻¹) = D_f a H(f⁻¹) = H_f",
+    "B": "D(f⁻¹) = H_f a H(f⁻¹) = H_f",
+    "C": "D(f⁻¹) = H_f a H(f⁻¹) = D_f",
+    "D": "D(f⁻¹) = D_f a H(f⁻¹) = D_f"
+   },
+   "correct": [
+    "C"
+   ],
+   "explanation": "Šipky se otočí: kde zobrazení končilo (H_f), tam inverzní začíná, a naopak.",
+   "number": 20,
+   "id": "4-20"
+  },
+  {
+   "type": "choice",
+   "text": "Jak se zapíše f⁻¹(y) = x?",
+   "options": {
+    "A": "f⁻¹(y) = x ⇔ f(x) ≠ y",
+    "B": "f⁻¹(y) = x ⇔ f(x) = y",
+    "C": "f⁻¹(y) = x ⇔ f(y) = x",
+    "D": "f⁻¹(y) = 1/f(y)"
+   },
+   "correct": [
+    "B"
+   ],
+   "explanation": "Inverzní zobrazení jde po šipkách zpátky: co f pošle z x do y, to f⁻¹ pošle z y do x.",
+   "number": 21,
+   "id": "4-21"
+  },
+  {
+   "type": "choice",
+   "text": "Je dáno g: K → L a f: L → Q. Co je složené zobrazení f∘g (zápis z přednášky)?",
+   "options": {
+    "A": "f∘g: Q → K, (f∘g)(x) = f(g(x))",
+    "B": "f∘g: K → Q, (f∘g)(x) = f(g(x))",
+    "C": "f∘g: K → L, (f∘g)(x) = f(g(x))",
+    "D": "f∘g: K → Q, (f∘g)(x) = f(x) · g(x)"
+   },
+   "correct": [
+    "B"
+   ],
+   "explanation": "Nejdřív g (z K do L), pak f (z L do Q). Pozor: skripta (s. 118) mají pořadí opačné, F∘G(x) = G(F(x)); tady je to zápis z přednášky.",
+   "number": 22,
+   "id": "4-22"
+  },
+  {
+   "type": "choice",
+   "text": "Jak poznáš z grafu v rovině (x vodorovně, y svisle), že relace NENÍ zobrazení?",
+   "options": {
+    "A": "graf nemá žádný bod s x > 0",
+    "B": "nějaká svislá přímka protne graf ve dvou nebo více bodech (jedno x má víc hodnot y)",
+    "C": "graf je vodorovná přímka",
+    "D": "graf prochází počátkem"
+   },
+   "correct": [
+    "B"
+   ],
+   "explanation": "Zobrazení: každému x právě jedno y, tedy každá svislá přímka protne graf nejvýše jednou. Vodorovná přímka y = c je zobrazení (konstantní).",
+   "number": 23,
+   "id": "4-23"
+  },
+  {
+   "type": "input",
+   "text": "Kolik různých rozkladů má množina {1,2,3}?",
+   "hint": "číslo",
+   "answer": "5",
+   "solution": "Všech rozkladů množiny {1,2,3} je 5. (Pro 3 prvky: {{1,2,3}}, {{1,2},{3}}, {{1,3},{2}}, {{2,3},{1}}, {{1},{2},{3}}.)",
+   "number": 24,
+   "id": "4-24"
+  },
+  {
+   "type": "input",
+   "text": "Kolik různých rozkladů má množina {1,2,3,4}?",
+   "hint": "číslo",
+   "answer": "15",
+   "solution": "Všech rozkladů množiny {1,2,3,4} je 15 (spočítáno výčtem).",
+   "number": 25,
+   "id": "4-25"
+  },
+  {
+   "type": "input",
+   "text": "M = {1,…,8}, relace: stejný zbytek po dělení 3. Napiš třídu prvku 1 (prvky vzestupně bez mezer).",
+   "hint": "např. 147",
+   "answer": "147",
+   "solution": "třídy: {1,4,7}; {2,5,8}; {3,6}\ntřída prvku 1: {1,4,7}",
+   "number": 26,
+   "id": "4-26"
+  },
+  {
+   "type": "input",
+   "text": "M = {1,…,9}, relace: stejný zbytek po dělení 4. Napiš třídu prvku 2 (prvky vzestupně bez mezer).",
+   "hint": "např. 147",
+   "answer": "26",
+   "solution": "třídy: {1,5,9}; {2,6}; {3,7}; {4,8}\ntřída prvku 2: {2,6}",
+   "number": 27,
+   "id": "4-27"
+  },
+  {
+   "type": "input",
+   "text": "M = {1,…,9}, relace: stejný zbytek po dělení 3. Napiš třídu prvku 5 (prvky vzestupně bez mezer).",
+   "hint": "např. 147",
+   "answer": "258",
+   "solution": "třídy: {1,4,7}; {2,5,8}; {3,6,9}\ntřída prvku 5: {2,5,8}",
+   "number": 28,
+   "id": "4-28"
+  },
+  {
+   "type": "input",
+   "text": "M = {1,…,20}, relace: stejný zbytek po dělení 4. Kolik prvků má podílová množina M/∼?",
+   "hint": "číslo",
+   "answer": "4",
+   "solution": "Třídy odpovídají zbytkům 0, 1, 2, 3, tedy M/∼ má 4 prvky (tříd, ne čísel z M).",
+   "number": 29,
+   "id": "4-29"
+  },
+  {
+   "type": "input",
+   "text": "f: {1,2,3,4,5} → {a,b,c,d}, f(1) = a, f(2) = a, f(3) = c, f(4) = c, f(5) = b. Kolik prvků má obor hodnot H_f?",
+   "hint": "číslo",
+   "answer": "3",
+   "solution": "H_f = {a,b,c}, tedy 3 prvky. Prvek d nemá vzor, takže f není na množinu {a,b,c,d}.",
+   "number": 30,
+   "id": "4-30"
+  },
+  {
+   "type": "input",
+   "text": "f: {1,2,3} → {2,4,6}, f(x) = 2x, je bijekce. Kolik je f⁻¹(4)?",
+   "hint": "číslo",
+   "answer": "2",
+   "solution": "f⁻¹(4) = x ⇔ f(x) = 4. Z 2x = 4 plyne x = 2, tedy f⁻¹(4) = 2.",
+   "number": 31,
+   "id": "4-31"
+  },
+  {
+   "type": "input",
+   "text": "g(x) = x + 1, f(y) = 2y. Kolik je (f∘g)(3), kde (f∘g)(x) = f(g(x))?",
+   "hint": "číslo",
+   "answer": "8",
+   "solution": "Nejdřív g: g(3) = 4. Pak f: f(4) = 8. Tedy (f∘g)(3) = 8.",
+   "number": 32,
+   "id": "4-32"
+  },
+  {
+   "type": "input",
+   "text": "g(x) = x + 1, f(y) = 2y. Kolik je (g∘f)(3), kde (g∘f)(x) = g(f(x))?",
+   "hint": "číslo",
+   "answer": "7",
+   "solution": "Nejdřív f: f(3) = 6. Pak g: g(6) = 7. Tedy (g∘f)(3) = 7, což je jiné než (f∘g)(3) = 8. Na pořadí záleží.",
+   "number": 33,
+   "id": "4-33"
+  }
+ ]
+}

@@ -22,6 +22,7 @@ from urllib.parse import parse_qs, urlparse
 
 BASE = Path(__file__).resolve().parent
 BANKS = BASE / "banky"
+RECALL_DIR = BANKS / "doplnovacka"  # otázky typu recall; běžné režimy čtou jen banky/*.json, tyhle nevidí
 PROGRESS_FILE = BASE / "progress.json"
 PORT = 5051
 ALL = "_all"
@@ -56,6 +57,12 @@ def load_questions(source):
     if source == ALL:
         return [q for d in banks.values() for q in d["questions"]]
     return banks[source]["questions"]
+
+
+def load_recall():
+    """Otázky pro režim Doplňovačka ze všech bank v banky/doplnovacka/."""
+    return [q for p in sorted(RECALL_DIR.glob("*.json"))
+            for q in json.loads(p.read_text(encoding="utf-8"))["questions"]]
 
 
 def load_progress():
@@ -154,6 +161,11 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(load_questions(source))
             except (KeyError, OSError, ValueError) as e:
                 return self._json({"error": str(e)}, 404)
+        if u.path == "/api/recall":
+            try:
+                return self._json(load_recall())
+            except (KeyError, OSError, ValueError) as e:
+                return self._json({"error": str(e)}, 500)
         if u.path == "/api/progress":
             with lock:
                 d = load_progress()

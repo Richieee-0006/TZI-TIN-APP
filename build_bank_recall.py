@@ -1,0 +1,358 @@
+#!/usr/bin/env python3
+"""Vygeneruje banku pro režim „Doplňovačka (na paměť)“ do banky/doplnovacka/.
+
+Deklarace využití AI: vytvořeno s pomocí nástroje Claude Opus 5.5 (Anthropic, 2026),
+uvedeno v souladu se Směrnicí rektora UJEP č. 7/2026 (dobrovolně).
+
+Otázky typu recall: odpověď se píše z hlavy, bez možností ABCD. accept = uznávané varianty
+(první je kanonická), words = očekávaný počet slov kanonické odpovědi (číslo nebo "1-2"),
+category = tematická kategorie napříč přednáškami. Velká/malá písmena, diakritiku a interpunkci
+sjednocuje UI, proto se varianty bez diakritiky nepíšou zvlášť.
+Obsah vychází z výpisků přednášek 1 až 4 (vault TZI1: Prednasky/*.md, Glosar.md) a z bank 1 až 4.
+Kde se zdroje liší (podílová × faktorová množina, spočetná × spočetně nekonečná, slabá
+antisymetrie, neostré uspořádání), uznávají se obě varianty. Teorii kontrolovat proti sylabu KI/TIN.
+Banka je v podsložce, běžné režimy (banky/*.json) ji vůbec nenačtou.
+Spuštění:  python3 build_bank_recall.py
+"""
+import json
+from math import comb, factorial
+from pathlib import Path
+
+
+def q(text, accept, words, explanation):
+    return {"text": text, "accept": accept, "words": words, "explanation": explanation}
+
+
+P1, P2, P3, P4 = "Přednáška 1. 10.", "Přednáška 8. 10.", "Přednáška 15. 10.", "Přednáška 22. 10."
+
+CATS = [
+    ("Matematický zápis", [
+        q("Co označuje symbol ℕ?", ["přirozená čísla", "přirozená", "množina přirozených čísel",
+          "obor přirozených čísel", "natural numbers"], 2,
+          f"ℕ jsou přirozená čísla (na přednášce 0, 1, 2, 3, …). Platí ℕ ⊂ ℤ ⊂ ℚ ⊂ ℝ ⊂ ℂ. {P1}"),
+        q("Co označuje symbol ℤ?", ["celá čísla", "celá", "množina celých čísel", "obor celých čísel",
+          "integers"], 2, f"ℤ jsou celá čísla (…, −2, −1, 0, 1, 2, …). {P1}"),
+        q("Co označuje symbol ℚ?", ["racionální čísla", "racionální", "množina racionálních čísel",
+          "obor racionálních čísel", "zlomky", "rational numbers"], 2,
+          f"ℚ jsou racionální čísla (ve výpiscích „zlomky“, např. 1/2, −3/4, 5). {P1}"),
+        q("Co označuje symbol ℝ?", ["reálná čísla", "reálná", "množina reálných čísel", "obor reálných čísel",
+          "real numbers"], 2, f"ℝ jsou reálná čísla, všechna čísla na ose, i √2 a π. {P1}"),
+        q("Co označuje symbol ℂ?", ["komplexní čísla", "komplexní", "množina komplexních čísel",
+          "obor komplexních čísel", "complex numbers"], 2, f"ℂ jsou komplexní čísla tvaru a + ib. {P1}"),
+        q("Jak se nazývá n! = 1 · 2 · 3 · … · n?", ["faktoriál", "n faktoriál", "faktoriál n", "factorial"], 1,
+          f"n! je faktoriál, 0! = 1. {P1}"),
+        q("Kolik je 0! (nula faktoriál)?", [str(factorial(0)), "jedna"], 1, f"0! = 1. {P1}"),
+        q("Co znamená symbol Σ v zápisu Σ_(i=1)^n a_i?", ["součet", "suma", "sumace", "sum"], 1,
+          f"Σ_(i=1)^n a_i = a_1 + a_2 + … + a_n je součet. {P1}"),
+        q("Co znamená symbol Π v zápisu Π_(i=1)^n a_i?", ["součin", "produkt", "product"], 1,
+          f"Π_(i=1)^n a_i = a_1 · a_2 · … · a_n je součin. {P1}"),
+        q("Jak se nazývá |x|, např. |−5| = 5?", ["absolutní hodnota", "absolutní hodnota x", "absolute value"], 2,
+          f"|5| = 5 a |−5| = 5: absolutní hodnota. {P1}"),
+    ]),
+    ("Číselné soustavy", [
+        q("Jak se nazývá číselná soustava, která není charakterizovaná základem (např. římská)?",
+          ["nepoziční", "nepoziční soustava", "nepoziční číselná soustava"], 1,
+          f"Soustavy jsou poziční (mají základ Z > 1) a nepoziční (základ nemají), např. římská. {P1}"),
+        q("Uveď příklad nepoziční číselné soustavy.", ["římská", "římská soustava", "římská číselná soustava",
+          "římské číslice", "římská čísla"], 1, f"Římská soustava (I, II, III, IV, V, VI, …) je nepoziční. {P1}"),
+        q("Jak se nazývá číslo Z > 1, které charakterizuje poziční soustavu?", ["základ", "základ soustavy",
+          "základ číselné soustavy", "báze", "radix", "base"], 1,
+          f"Základ Z udává maximální počet číslic, které jsou v soustavě k dispozici. {P1}"),
+        q("Jak se nazývají znaky, ze kterých se tvoří čísla dané soustavy?", ["číslice", "cifry", "cifra",
+          "číslice soustavy", "digits", "digit"], 1,
+          f"Čísla se tvoří z uspořádaných souborů znaků, které se nazývají číslice (cifry). {P1}"),
+        q("Jak se jinak nazývá osmičková soustava?", ["oktalová", "oktalová soustava", "oktální",
+          "oktální soustava", "octal"], 1, f"Z = 8, číslice 0 až 7: osmičková (oktalová). {P1}"),
+        q("Jak se jinak nazývá desítková soustava?", ["dekadická", "dekadická soustava", "decimální",
+          "decimální soustava", "decimal"], 1, f"Z = 10, číslice 0 až 9: desítková (dekadická). {P1}"),
+        q("Jak se jinak nazývá šestnáctková soustava?", ["hexadecimální", "hexadecimální soustava", "hexa",
+          "hex", "hexadecimal"], 1, f"Z = 16, číslice 0 až 9 a A až F: šestnáctková (hexadecimální). {P1}"),
+        q("Jakou hodnotu má hexadecimální číslice F (v desítkové soustavě)?", [str(int("F", 16)), "patnáct"], 1,
+          f"A = 10, B = 11, C = 12, D = 13, E = 14, F = 15. {P1}"),
+        q("Kolik bitů odpovídá jedné šestnáctkové (hexadecimální) číslici?", ["4", "čtyři", "4 bity",
+          "čtyři bity"], 1, f"16 = 2^4, proto se při převodu 2 ↔ 16 dělí po čtveřicích bitů (váhy 8 4 2 1). {P1}"),
+        q("Převod z desítkové soustavy opakovaným dělením základem: v jakém pořadí se čtou zbytky?",
+          ["zdola nahoru", "odspodu nahoru", "zespodu nahoru", "odspoda nahoru", "zespoda nahoru",
+           "od spodu nahoru", "v opačném pořadí", "pozpátku", "od posledního k prvnímu"], 2,
+          f"Dělím celočíselně základem a zbytky čtu zdola nahoru, např. (26)_10 = (11010)_2. {P1}"),
+        q("Přes kterou soustavu se ve výpiscích převádí osmičková soustava na šestnáctkovou?",
+          ["dvojkovou", "dvojková", "přes dvojkovou", "dvojková soustava", "přes dvojkovou soustavu",
+           "oklikou přes dvojkovou", "binární", "přes binární", "binární soustava", "přes binární soustavu"], "1-2",
+          f"8 ↔ 16 oklikou přes dvojkovou: osmičkové číslice na trojice bitů, pak po čtveřicích zprava. {P1}"),
+        q("Kolik je 1 + 1 ve dvojkové soustavě (výsledek zapiš dvojkově)?", [bin(1 + 1)[2:]], 1,
+          f"1 + 1 = (10)_2: zapíšu 0 a 1 přenesu do vyššího řádu. {P1}"),
+        q("Jak se nazývá jednička, kterou při sčítání 1 + 1 ve dvojkové soustavě posunu do vyššího řádu?",
+          ["přenos", "carry"], 1, f"V tabulce sčítání je u 1 + 1 výsledek 0 a přenos 1. {P1}"),
+    ]),
+    ("Symboly a logika", [
+        q("Co je to za symbol: ∨ ?", ["disjunkce", "OR", "nebo", "logické nebo", "logický součet",
+          "logická disjunkce"], "1-2",
+          f"x ∨ y je disjunkce, čteme „x nebo y“; pravdivá, když je pravdivý aspoň jeden výrok. {P2}"),
+        q("Co je to za symbol: ∧ ?", ["konjunkce", "AND", "a", "a zároveň", "logické a", "logický součin",
+          "logická konjunkce"], "1-2",
+          f"x ∧ y je konjunkce, čteme „x a zároveň y“; pravdivá, když jsou pravdivé oba výroky. {P2}"),
+        q("Co je to za symbol: ¬ ?", ["negace", "NOT", "ne", "není pravda, že", "logická negace", "non"], 1,
+          f"¬x je negace, čteme „není pravda, že x“; obrací pravdivostní hodnotu. {P2}"),
+        q("Co je to za symbol: ⇒ ?", ["implikace", "logická implikace", "jestliže … pak", "jestliže x pak y",
+          "když … pak", "plyne", "z toho plyne", "implies"], 1,
+          f"x ⇒ y je implikace, čteme „jestliže x, pak y“; nepravdivá jen pro x = 1, y = 0. {P2}"),
+        q("Co je to za symbol: ⇔ ?", ["ekvivalence", "logická ekvivalence", "právě tehdy, když", "právě když",
+          "tehdy a jen tehdy, když", "tehdy a jen tehdy", "iff"], 1,
+          f"x ⇔ y je ekvivalence, čteme „x právě tehdy, když y“; pravdivá, když mají x a y stejnou hodnotu. {P2}"),
+        q("Co je to za symbol: ∀ ?", ["obecný kvantifikátor", "pro každé", "pro všechna", "pro všechny",
+          "velký kvantifikátor", "univerzální kvantifikátor", "for all"], 2,
+          f"∀ je obecný (velký) kvantifikátor, čteme „pro každé / pro všechna“, např. ∀x ∈ ℝ; x² ≥ 0. {P2}"),
+        q("Co je to za symbol: ∃ ?", ["existenční kvantifikátor", "existuje", "existuje aspoň jedno",
+          "existuje alespoň jedno", "existuje aspoň jeden", "existuje alespoň jeden", "malý kvantifikátor",
+          "exists", "there exists"], "1-2",
+          f"∃ je existenční kvantifikátor, čteme „existuje (aspoň jedno)“, např. ∃x ∈ ℝ; x > 5. {P2}"),
+        q("Co znamená zápis ∃! ?", ["existuje právě jedno", "existuje právě jeden", "existuje právě jedna",
+          "existuje jediné", "existuje jediný", "existuje jediná", "kvantifikátor jednoznačné existence",
+          "jednoznačná existence"], 3, f"∃! čteme „existuje právě jedno“, např. ∃! x ∈ ℝ; x = 5. {P2}"),
+        q("Jak se nazývá ¬y ⇒ ¬x vzhledem k implikaci x ⇒ y?", ["obměna", "obměna implikace", "kontrapozice",
+          "kontrapozice implikace"], 1,
+          f"¬y ⇒ ¬x je obměna implikace x ⇒ y; obě mají vždy stejnou pravdivostní hodnotu. {P2}"),
+        q("Jak se nazývá y ⇒ x vzhledem k implikaci x ⇒ y?", ["obrácení", "obrácení implikace",
+          "obrácená implikace", "obrácená"], "1-2",
+          f"y ⇒ x je obrácení (obrácená implikace); na rozdíl od obměny nemusí mít stejnou hodnotu jako x ⇒ y. {P2}"),
+        q("Jak se nazývá výroková formule, která je po dosazení výroků jakýchkoli pravdivostních hodnot "
+          "vždy pravdivá?", ["tautologie"], 1, f"Tautologie, např. x ∨ ¬x nebo (x ⇒ y) ≡ (¬y ⇒ ¬x). {P2}"),
+        q("Jak se nazývá zápis z písmen, logických spojek a závorek, ze kterého se po dosazení výroků za "
+          "písmena stane výrok?", ["výroková formule", "formule"], 2,
+          f"Výroková formule, např. (x ∧ ¬y) ⇒ z. Neplést s výrokovou formou (věta s proměnnou). {P2}"),
+        q("Jak se nazývá věta s proměnnou, např. V(x): x > 0, která se stane výrokem až po dosazení?",
+          ["výroková forma", "forma"], 2,
+          f"Výroková forma obsahuje proměnnou, značí se V(x), V(x, y). Neplést s výrokovou formulí. {P2}"),
+        q("Jak se nazývá podmnožina definičního oboru výrokové formy V(x), pro jejíž prvky c je V(c) "
+          "pravdivý výrok?", ["obor pravdivosti"], 2,
+          "Obor pravdivosti (pro √x = 5 je to {25}). V definičním oboru stačí, aby V(c) byl výrok. "
+          "Výpisky 8. 10."),
+        q("Jak se nazývají pravidla ¬(x ∧ y) ≡ ¬x ∨ ¬y a ¬(x ∨ y) ≡ ¬x ∧ ¬y?", ["De Morganovy zákony",
+          "De Morganův zákon", "De Morganova pravidla", "De Morganovo pravidlo", "De Morgan"], 3,
+          "De Morganovy zákony: negace „a“ je „nebo“ z negací a naopak. První zákon byl úkol "
+          "z přednášky 8. 10. (důkaz tabulkou)."),
+    ]),
+    ("Důkazy a výstavba matematiky", [
+        q("Jak se nazývá důkaz implikace x ⇒ y řetězem implikací x ⇒ y₁, y₁ ⇒ y₂, …, yₙ ⇒ y?",
+          ["přímý důkaz", "přímý", "přímo"], 2, f"Přímý důkaz: z předpokladu x se po krocích dojde k y. {P2}"),
+        q("Jak se nazývá důkaz, při kterém místo x ⇒ y dokážeme ¬y ⇒ ¬x?", ["nepřímý důkaz", "nepřímý",
+          "nepřímo", "důkaz obměnou", "obměnou", "důkaz kontrapozicí", "kontrapozicí"], 2,
+          f"Nepřímý důkaz dokazuje obměnu ¬y ⇒ ¬x, která má stejnou pravdivostní hodnotu jako x ⇒ y. {P2}"),
+        q("Jak se nazývá důkaz, při kterém předpokládáme x ∧ ¬y a odvodíme nepravdivé tvrzení Z?",
+          ["důkaz sporem", "sporem", "spor", "reductio ad absurdum"], 2,
+          f"Důkaz sporem: (x ∧ ¬y) ⇒ Z, kde Z je nepravda; předpoklad tedy neplatí a x ⇒ y platí. {P2}"),
+        q("Jak se nazývá důkaz tvrzení pro všechna n ≥ n₀ pomocí základního a indukčního kroku?",
+          ["matematická indukce", "indukce", "důkaz matematickou indukcí", "matematickou indukcí",
+           "důkaz indukcí", "indukcí"], 2,
+          f"Matematická indukce: ověří se φ(n₀) a dokáže se φ(k) ⇒ φ(k+1). {P3}"),
+        q("Jak se v matematické indukci nazývá krok, ve kterém ověříme φ(n₀)?", ["základní krok", "základ",
+          "základ indukce"], 2, f"Základní krok φ(n₀), potom indukční krok φ(k) ⇒ φ(k+1). {P3}"),
+        q("Jak se v matematické indukci nazývá krok, ve kterém dokazujeme φ(k) ⇒ φ(k+1)?", ["indukční krok"], 2,
+          f"Indukční krok: z platnosti φ(k) se dokáže φ(k+1). {P3}"),
+        q("Jak se v matematické indukci nazývá předpoklad, že φ(k) platí pro nějaké pevné k?",
+          ["indukční předpoklad"], 2,
+          "Indukční předpoklad: φ(k) platí, z něj se v indukčním kroku dokáže φ(k+1). "
+          "Výpisky 8. 10. (podle učebního textu Přibyl, Tichá)."),
+        q("Co musíme dokázat, když dokazujeme ekvivalenci x ⇔ y?", ["obě implikace", "dvě implikace",
+          "obě implikace x ⇒ y a y ⇒ x", "implikaci tam i zpět", "oba směry"], 2,
+          f"(x ⇔ y) ⇔ (x ⇒ y) ∧ (y ⇒ x): dokazují se obě implikace. {P2}"),
+        q("Jak se nazývá tvrzení, jehož platnost předpokládáme a nedokazujeme?", ["axiom"], 1,
+          f"Na počátku logické výstavby matematiky jsou axiomy; předpokládáme, že platí. {P2}"),
+        q("Jak se nazývá pojem z axiomů, který nedefinujeme (např. bod, přímka, čas)?", ["primitivní pojem",
+          "primitivní pojmy", "primitivní"], 2, f"Primitivní pojmy se nedefinují, jsou výchozí. {P2}"),
+        q("Jak se nazývá pravdivý výrok, který lze odvodit pravidly logiky z axiomů nebo z dříve dokázaných "
+          "tvrzení?", ["věta", "matematická věta", "teorém"], 1,
+          f"Věta je pravdivý výrok odvoditelný z axiomů nebo z vět již dokázaných; věty se zpravidla dokazují. {P2}"),
+        q("Jak se nazývá věta, která se dokazuje, ale slouží spíš jako pomocná pro důkaz dalších vět?",
+          ["lemma", "pomocná věta"], 1, f"Lemma; rozdíl proti větě je často nevýrazný. {P2}"),
+        q("Čím se zavádějí další pojmy, např. rychlost nebo zrychlení?", ["definice", "definicí", "definicemi",
+          "pomocí definic", "pomocí definice"], 1,
+          f"Další pojmy se zavádějí definicemi (definice rychlosti, zrychlení). {P2}"),
+    ]),
+    ("Množiny", [
+        q("Jak se nazývá množina, která neobsahuje žádný prvek?", ["prázdná množina", "prázdná", "empty set"], 2,
+          f"Prázdná množina ∅. {P3}"),
+        q("Jak se nazývá vztah X ⊆ Y, tedy a ∈ X ⇒ a ∈ Y?", ["podmnožina", "inkluze", "X je podmnožinou Y",
+          "je podmnožinou", "X je podmnožina Y", "subset"], 1,
+          f"X ⊆ Y: X je podmnožinou Y (inkluze), definice implikací; rovnost připouští. {P3}"),
+        q("Jak se nazývá X, pokud X ⊆ Y a zároveň X ≠ Y?", ["vlastní podmnožina", "vlastní podmnožina Y",
+          "X je vlastní podmnožinou Y", "je vlastní podmnožinou", "proper subset"], 2,
+          "Vlastní podmnožina rovnost nepřipouští (na přednášce X ⊂ Y; jinde se značí X ⊊ Y, proto se ptám "
+          f"definicí). {P3}"),
+        q("Jak se nazývá množina prvků, které patří do A i do B (A ∩ B)?", ["průnik", "průnik množin",
+          "průnik A a B", "průnik množin A a B", "intersection"], 1, f"x ∈ A ∩ B ⇔ x ∈ A ∧ x ∈ B. {P3}"),
+        q("Jak se nazývá množina prvků, které patří do A nebo do B (A ∪ B)?", ["sjednocení", "sjednocení množin",
+          "sjednocení A a B", "sjednocení množin A a B", "union"], 1, f"x ∈ A ∪ B ⇔ x ∈ A ∨ x ∈ B. {P3}"),
+        q("Jak se nazývá A ∖ B, tedy prvky A, které neleží v B?", ["rozdíl", "rozdíl množin", "množinový rozdíl",
+          "rozdíl A a B", "rozdíl množin A a B", "A mínus B", "difference"], 1,
+          f"x ∈ A ∖ B ⇔ x ∈ A ∧ x ∉ B. {P3}"),
+        q("Jak se nazývá A′, tedy prvky univerza U, které nepatří do A?", ["doplněk", "doplněk množiny",
+          "doplněk množiny A", "doplněk A", "komplement", "complement"], 1,
+          f"x ∈ A′ ⇔ x ∈ U ∧ x ∉ A. {P3}"),
+        q("Jak se nazývá množina U všech uvažovaných prvků, jejíž podmnožinou je každá množina, se kterou "
+          "pracujeme?", ["univerzum", "universum", "univerzální množina"], 1, f"Univerzum U, A ⊆ U. {P3}"),
+        q("Jak se nazývají množiny A, B, pro které A ∩ B = ∅?", ["disjunktní", "disjunktní množiny",
+          "navzájem disjunktní", "disjoint"], 1, f"Disjunktní množiny nemají žádný společný prvek. {P3}"),
+        q("Jak se nazývá množina všech podmnožin množiny A, značená P(A) nebo Pot(A)?", ["potenční množina",
+          "potenční", "potenční množina A", "power set"], 2, f"Potenční množina, |Pot(A)| = 2^n. {P3}"),
+        q("Kolik prvků má potenční množina množiny {a, b, c}?", [str(2 ** len("abc")), "osm"], 1,
+          f"|Pot(A)| = 2^n, pro n = 3 je to 8 (od ∅ po {{a, b, c}}). {P3}"),
+        q("Jak se nazývá množina všech uspořádaných dvojic (x, y), kde x ∈ A a y ∈ B?", ["kartézský součin",
+          "kartézský součin A a B", "kartézský součin množin", "kartézský součin množin A a B", "A krát B",
+          "cartesian product"], 2, f"Kartézský součin A × B = {{(x, y) ; x ∈ A ∧ y ∈ B}}. {P3}"),
+        q("Jak se podle přednášky nazývá množina, mezi kterou a ℕ existuje vzájemně jednoznačné zobrazení?",
+          ["spočetná", "spočetná množina", "spočetně nekonečná", "spočetně nekonečná množina",
+           "nekonečně spočetná"], 1,
+          "Spočetná: prvky jde očíslovat přirozenými čísly. Někteří autoři řadí mezi spočetné i konečné "
+          f"množiny a tuto nazývají spočetně nekonečná, proto se uznává obojí. {P3}"),
+        q("Která z množin ℕ, ℤ, ℝ je nespočetná?", ["ℝ", "R", "reálná čísla", "množina reálných čísel",
+          "reálná"], 1, "ℝ je nekonečná, ale nespočetná (nejde očíslovat); ℕ a ℤ jsou spočetné. Výpisky 15. 10."),
+    ]),
+    ("Relace", [
+        q("Jak se nazývá podmnožina kartézského součinu A × B?", ["relace", "binární relace",
+          "relace mezi A a B", "relation"], 1,
+          f"Relace mezi prvky A a B je podmnožina A × B (nebo pravidlo, které o každé dvojici určí, "
+          f"zda je v relaci). {P3}"),
+        q("Jak se nazývá vlastnost relace R na A: ∀x ∈ A; xRx?", ["reflexivní", "reflexivita",
+          "reflexivní relace", "reflexive"], 1, f"Reflexivní, např. x = x. {P3}"),
+        q("Jak se nazývá vlastnost relace: xRy ⇒ yRx?", ["symetrická", "symetrie", "symetrická relace",
+          "symmetric"], 1, f"Symetrická, např. x = y ⇒ y = x. {P3}"),
+        q("Jak se nazývá vlastnost relace: xRy ∧ yRz ⇒ xRz?", ["tranzitivní", "tranzitivita",
+          "tranzitivní relace", "transitive"], 1, f"Tranzitivní, např. x > y ∧ y > z ⇒ x > z. {P3}"),
+        q("Jak se nazývá vlastnost relace: xRy ∧ yRx ⇒ x = y?", ["antisymetrická", "antisymetrie",
+          "slabě antisymetrická", "slabá antisymetrie", "antisymetrická relace", "antisymmetric"], 1,
+          f"Antisymetrická (učebnice Přibyl, Tichá: slabá antisymetrie), např. ≤. {P3}"),
+        q("Jak se nazývá relace, která je reflexivní, symetrická a tranzitivní?", ["ekvivalence",
+          "relace ekvivalence", "equivalence", "equivalence relation"], 1,
+          f"Relace ekvivalence (na stejné množině), např. = nebo „stejný zbytek po dělení 3“. {P3}"),
+        q("Jak se podle učebnice (Přibyl, Tichá) nazývá relace reflexivní, antisymetrická a tranzitivní, "
+          "např. ≤?", ["neostré uspořádání", "uspořádání", "relace uspořádání", "částečné uspořádání",
+          "neostré"], 2,
+          "Neostré uspořádání (učebnice, s. 107). Tištěná poznámka z přednášky uvádí u uspořádání jen "
+          "„tranzitivní a antisymetrická“. Výpisky 15. 10."),
+        q("Jak se podle učebnice (Přibyl, Tichá) nazývá relace antireflexivní, antisymetrická a tranzitivní, "
+          "např. <?", ["ostré uspořádání", "ostré"], 2, "Ostré uspořádání (učebnice, s. 107). Výpisky 15. 10."),
+        q("Jak se nazývá vlastnost relace, kdy žádný prvek není v relaci sám se sebou?", ["antireflexivní",
+          "antireflexivita", "ireflexivní", "irreflexive"], 1,
+          "Antireflexivní: ∀x; (x, x) ∉ R, např. <. Učebnice Přibyl, Tichá (výpisky 15. 10.)."),
+        q("Jak se nazývá systém neprázdných podmnožin A, které jsou po dvou disjunktní a jejich sjednocením "
+          "je A?", ["disjunktní rozklad", "rozklad", "rozklad množiny", "rozklad množiny A",
+          "disjunktní rozklad množiny A", "partition"], "1-2",
+          f"Disjunktní rozklad: a) sjednocením je A, b) každé dvě různé části jsou disjunktní. {P4}"),
+        q("Jak se nazývá skupina všech prvků, které jsou spolu navzájem ekvivalentní?", ["třída ekvivalence",
+          "třída", "ekvivalenční třída", "třída rozkladu"], 2,
+          f"Třída ekvivalence; třídy ekvivalence tvoří rozklad množiny. {P4}"),
+        q("Jak se nazývá množina všech tříd ekvivalence množiny A, značená A/∼?", ["podílová množina",
+          "faktorová množina", "kvocientní množina", "podílová", "faktorová", "quotient set"], 2,
+          f"Na přednášce podílová množina, v učebnici Přibyl, Tichá faktorová množina (M/E); uznává se obojí. {P4}"),
+        q("Jak se nazývá prvek třídy ekvivalence, kterým třídu zastupujeme (např. [1] = [4] = [7])?",
+          ["reprezentant", "reprezentant třídy", "zástupce", "zástupce třídy"], 1,
+          "Každý prvek třídy je její reprezentant; třída se nezmění, když vezmeš jiný. "
+          "Učebnice Přibyl, Tichá (výpisky 22. 10.)."),
+        q("Kolik tříd ekvivalence má relace „stejný zbytek po dělení 3“ na M = {1, …, 8}?",
+          [str(len({x % 3 for x in range(1, 9)})), "tři"], 1,
+          "{1, 4, 7}, {2, 5, 8}, {3, 6}: zbytky 1, 2 a 0. Výpisky 22. 10. (příklad z učebnice)."),
+    ]),
+    ("Zobrazení", [
+        q("Jak se nazývá předpis f, který každému prvku x z neprázdné množiny M přiřazuje právě jeden prvek y "
+          "z P?", ["zobrazení", "zobrazení M do P", "zobrazení z M do P", "funkce", "mapping"], 1,
+          f"Zobrazení množiny M do P, f: M → P. Pro zobrazení se často používá i pojem funkce "
+          f"(učebnice, s. 113). {P4}"),
+        q("Jak se nazývá x v zápisu f(x) = y?", ["vzor", "vzor prvku y", "vzor y"], 1,
+          f"x je vzor prvku y, y je obraz prvku x. {P4}"),
+        q("Jak se nazývá y v zápisu f(x) = y?", ["obraz", "obraz prvku x", "obraz x"], 1,
+          f"y je obraz prvku x, x je vzor prvku y. {P4}"),
+        q("Jak se nazývá D_f u zobrazení f: M → P?", ["definiční obor", "obor definice",
+          "definiční obor zobrazení", "domain"], 2, f"D_f je definiční obor, u f: M → P je D_f = M. {P4}"),
+        q("Jak se nazývá H_f u zobrazení f: M → P?", ["obor hodnot", "obor hodnot zobrazení", "range"], 2,
+          f"H_f je obor hodnot, H_f ⊆ P. {P4}"),
+        q("Jak se nazývá zobrazení f: M → P, u kterého obrazy leží v P, ale nemusí pokrýt celé P?",
+          ["zobrazení do", "do", "zobrazení do P", "zobrazení do množiny P", "zobrazení do množiny"], 2,
+          f"Zobrazení do množiny P: H_f ⊆ P. Je-li H_f = P, je to zobrazení na. {P4}"),
+        q("Jak se nazývá zobrazení f: M → P, pro které H_f = P (každý prvek P je obrazem)?",
+          ["zobrazení na", "na", "zobrazení na P", "zobrazení na množinu P", "surjektivní", "surjekce",
+           "surjektivní zobrazení", "surjective"], "1-2", f"Zobrazení na množinu P (surjektivní): H_f = P. {P4}"),
+        q("Jak se nazývá zobrazení, pro které x₁ ≠ x₂ ⇒ f(x₁) ≠ f(x₂)?", ["prosté", "prosté zobrazení",
+          "injektivní", "injekce", "injektivní zobrazení", "injective"], 1,
+          f"Prosté (injektivní): různé prvky mají různé obrazy. {P4}"),
+        q("Jak se nazývá zobrazení, které je prosté a zároveň na?", ["bijekce", "bijektivní",
+          "bijektivní zobrazení", "vzájemně jednoznačné", "vzájemně jednoznačné zobrazení", "bijection"], "1-2",
+          f"Vzájemně jednoznačné (bijektivní) zobrazení: každé y má právě jeden vzor. {P4}"),
+        q("Jak se nazývá zobrazení f⁻¹, pro které platí f⁻¹(y) = x ⇔ f(x) = y?", ["inverzní zobrazení",
+          "inverzní", "inverze", "inverzní funkce"], 2,
+          f"Inverzní zobrazení f⁻¹ (čteme „f na mínus prvou“), D_(f⁻¹) = H_f a H_(f⁻¹) = D_f. {P4}"),
+        q("Jaké musí být zobrazení f, aby k němu existovalo inverzní zobrazení f⁻¹?", ["bijekce", "bijektivní",
+          "bijektivní zobrazení", "vzájemně jednoznačné", "vzájemně jednoznačné zobrazení", "prosté a na",
+          "prosté a zároveň na", "f je bijekce", "musí být bijekce"], "1-2",
+          f"f musí být vzájemně jednoznačné (bijekce), tedy prosté a zároveň na. {P4}"),
+        q("Jak se nazývá zobrazení f ∘ g: K → Q, kde z = f(g(x))?", ["složené zobrazení", "složení",
+          "složení zobrazení", "složená funkce", "kompozice", "kompozice zobrazení"], 2,
+          "Složené zobrazení (značka ∘, „kolečko“). Pozor, učebnice Přibyl, Tichá zapisuje pořadí opačně "
+          f"(F ∘ G = nejdřív F), na přednášce f ∘ g = f(g(x)). {P4}"),
+    ]),
+    ("Kombinatorika", [
+        q("Jak se nazývá skupina prvků vybraných ze základní množiny M, u níž nezáleží na pořadí?",
+          ["kombinace", "combination"], 1, f"Kombinace: (a, b) a (b, a) zastupuje tutéž skupinu. {P4}"),
+        q("Jak se nazývá skupina prvků ze základní množiny, ve které záleží na pořadí, tedy (a, b) a (b, a) "
+          "jsou dvě různé skupiny?", ["uspořádaná skupina", "variace"], "1-2",
+          f"V rukopisu uspořádaná skupina (z kontextu variace, název je v exportu oříznutý). {P4}"),
+        q("Jak se nazývá kombinace, která má k prvků?", ["kombinace k-té třídy", "kombinace kté třídy",
+          "k-té třídy", "kté třídy", "k-tá třída", "ktá třída"], 3, f"Kombinace k-té třídy má k prvků. {P4}"),
+        q("Jak se nazývá výběr, ve kterém je každý prvek základní množiny vybrán pouze jednou?",
+          ["bez opakování", "výběr bez opakování", "skupina bez opakování"], 2, f"Bez opakování. {P4}"),
+        q("Jak se nazývá výběr, ve kterém je možno každý prvek z M vybrat vícekrát?", ["s opakováním",
+          "výběr s opakováním", "skupina s opakováním", "skupiny s opakováním"], 2, f"S opakováním. {P4}"),
+        q("Jak se nazývá výraz n! / ((n − k)! · k!) pro 0 ≤ k ≤ n?", ["kombinační číslo",
+          "binomický koeficient", "n nad k"], 2,
+          f"Kombinační číslo (n nad k) = n! / ((n − k)! · k!), n, k ∈ ℕ, 0 ≤ k ≤ n. {P4}"),
+        q("Čemu se rovná kombinační číslo (n nad 0)?", [str(comb(7, 0)), "jedna"], 1,
+          f"(n nad 0) = n! / (n! · 0!) = 1, stejně (n nad n) = 1. {P4}"),
+        q("Čemu se rovná kombinační číslo (n nad 1)?", ["n"], 1, f"(n nad 1) = n! / ((n − 1)! · 1!) = n. {P4}"),
+        q("Podle symetrie kombinačních čísel platí (n nad k) = (n nad ?). Co patří místo otazníku?",
+          ["n-k", "n minus k"], 1, f"(n nad k) = (n nad n − k), protože n − (n − k) = k. {P4}"),
+        q("Jak se nazývá vztah (n nad k) + (n nad k+1) = (n+1 nad k+1) z domácího úkolu?",
+          ["Pascalovo pravidlo", "Pascalova identita", "Pascal's rule"], 2,
+          "Pascalovo pravidlo (k < n). Rukopis má jen vztah, název je doplněný ve výpiscích 22. 10."),
+        q("Kolik je (5 nad 2)?", [str(comb(5, 2)), "deset"], 1, f"(5 nad 2) = 5 · 4 / 2! = 20 / 2 = 10. {P4}"),
+        q("Kolik je 5!?", [str(factorial(5)), "sto dvacet"], 1,
+          f"5! = 5 · 4 · 3 · 2 · 1 = 120 (na přednášce rozepsáno jako 5 · 4 · 3!). {P4}"),
+    ]),
+]
+
+
+def word_range(w):
+    lo, _, hi = str(w).partition("-")
+    return int(lo), int(hi or lo)
+
+
+def self_check(qs):
+    assert len({x["id"] for x in qs}) == len(qs), "duplicitní id"
+    assert len({x["text"] for x in qs}) == len(qs), "duplicitní text otázky"
+    for x in qs:
+        acc = x["accept"]
+        assert acc and all(isinstance(v, str) and v.strip() for v in acc), x["id"]
+        assert len({v.lower() for v in acc}) == len(acc), f'{x["id"]}: duplicitní varianta'
+        lo, hi = word_range(x["words"])
+        assert 1 <= lo <= hi <= 5, x["id"]
+        assert lo <= len(acc[0].split()) <= hi, f'{x["id"]}: words neodpovídá kanonické odpovědi'
+        assert x["category"] and x["explanation"], x["id"]
+    # číselné odpovědi napsané ručně (ostatní se počítají přímo v CATS)
+    assert int("F", 16) == 15 and 16 == 2 ** 4 and comb(7, 1) == 7
+
+
+def main():
+    qs = [{"type": "recall", "category": cat, **x} for cat, items in CATS for x in items]
+    for i, x in enumerate(qs, 1):
+        x["number"] = i
+        x["id"] = f"r-{i}"
+    self_check(qs)
+    out = {"title": "Doplňovačka (na paměť), přednášky 1 až 4", "lecture": 4, "date": "2026-10-22", "questions": qs}
+    path = Path(__file__).parent / "banky" / "doplnovacka" / "04r-doplnovacka.json"
+    path.parent.mkdir(exist_ok=True)
+    path.write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
+    counts = ", ".join(f"{cat} {len(items)}" for cat, items in CATS)
+    print(f"{path.name}: {len(qs)} otázek ({counts})")
+
+
+if __name__ == "__main__":
+    main()

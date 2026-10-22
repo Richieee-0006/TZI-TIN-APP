@@ -160,6 +160,7 @@
 <body>
 <a class="ui-switch" href="/?ui=novy">Nový vzhled</a>
 <div id="app">
+  <p class="sub" style="background:#fff7e6;border:1px solid #f0d9a8;border-radius:8px;padding:8px 12px;color:#6b5a2e">Klasický vzhled se už nevyvíjí. Novinky (Doplňovačka, míchání možností) jsou jen v <a href="/?ui=novy">novém vzhledu</a>.</p>
 
   <div id="menu">
     <h1>TZI Trenér</h1>
@@ -285,6 +286,7 @@ const show = id => {
 };
 const norm = s => { s = (s || '').toUpperCase().replace(/[\s_]/g, ''); return s.replace(/^0+(?=.)/, ''); };
 const isInput = q => q.type === 'input';
+const isReveal = q => q.reveal === true; // zadání bez políčka, řešení se jen odhalí
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const shuffle = a => [...a].sort(() => Math.random() - .5);
 // Zápis z banky (a_n, Z^n, a_(n-1), ->) převede na HTML s dolními/horními indexy a šipkami.
@@ -509,12 +511,13 @@ function evaluate(q) {
     isCorrect: selected.size === cs.size && [...selected].every(k => cs.has(k))};
 }
 function record(q) {
+  if (isReveal(q)) return null; // bez vyhodnocení, do výsledků se nezapočítá
   const rec = Object.assign({id: q.id}, evaluate(q));
   const i = history.findIndex(h => h.id === q.id);
   if (i >= 0) history[i] = rec; else history.push(rec);
   return rec;
 }
-function hasAnswer() { return isInput(queue[idx]) ? $('ans-input').value.trim() !== '' : selected.size > 0; }
+function hasAnswer() { return isReveal(queue[idx]) || (isInput(queue[idx]) ? $('ans-input').value.trim() !== '' : selected.size > 0); }
 function syncAction() { $('btn-action').disabled = !hasAnswer(); }
 function onInput() { if (!checked && !studyMode) syncAction(); }
 
@@ -531,7 +534,7 @@ function renderQ() {
 
   const src = sources.find(s => s.id === currentSource);
   const lec = q.id.split('-')[0];
-  $('q-src').textContent = `${lec}. přednáška · otázka ${q.number}` + (isInput(q) ? ' · příklad na výsledek' : ' · teorie');
+  $('q-src').textContent = `${lec}. přednáška · otázka ${q.number}` + (isReveal(q) ? ' · zadání na rozbor' : isInput(q) ? ' · příklad na výsledek' : ' · teorie');
   const t = $('q-text'); t.innerHTML = fmt(q.text); t.className = 'question-text' + (isInput(q) ? ' calc' : '');
   $('q-hint').textContent = isInput(q) ? (q.hint || '') : (q.correct.length > 1 ? '(Vyberte více správných odpovědí)' : '');
   $('feedback').textContent = ''; $('feedback').className = 'feedback';
@@ -539,7 +542,7 @@ function renderQ() {
 
   const optsEl = $('opts'); optsEl.innerHTML = '';
   const inp = $('ans-input'); inp.value = ''; inp.disabled = false; inp.className = 'ans-input';
-  inp.style.display = isInput(q) ? 'block' : 'none';
+  inp.style.display = isInput(q) && !isReveal(q) ? 'block' : 'none';
   if (!isInput(q)) {
     for (const [letter, text] of Object.entries(q.options)) {
       const div = document.createElement('div');
@@ -553,6 +556,7 @@ function renderQ() {
   $('btn-prev').disabled = (idx === 0) || suddenDeath || studyMode;
   $('btn-action').textContent = '✔ Potvrdit (Enter)';
   $('btn-action').disabled = true;
+  if (isReveal(q)) { $('btn-action').disabled = false; $('btn-action').textContent = '👁 Ukázat řešení (Enter)'; }
 
   if (studyMode) { renderStudy(q); return; }
   const rec = history.find(h => h.id === q.id);
@@ -566,7 +570,7 @@ function renderQ() {
     if (isInput(q)) inp.focus();
     return;
   }
-  if (rec) restoreState(rec); else if (isInput(q)) inp.focus();
+  if (rec && isReveal(q)) revealTask(q); else if (rec) restoreState(rec); else if (isInput(q)) inp.focus();
 }
 
 function renderStudy(q) {
@@ -590,7 +594,7 @@ function showSolution(q) {
   const el = $('solution');
   const text = isInput(q) ? q.solution : q.explanation;
   if (!text) return;
-  el.className = 'solution' + (isInput(q) ? '' : ' explain');
+  el.className = 'solution' + (isInput(q) && !isReveal(q) ? '' : ' explain');
   el.innerHTML = fmt(text); el.style.display = 'block';
 }
 
@@ -609,7 +613,7 @@ function toggleOpt(letter) {
 function handleAction() {
   if (studyMode) { studyNext(); return; }
   if (examMode) { examNext(); return; }
-  if (!checked) confirmAnswer(); else nextQ();
+  if (!checked) confirmAnswer(); else if (isReveal(queue[idx])) gradeTask(true); else nextQ();
 }
 
 function studyNext() {
@@ -626,10 +630,36 @@ function examNext() {
   else { clearExamTimer(); saveProgress(); showResults(); }
 }
 
+function toggleSolution(btn) {
+  const el = $('solution'), hide = el.style.display !== 'none';
+  el.style.display = hide ? 'none' : 'block';
+  btn.textContent = hide ? 'Ukázat řešení' : 'Skrýt řešení';
+}
+
+function revealTask(q) {
+  checked = true;
+  showSolution(q);
+  const rec = history.find(h => h.id === q.id);
+  const mark = rec ? (rec.isCorrect ? 'Označeno: zvládl jsem. ' : 'Označeno: nezvládl jsem. ') : '';
+  $('feedback').innerHTML = mark + '<button class="btn-prev" onclick="toggleSolution(this)">Skrýt řešení</button> <button class="btn-prev" onclick="gradeTask(false)">Nezvládl jsem</button>';
+  $('btn-action').textContent = '✔ Zvládl jsem (Enter)';
+  $('btn-action').focus();
+}
+
+// vlastní hodnocení člověka: Zvládl jsem = správně, Nezvládl jsem = špatně
+function gradeTask(ok) {
+  const q = queue[idx];
+  const rec = {id: q.id, userKeys: [], correctKeys: [], isCorrect: ok};
+  const i = history.findIndex(h => h.id === q.id);
+  if (i >= 0) history[i] = rec; else history.push(rec);
+  nextQ();
+}
+
 function confirmAnswer() {
   if (!hasAnswer()) return;
   checked = true;
   const q = queue[idx];
+  if (isReveal(q)) { revealTask(q); return; }
   const rec = record(q);
   restoreState(rec);
   saveProgress();

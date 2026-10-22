@@ -247,7 +247,7 @@
    "type": "choice",
    "text": "Jaký je vztah pojmů „spočetná“ a „nekonečná“ množina?",
    "options": {
-    "A": "každá spočetná nekonečná množina je nekonečná, ale ne každá nekonečná je spočetná",
+    "A": "každá spočetná množina je nekonečná, ale ne každá nekonečná je spočetná",
     "B": "každá nekonečná množina je spočetná",
     "C": "jsou to synonyma",
     "D": "spočetná množina je vždy konečná"

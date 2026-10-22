@@ -1,0 +1,303 @@
+{
+ "title": "Kombinatorika (kombinace, kombinační číslo, Pascalovo pravidlo)",
+ "lecture": 4,
+ "date": "2026-10-22",
+ "questions": [
+  {
+   "type": "choice",
+   "text": "Co je kombinace ze základní množiny M?",
+   "options": {
+    "A": "skupina prvků z M, u níž záleží na pořadí; (a, b) a (b, a) jsou různé skupiny",
+    "B": "skupina, ve které je vždy vybráno všech n prvků M",
+    "C": "skupina prvků z M, u níž nezáleží na pořadí; (a, b) a (b, a) je tatáž skupina",
+    "D": "skupina, ve které se každý prvek vybírá víckrát"
+   },
+   "correct": [
+    "C"
+   ],
+   "explanation": "Rukopis: kombinace je skupina, u níž nezáleží na pořadí, (a, b) i (b, a) zastupuje tutéž skupinu. Kombinace k-té třídy má k prvků.",
+   "number": 1,
+   "id": "4k-1"
+  },
+  {
+   "type": "choice",
+   "text": "Co je uspořádaná skupina (variace)?",
+   "options": {
+    "A": "skupina, ve které nezáleží na pořadí; (a, b) a (b, a) je tatáž skupina",
+    "B": "skupina, ve které se žádný prvek neopakuje",
+    "C": "skupina, ve které záleží na pořadí prvků; (a, b) a (b, a) jsou dvě různé skupiny",
+    "D": "skupina, která obsahuje všechny prvky M"
+   },
+   "correct": [
+    "C"
+   ],
+   "explanation": "Uspořádaná skupina: záleží na pořadí, tedy (a, b) ≠ (b, a). (Že jde o variace, je čtení z kontextu rukopisu.)",
+   "number": 2,
+   "id": "4k-2"
+  },
+  {
+   "type": "choice",
+   "text": "Co znamená, že se skupina vybírá bez opakování?",
+   "options": {
+    "A": "skupina má stejně prvků jako M",
+    "B": "každý prvek je vybrán nejméně dvakrát",
+    "C": "záleží na pořadí prvků",
+    "D": "každý prvek základní množiny je vybrán pouze jednou"
+   },
+   "correct": [
+    "D"
+   ],
+   "explanation": "Bez opakování: každý prvek z M jen jednou. S opakováním: každý prvek lze vybrat vícekrát.",
+   "number": 3,
+   "id": "4k-3"
+  },
+  {
+   "type": "choice",
+   "text": "Co je to kombinace k-té třídy?",
+   "options": {
+    "A": "k-tý prvek základní množiny",
+    "B": "skupina o k prvcích, u níž záleží na pořadí",
+    "C": "skupina o k prvcích (bez ohledu na pořadí)",
+    "D": "skupina o n prvcích"
+   },
+   "correct": [
+    "C"
+   ],
+   "explanation": "Rukopis: kombinace k-té třídy je skupina, která má k prvků.",
+   "number": 4,
+   "id": "4k-4"
+  },
+  {
+   "type": "choice",
+   "text": "Čemu se rovná 0! (nula faktoriál)?",
+   "options": {
+    "A": "0",
+    "B": "1",
+    "C": "n",
+    "D": "není definováno"
+   },
+   "correct": [
+    "B"
+   ],
+   "explanation": "Dohoda 0! = 1. Bez ní by C(n,0) = n!/(n!·0!) a C(n,n) = n!/(0!·n!) nedávala smysl.",
+   "number": 5,
+   "id": "4k-5"
+  },
+  {
+   "type": "choice",
+   "text": "Jak je definováno kombinační číslo C(n, k) = (n nad k), kde 0 ≤ k ≤ n?",
+   "options": {
+    "A": "n! / (n−k)!",
+    "B": "n! / k!",
+    "C": "n! / ((n−k)! · k!)",
+    "D": "(n−k)! · k! / n!"
+   },
+   "correct": [
+    "C"
+   ],
+   "explanation": "C(n,k) = n!/((n−k)!·k!) je počet kombinací k-té třídy z n prvků. n!/(n−k)! je počet variací.",
+   "number": 6,
+   "id": "4k-6"
+  },
+  {
+   "type": "choice",
+   "text": "Jak se v rukopisu rozepíše n!, aby se dal vykrátit faktoriál (n−k)! (k ≤ n)?",
+   "options": {
+    "A": "n! = (n−k)!·k!",
+    "B": "n! = n·(n−1)·…·(n−k+1)·(n−k)!",
+    "C": "n! = n·(n−1)·…·(n−k+1)·k!",
+    "D": "n! = n·(n−1)·…·(n−k)·k!"
+   },
+   "correct": [
+    "B"
+   ],
+   "explanation": "n! = n·(n−1)·…·2·1. Prvních k činitelů necháme rozepsaných, zbytek (n−k)·…·1 je (n−k)!. Příklad: 6! = 6·5·4!.",
+   "number": 7,
+   "id": "4k-7"
+  },
+  {
+   "type": "choice",
+   "text": "Čemu se rovná C(n, k) po vykrácení (n−k)!?",
+   "options": {
+    "A": "n·(n−1)·…·(n−k+1)",
+    "B": "n·(n−1)·…·(n−k) / k!",
+    "C": "(n−k)! / k!",
+    "D": "n·(n−1)·…·(n−k+1) / k!"
+   },
+   "correct": [
+    "D"
+   ],
+   "explanation": "C(n,k) = n!/((n−k)!·k!) = n·(n−1)·…·(n−k+1)·(n−k)! / ((n−k)!·k!) = n·(n−1)·…·(n−k+1)/k!. Čitatel má k činitelů.",
+   "number": 8,
+   "id": "4k-8"
+  },
+  {
+   "type": "choice",
+   "text": "Čemu se rovná C(n, k) podle symetrie kombinačních čísel?",
+   "options": {
+    "A": "C(n, k+1)",
+    "B": "C(n−k, k)",
+    "C": "C(n, n−k)",
+    "D": "C(n, n+k)"
+   },
+   "correct": [
+    "C"
+   ],
+   "explanation": "C(n,n−k) = n!/((n−(n−k))!·(n−k)!) = n!/(k!·(n−k)!) = C(n,k). Vybrat k prvků je totéž jako vybrat těch n−k, které nevezmeme.",
+   "number": 9,
+   "id": "4k-9"
+  },
+  {
+   "type": "choice",
+   "text": "Čemu se rovnají C(n, 0) a C(n, n)?",
+   "options": {
+    "A": "obě 0",
+    "B": "C(n,0) = 1 a C(n,n) = n",
+    "C": "obě 1",
+    "D": "obě n"
+   },
+   "correct": [
+    "C"
+   ],
+   "explanation": "C(n,0) = n!/(n!·0!) = 1 a C(n,n) = n!/(0!·n!) = 1. Nevybrat nic i vybrat všechno jde jedním způsobem.",
+   "number": 10,
+   "id": "4k-10"
+  },
+  {
+   "type": "choice",
+   "text": "Čemu se rovná C(n, 1)?",
+   "options": {
+    "A": "1",
+    "B": "n",
+    "C": "n!",
+    "D": "n − 1"
+   },
+   "correct": [
+    "B"
+   ],
+   "explanation": "C(n,1) = n!/((n−1)!·1!) = n·(n−1)!/(n−1)! = n. Jeden prvek z n lze vybrat n způsoby.",
+   "number": 11,
+   "id": "4k-11"
+  },
+  {
+   "type": "choice",
+   "text": "Pascalovo pravidlo (domácí úkol): čemu se rovná C(n, k) + C(n, k+1), kde k < n?",
+   "options": {
+    "A": "C(n+1, k+1)",
+    "B": "C(n+1, k)",
+    "C": "C(n+1, k+2)",
+    "D": "C(n, k+2)"
+   },
+   "correct": [
+    "A"
+   ],
+   "explanation": "C(n,k) + C(n,k+1) = C(n+1,k+1). Např. C(5,2) + C(5,3) = 10 + 10 = 20 = C(6,3).",
+   "number": 12,
+   "id": "4k-12"
+  },
+  {
+   "type": "choice",
+   "text": "Proč se v domácím úkolu C(n,k) + C(n,k+1) = C(n+1,k+1) předpokládá k < n?",
+   "options": {
+    "A": "aby bylo C(n, k) rovno nule",
+    "B": "aby C(n, k+1) bylo definováno (potřeba k+1 ≤ n)",
+    "C": "aby platilo n < 0",
+    "D": "protože pro k = n vychází C(n+1, k+1) = 0"
+   },
+   "correct": [
+    "B"
+   ],
+   "explanation": "C(n,k+1) vyžaduje k+1 ≤ n. Pro k = n by ve jmenovateli bylo (n−k−1)! = (−1)!, které není definováno.",
+   "number": 13,
+   "id": "4k-13"
+  },
+  {
+   "type": "choice",
+   "text": "Jak se v důkazu Pascalova pravidla získá společný jmenovatel?",
+   "options": {
+    "A": "použije se vztah (n−k)! = (n−k−1)! + (n−k)",
+    "B": "oba zlomky se vynásobí n!",
+    "C": "využijí se vztahy (k+1)! = (k+1)·k! a (n−k)! = (n−k)·(n−k−1)!",
+    "D": "použije se vztah (k+1)! = k! + 1"
+   },
+   "correct": [
+    "C"
+   ],
+   "explanation": "Společný jmenovatel je (k+1)!·(n−k)!. První zlomek se rozšíří (k+1), druhý (n−k). Součet čitatelů n!·[(k+1)+(n−k)] = n!·(n+1) = (n+1)!.",
+   "number": 14,
+   "id": "4k-14"
+  },
+  {
+   "type": "input",
+   "text": "Kolik uspořádaných dvojic (bez opakování) lze vybrat z množiny {a,b,c,d,e}?",
+   "hint": "číslo",
+   "answer": "20",
+   "solution": "První prvek 5 způsoby, druhý 4 způsoby: 5 · 4 = 20. Pořadí záleží, (a,b) ≠ (b,a).",
+   "number": 15,
+   "id": "4k-15"
+  },
+  {
+   "type": "input",
+   "text": "Kolik různých dvouprvkových skupin (kombinací 2. třídy, na pořadí nezáleží) lze vybrat z {a,b,c,d}?",
+   "hint": "číslo",
+   "answer": "6",
+   "solution": "ab, ac, ad, bc, bd, cd, tedy 6.",
+   "number": 16,
+   "id": "4k-16"
+  },
+  {
+   "type": "input",
+   "text": "Kolika způsoby lze seřadit 4 různé prvky (n! = n · (n−1) · … · 2 · 1)?",
+   "hint": "číslo",
+   "answer": "24",
+   "solution": "4! = 4 · 3 · 2 · 1 = 24.",
+   "number": 17,
+   "id": "4k-17"
+  },
+  {
+   "type": "input",
+   "text": "Kolik je C(6, 2) = (6 nad 2)?",
+   "hint": "číslo",
+   "answer": "15",
+   "solution": "C(6,2) = 6!/((6-2)!·2!) = 6 · 5 / 2! = 15.",
+   "number": 18,
+   "id": "4k-18"
+  },
+  {
+   "type": "input",
+   "text": "Kolik je C(7, 3) = (7 nad 3)?",
+   "hint": "číslo",
+   "answer": "35",
+   "solution": "C(7,3) = 7!/((7-3)!·3!) = 7 · 6 · 5 / 3! = 35.",
+   "number": 19,
+   "id": "4k-19"
+  },
+  {
+   "type": "input",
+   "text": "Kolik je C(10, 8) = (10 nad 8)?",
+   "hint": "číslo",
+   "answer": "45",
+   "solution": "C(10,8) = 10!/((10-8)!·8!) = 10 · 9 · 8 · 7 · 6 · 5 · 4 · 3 / 8! = 45. Rychleji přes symetrii: C(10,8) = C(10,2) = 45.",
+   "number": 20,
+   "id": "4k-20"
+  },
+  {
+   "type": "input",
+   "text": "Kolik je C(5,2) + C(5,3) (Pascalovo pravidlo: součet je C(6,3))?",
+   "hint": "číslo",
+   "answer": "20",
+   "solution": "C(5,2) = 10, C(5,3) = 10, součet 20 = C(6,3).",
+   "number": 21,
+   "id": "4k-21"
+  },
+  {
+   "type": "input",
+   "text": "Kolik uspořádaných trojic (bez opakování) lze vybrat ze 6 prvků? (6·5·4! = 6!, k = 3: n·(n−1)·…·(n−k+1))",
+   "hint": "číslo",
+   "answer": "120",
+   "solution": "6 · 5 · 4 = 120 (= 6!/3!).",
+   "number": 22,
+   "id": "4k-22"
+  }
+ ]
+}
