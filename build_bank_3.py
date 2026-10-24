@@ -5,8 +5,7 @@ Deklarace využití AI: vytvořeno s pomocí nástroje Claude Sonnet 5.5 (Anthro
 uvedeno v souladu se Směrnicí rektora UJEP č. 7/2026 (dobrovolně).
 
 Obsah vychází z autorových poznámek z přednášky 15. 10. 2026 a z učebního textu Přibyl, Tichá (kap. 4).
-Příklady na výsledek se počítají zde (ne ručně). Teoretické části doplněné AI (doplněk, spočetnost,
-uspořádání) je třeba kontrolovat proti přednášce a sylabu KI/TIN.
+Příklady na výsledek se počítají zde (ne ručně). Teoretické části doplněné AI (doplněk, spočetnost) je třeba kontrolovat proti přednášce a sylabu KI/TIN.
 Spuštění:  python3 build_bank_3.py
 """
 import itertools
@@ -160,19 +159,10 @@ CHOICE = [
     ("Která z relací na ℕ je ekvivalence?",
      ["xRy ⇔ x a y mají stejný zbytek po dělení 3", "xRy ⇔ x < y", "xRy ⇔ x ≤ y", "xRy ⇔ x dělí y a x ≠ y"], [0],
      "Stejný zbytek po dělení 3 je reflexivní, symetrická i tranzitivní. <, ≤ a dělitelnost nejsou symetrické."),
-    ("Jak podle učebnice (Přibyl, Tichá, s. 107) vypadá neostré uspořádání?",
-     ["relace reflexivní, antisymetrická a tranzitivní", "relace jen tranzitivní a antisymetrická",
-      "relace antireflexivní, antisymetrická a tranzitivní", "relace symetrická a tranzitivní"], [0],
-     "Neostré: reflexivní + antisymetrická + tranzitivní (např. ≤ na ℕ). Ostré: antireflexivní + antisymetrická + tranzitivní (např. <). "
-     "Tištěná poznámka „tranzitivní a antisymetrická“ nestačí, chybí reflexivita nebo antireflexivita."),
     ("Co znamená, že relace R je antireflexivní?",
      ["žádný prvek není v relaci sám se sebou", "každý prvek je v relaci sám se sebou",
       "některý prvek je v relaci sám se sebou", "relace je prázdná"], [0],
      "∀x; ¬(xRx). Příklad: < na ℕ. Pozor, antireflexivní není totéž co „není reflexivní“."),
-    ("Co je uspořádaná množina?",
-     ["dvojice (M, R), kde R je uspořádání na M", "množina uspořádaných dvojic", "množina seřazená podle abecedy",
-      "libovolná konečná množina"], [0],
-     "Dvojice (M, R), kde R je relace uspořádání na M."),
 ]
 
 POOL = "abcdefgh"

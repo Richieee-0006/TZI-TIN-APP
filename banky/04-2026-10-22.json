@@ -79,7 +79,7 @@
    "correct": [
     "A"
    ],
-   "explanation": "Ekvivalence = reflexivní + symetrická + tranzitivní. Reflexivní, antisymetrická a tranzitivní je neostré uspořádání.",
+   "explanation": "Ekvivalence = reflexivní + symetrická + tranzitivní.",
    "number": 5,
    "id": "4-5"
   },

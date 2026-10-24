@@ -100,7 +100,7 @@ def choice_questions():
         ("Která trojice vlastností musí platit, aby relace byla ekvivalencí?",
          ["reflexivní, symetrická, tranzitivní", "reflexivní, antisymetrická, tranzitivní",
           "symetrická, antisymetrická, tranzitivní", "antireflexivní, symetrická, tranzitivní"], [0],
-         "Ekvivalence = reflexivní + symetrická + tranzitivní. Reflexivní, antisymetrická a tranzitivní je neostré uspořádání."),
+         "Ekvivalence = reflexivní + symetrická + tranzitivní."),
         ("Co tvoří jednu třídu ekvivalence?",
          ["všechny prvky, které jsou spolu navzájem ekvivalentní", "všechny prvky celé množiny",
           "libovolné dva prvky množiny", "prvky, které spolu nejsou ekvivalentní"], [0],

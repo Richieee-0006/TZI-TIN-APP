@@ -629,51 +629,19 @@
   },
   {
    "type": "choice",
-   "text": "Jak podle učebnice (Přibyl, Tichá, s. 107) vypadá neostré uspořádání?",
-   "options": {
-    "A": "relace reflexivní, antisymetrická a tranzitivní",
-    "B": "relace antireflexivní, antisymetrická a tranzitivní",
-    "C": "relace symetrická a tranzitivní",
-    "D": "relace jen tranzitivní a antisymetrická"
-   },
-   "correct": [
-    "A"
-   ],
-   "explanation": "Neostré: reflexivní + antisymetrická + tranzitivní (např. ≤ na ℕ). Ostré: antireflexivní + antisymetrická + tranzitivní (např. <). Tištěná poznámka „tranzitivní a antisymetrická“ nestačí, chybí reflexivita nebo antireflexivita.",
-   "number": 40,
-   "id": "3-40"
-  },
-  {
-   "type": "choice",
    "text": "Co znamená, že relace R je antireflexivní?",
    "options": {
     "A": "žádný prvek není v relaci sám se sebou",
     "B": "některý prvek je v relaci sám se sebou",
-    "C": "každý prvek je v relaci sám se sebou",
-    "D": "relace je prázdná"
+    "C": "relace je prázdná",
+    "D": "každý prvek je v relaci sám se sebou"
    },
    "correct": [
     "A"
    ],
    "explanation": "∀x; ¬(xRx). Příklad: < na ℕ. Pozor, antireflexivní není totéž co „není reflexivní“.",
-   "number": 41,
-   "id": "3-41"
-  },
-  {
-   "type": "choice",
-   "text": "Co je uspořádaná množina?",
-   "options": {
-    "A": "libovolná konečná množina",
-    "B": "množina seřazená podle abecedy",
-    "C": "dvojice (M, R), kde R je uspořádání na M",
-    "D": "množina uspořádaných dvojic"
-   },
-   "correct": [
-    "C"
-   ],
-   "explanation": "Dvojice (M, R), kde R je relace uspořádání na M.",
-   "number": 42,
-   "id": "3-42"
+   "number": 40,
+   "id": "3-40"
   },
   {
    "type": "input",
@@ -681,8 +649,8 @@
    "hint": "napiš prvky abecedně bez čárek a mezer, např. ace",
    "answer": "eh",
    "solution": "A = {b,d,e,h}, B = {a,e,g,h}\nA ∩ B = {e,h} (průnik)",
-   "number": 43,
-   "id": "3-43"
+   "number": 41,
+   "id": "3-41"
   },
   {
    "type": "input",
@@ -690,8 +658,8 @@
    "hint": "napiš prvky abecedně bez čárek a mezer, např. ace",
    "answer": "abdefgh",
    "solution": "A = {a,b,e,f}, B = {a,d,g,h}\nA ∪ B = {a,b,d,e,f,g,h} (sjednocení)",
-   "number": 44,
-   "id": "3-44"
+   "number": 42,
+   "id": "3-42"
   },
   {
    "type": "input",
@@ -699,8 +667,8 @@
    "hint": "napiš prvky abecedně bez čárek a mezer, např. ace",
    "answer": "ab",
    "solution": "A = {a,b,g}, B = {e,g,h}\nA ∖ B = {a,b} (rozdíl)",
-   "number": 45,
-   "id": "3-45"
+   "number": 43,
+   "id": "3-43"
   },
   {
    "type": "input",
@@ -708,8 +676,8 @@
    "hint": "napiš prvky abecedně bez čárek a mezer, např. ace",
    "answer": "de",
    "solution": "A = {b,c,d,e}, B = {a,b,c,h}\nA ∖ B = {d,e} (rozdíl)",
-   "number": 46,
-   "id": "3-46"
+   "number": 44,
+   "id": "3-44"
   },
   {
    "type": "input",
@@ -717,8 +685,8 @@
    "hint": "napiš prvky vzestupně bez čárek a mezer, např. 135",
    "answer": "12",
    "solution": "A′ = U ∖ A = {1,2} (prvky U, které nejsou v A)",
-   "number": 47,
-   "id": "3-47"
+   "number": 45,
+   "id": "3-45"
   },
   {
    "type": "input",
@@ -726,8 +694,8 @@
    "hint": "číslo",
    "answer": "8",
    "solution": "|Pot(A)| = 2^3 = 8",
-   "number": 48,
-   "id": "3-48"
+   "number": 46,
+   "id": "3-46"
   },
   {
    "type": "input",
@@ -735,8 +703,8 @@
    "hint": "číslo",
    "answer": "16",
    "solution": "|Pot(A)| = 2^4 = 16",
-   "number": 49,
-   "id": "3-49"
+   "number": 47,
+   "id": "3-47"
   },
   {
    "type": "input",
@@ -744,8 +712,8 @@
    "hint": "číslo",
    "answer": "32",
    "solution": "|Pot(A)| = 2^5 = 32",
-   "number": 50,
-   "id": "3-50"
+   "number": 48,
+   "id": "3-48"
   },
   {
    "type": "input",
@@ -753,8 +721,8 @@
    "hint": "číslo",
    "answer": "6",
    "solution": "|A × B| = |A| · |B| = 2 · 3 = 6",
-   "number": 51,
-   "id": "3-51"
+   "number": 49,
+   "id": "3-49"
   },
   {
    "type": "input",
@@ -762,8 +730,8 @@
    "hint": "číslo",
    "answer": "12",
    "solution": "|A × B| = |A| · |B| = 3 · 4 = 12",
-   "number": 52,
-   "id": "3-52"
+   "number": 50,
+   "id": "3-50"
   },
   {
    "type": "input",
@@ -771,8 +739,8 @@
    "hint": "číslo",
    "answer": "20",
    "solution": "|A × B| = |A| · |B| = 4 · 5 = 20",
-   "number": 53,
-   "id": "3-53"
+   "number": 51,
+   "id": "3-51"
   },
   {
    "type": "input",
@@ -780,8 +748,8 @@
    "hint": "1 = ano, 0 = ne; pořadí reflexivní, symetrická, tranzitivní, antisymetrická, např. 1010",
    "answer": "1110",
    "solution": "reflexivní: ano\nsymetrická: ano\ntranzitivní: ano\n(slabě) antisymetrická: ne\nOdpověď: 1110",
-   "number": 54,
-   "id": "3-54"
+   "number": 52,
+   "id": "3-52"
   },
   {
    "type": "input",
@@ -789,8 +757,8 @@
    "hint": "1 = ano, 0 = ne; pořadí reflexivní, symetrická, tranzitivní, antisymetrická, např. 1010",
    "answer": "1011",
    "solution": "reflexivní: ano\nsymetrická: ne\ntranzitivní: ano\n(slabě) antisymetrická: ano\nOdpověď: 1011",
-   "number": 55,
-   "id": "3-55"
+   "number": 53,
+   "id": "3-53"
   },
   {
    "type": "input",
@@ -798,8 +766,8 @@
    "hint": "1 = ano, 0 = ne; pořadí reflexivní, symetrická, tranzitivní, antisymetrická, např. 1010",
    "answer": "0011",
    "solution": "reflexivní: ne\nsymetrická: ne\ntranzitivní: ano\n(slabě) antisymetrická: ano\nOdpověď: 0011",
-   "number": 56,
-   "id": "3-56"
+   "number": 54,
+   "id": "3-54"
   },
   {
    "type": "input",
@@ -807,8 +775,8 @@
    "hint": "1 = ano, 0 = ne; pořadí reflexivní, symetrická, tranzitivní, antisymetrická, např. 1010",
    "answer": "0000",
    "solution": "reflexivní: ne\nsymetrická: ne\ntranzitivní: ne\n(slabě) antisymetrická: ne\nOdpověď: 0000",
-   "number": 57,
-   "id": "3-57"
+   "number": 55,
+   "id": "3-55"
   },
   {
    "type": "input",
@@ -816,8 +784,8 @@
    "hint": "1 = ano, 0 = ne; pořadí reflexivní, symetrická, tranzitivní, antisymetrická, např. 1010",
    "answer": "1111",
    "solution": "reflexivní: ano\nsymetrická: ano\ntranzitivní: ano\n(slabě) antisymetrická: ano\nOdpověď: 1111",
-   "number": 58,
-   "id": "3-58"
+   "number": 56,
+   "id": "3-56"
   },
   {
    "type": "input",
@@ -825,8 +793,8 @@
    "hint": "1 = ano, 0 = ne; pořadí reflexivní, symetrická, tranzitivní, antisymetrická, např. 1010",
    "answer": "0100",
    "solution": "reflexivní: ne\nsymetrická: ano\ntranzitivní: ne\n(slabě) antisymetrická: ne\nOdpověď: 0100",
-   "number": 59,
-   "id": "3-59"
+   "number": 57,
+   "id": "3-57"
   }
  ]
 }
