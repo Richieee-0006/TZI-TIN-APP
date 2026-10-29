@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TZI Trenér - Vstup</title>
+    <style>
+        :root {
+            --bg: #1e1e2e;
+            --card: #181825;
+            --border: #313244;
+            --text: #cdd6f4;
+            --text-dim: #a6adc8;
+            --mauve: #cba6f7;
+            --mauve-hover: #b4befe;
+            --pink: #f5c2e7;
+            --error: #f38ba8;
+            --green: #a6e3a1;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1.5rem;
+        }
+        .auth-card {
+            background-color: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 1.25rem;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+            text-align: center;
+        }
+        .icon {
+            font-size: 3rem;
+            margin-bottom: 0.8rem;
+            display: inline-block;
+        }
+        h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+            color: var(--mauve);
+        }
+        p.subtitle {
+            color: var(--text-dim);
+            font-size: 0.95rem;
+            margin-bottom: 1.8rem;
+        }
+        .tabs {
+            display: flex;
+            background: #11111b;
+            border-radius: 0.75rem;
+            padding: 0.3rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border);
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 0.6rem;
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            font-weight: 600;
+            font-size: 0.95rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tab-btn.active {
+            background: var(--mauve);
+            color: #11111b;
+        }
+        .form-group {
+            margin-bottom: 1.2rem;
+            text-align: left;
+        }
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            color: var(--text-dim);
+        }
+        input, select {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            background: #11111b;
+            border: 1px solid var(--border);
+            border-radius: 0.6rem;
+            color: var(--text);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        input:focus, select:focus {
+            border-color: var(--mauve);
+            box-shadow: 0 0 0 3px rgba(203, 166, 247, 0.2);
+        }
+        button.submit-btn {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            background: var(--mauve);
+            color: #11111b;
+            border: none;
+            border-radius: 0.6rem;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 0.5rem;
+        }
+        button.submit-btn:hover {
+            background: var(--mauve-hover);
+        }
+        .error-msg {
+            background: rgba(243, 139, 168, 0.15);
+            border: 1px solid var(--error);
+            color: var(--error);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+            margin-bottom: 1.2rem;
+        }
+        .success-msg {
+            background: rgba(166, 227, 161, 0.15);
+            border: 1px solid var(--green);
+            color: var(--green);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+            margin-bottom: 1.2rem;
+        }
+        .notice {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-top: 1.2rem;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <main class="auth-card">
+        <header>
+            <div class="icon">🎓</div>
+            <h1>TZI Trenér</h1>
+            <p class="subtitle">Teoretická informatika (KI/TIN)</p>
+        </header>
+
+        <!--MESSAGE-->
+
+        <nav class="tabs" aria-label="Volba přihlášení nebo registrace">
+            <button class="tab-btn <!--LOGIN_ACTIVE-->" onclick="switchTab('login')">Přihlášení</button>
+            <button class="tab-btn <!--REG_ACTIVE-->" onclick="switchTab('reg')">Registrace</button>
+        </nav>
+
+        <section id="login-form" style="display: <!--LOGIN_DISPLAY-->;">
+            <form method="POST" action="/login">
+                <div class="form-group">
+                    <label>Uživatelské jméno</label>
+                    <input type="text" name="username" placeholder="Zadejte své jméno..." required autofocus>
+                </div>
+                <div class="form-group">
+                    <label>Heslo</label>
+                    <input type="password" name="password" placeholder="Zadejte heslo..." required>
+                </div>
+                <button type="submit" class="submit-btn">Přihlásit se</button>
+            </form>
+        </section>
+
+        <section id="reg-form" style="display: <!--REG_DISPLAY-->;">
+            <form method="POST" action="/register">
+                <div class="form-group">
+                    <label>Uživatelské jméno</label>
+                    <input type="text" name="username" placeholder="Zvolte si přezdívku..." required minlength="2">
+                </div>
+                <div class="form-group">
+                    <label>Heslo</label>
+                    <input type="password" name="password" placeholder="Min. 4 znaky" required minlength="4">
+                </div>
+                <div class="form-group">
+                    <label>Potvrzení hesla</label>
+                    <input type="password" name="password_confirm" placeholder="Zopakujte heslo..." required minlength="4">
+                </div>
+                <button type="submit" class="submit-btn">Zaregistrovat se</button>
+            </form>
+        </section>
+
+        <nav style="margin-top: 1.5rem; padding-top: 1.2rem; border-top: 1px solid var(--border);" aria-label="Zkušební přístup">
+            <a href="/trial" style="display:block; text-decoration:none; background:#11111b; border:1px solid var(--border); color:var(--text-dim); padding:0.75rem; border-radius:0.6rem; font-weight:600; font-size:0.9rem; text-align:center; transition:all 0.2s;">
+                🚀 Vyzkoušet bez přihlášení (Trial mód)
+            </a>
+        </nav>
+
+        <footer style="margin-top: 1.2rem; font-size: 0.75rem; color: var(--text-dim); text-align: center; line-height: 1.5;">
+            Made with AI · Poděkování <b>Zdenax</b> za vytvoření apky · <a href="https://github.com/zdenax/TZI-TIN-APP" target="_blank" rel="noopener noreferrer" style="color: var(--text-dim); text-decoration: underline;">GitHub: TZI-TIN-APP</a>
+        </footer>
+    </main>
+
+    <script>
+        function switchTab(t) {
+            document.getElementById('login-form').style.display = t === 'login' ? 'block' : 'none';
+            document.getElementById('reg-form').style.display = t === 'reg' ? 'block' : 'none';
+            const btns = document.querySelectorAll('.tab-btn');
+            btns[0].classList.toggle('active', t === 'login');
+            btns[1].classList.toggle('active', t === 'reg');
+        }
+    </script>
+</body>
+</html>
