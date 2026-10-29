@@ -1,0 +1,272 @@
+{
+  "banky/01-2026-10-01.json": {
+    "mtime": 1790925706.5414457,
+    "seen": 1792683886.875104,
+    "ast_hash": "2072ff80b21d39bfa4aacb0abb8f0931",
+    "semantic_hash": ""
+  },
+  "banky/02-2026-10-08.json": {
+    "mtime": 1792601556.0524971,
+    "seen": 1792683886.8751051,
+    "ast_hash": "ddff821c6b48943faea8c324af6515b6",
+    "semantic_hash": ""
+  },
+  "banky/02d-dukazy.json": {
+    "mtime": 1792650683.4811442,
+    "seen": 1792683886.875107,
+    "ast_hash": "41107b73f3cee7e77f2fb31c35cb41fd",
+    "semantic_hash": ""
+  },
+  "banky/03-2026-10-15.json": {
+    "mtime": 1792843124.6036344,
+    "seen": 1793259326.042022,
+    "ast_hash": "978a992dbe96db7850a672c6e2d05440",
+    "semantic_hash": ""
+  },
+  "banky/04-2026-10-22.json": {
+    "mtime": 1792843124.6366606,
+    "seen": 1793259326.042023,
+    "ast_hash": "ff542c2d3bee1cfb9b8d1425737114d1",
+    "semantic_hash": ""
+  },
+  "banky/04k-kombinatorika.json": {
+    "mtime": 1792843124.6369073,
+    "seen": 1793259326.042024,
+    "ast_hash": "c13d825776d9e662fac1a0b1935509f3",
+    "semantic_hash": ""
+  },
+  "build_bank.py": {
+    "mtime": 1790925706.6239436,
+    "seen": 1792683886.8751109,
+    "ast_hash": "3e5b706a627ca01cc75a916c6417a6de",
+    "semantic_hash": ""
+  },
+  "build_bank_2.py": {
+    "mtime": 1792601556.0528972,
+    "seen": 1792683886.8751118,
+    "ast_hash": "6fddf8143ee73cb1ad0c559f998094d4",
+    "semantic_hash": ""
+  },
+  "build_bank_3.py": {
+    "mtime": 1792843124.546678,
+    "seen": 1793259326.0420291,
+    "ast_hash": "d49d94fc14e2c262cc147f01367bcafb",
+    "semantic_hash": ""
+  },
+  "build_bank_4.py": {
+    "mtime": 1792843124.547084,
+    "seen": 1793259326.04203,
+    "ast_hash": "9cb2faa51a4d04e6336778c40353374c",
+    "semantic_hash": ""
+  },
+  "build_bank_dukazy.py": {
+    "mtime": 1792650683.436596,
+    "seen": 1792683886.875115,
+    "ast_hash": "1fc9a3a3f2f82e7fc4a0585c1a555614",
+    "semantic_hash": ""
+  },
+  "tzi_trener.py": {
+    "mtime": 1792684119.1144729,
+    "seen": 1792684684.678569,
+    "ast_hash": "2cee04963ea3d0540d09c5fd5a5f9340",
+    "semantic_hash": ""
+  },
+  "zaloha/tzi_trener_v1.py": {
+    "mtime": 1792601557.605552,
+    "seen": 1792683886.875117,
+    "ast_hash": "9ed9029d901a5440d3789054815417cc",
+    "semantic_hash": ""
+  },
+  "CLAUDE.md": {
+    "mtime": 1792685614.5424623,
+    "seen": 1793259326.042037,
+    "ast_hash": "21c8895183be5dc5286f4d565a3b8643",
+    "semantic_hash": ""
+  },
+  "README.md": {
+    "mtime": 1792685614.542121,
+    "seen": 1793259326.042038,
+    "ast_hash": "bb58ff3af5700709a4fe39fd3a2a17a1",
+    "semantic_hash": ""
+  },
+  "ui/klasicky.html": {
+    "mtime": 1792684769.4221663,
+    "seen": 1792684769.832639,
+    "ast_hash": "6f14f4824cc2c5f1e33e62480cbce774",
+    "semantic_hash": ""
+  },
+  "ui/novy.html": {
+    "mtime": 1793259335.5415452,
+    "seen": 1793259335.916928,
+    "ast_hash": "050a112b46879721b6b23c78aa72a334",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/desktop-chunk-detail.png": {
+    "mtime": 1792601557.5852308,
+    "seen": 1792683886.8751218,
+    "ast_hash": "eec5212130244d0eb51b8fd35bf3a390",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/desktop-chunks.png": {
+    "mtime": 1792601557.5864668,
+    "seen": 1792683886.875123,
+    "ast_hash": "3d19668419fe1bbaa0bdc0ab87b69f25",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/desktop-exam.png": {
+    "mtime": 1792601557.5871692,
+    "seen": 1792683886.875124,
+    "ast_hash": "982c0d5d9ce70b9aaa225a9dda2a9ae8",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/desktop-menu-dark.png": {
+    "mtime": 1792601557.5890718,
+    "seen": 1792683886.875125,
+    "ast_hash": "0b15a59483dce1f90e6a38960753d7fe",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/desktop-menu.png": {
+    "mtime": 1792601557.5905669,
+    "seen": 1792683886.8751261,
+    "ast_hash": "c0cc6bbf475b7fa0576fdc12f3b30fef",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/desktop-question-answered.png": {
+    "mtime": 1792601557.5924835,
+    "seen": 1792683886.875127,
+    "ast_hash": "d5344308b3bf27ed8e781eb74cdd8153",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/desktop-question-choice.png": {
+    "mtime": 1792601557.5936618,
+    "seen": 1792683886.875128,
+    "ast_hash": "a3fe26f538c959c7885cc09ab5780e59",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/desktop-question-input.png": {
+    "mtime": 1792601557.5946698,
+    "seen": 1792683886.875129,
+    "ast_hash": "4e25f237638bf87ff61cd162e27f47eb",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/desktop-results.png": {
+    "mtime": 1792601557.5952268,
+    "seen": 1792683886.8751302,
+    "ast_hash": "f4f6e11213a92a4458cb66a26848a095",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/desktop-study.png": {
+    "mtime": 1792601557.5960848,
+    "seen": 1792683886.875131,
+    "ast_hash": "40bcc25ac56b61c5fc5843015fa2a70a",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/legacy/desktop-chunk-detail.png": {
+    "mtime": 1792601557.5968764,
+    "seen": 1792683886.8751318,
+    "ast_hash": "5c97ee4fe62f84055b2bb8c1e432d83f",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/legacy/desktop-chunks.png": {
+    "mtime": 1792601557.597504,
+    "seen": 1792683886.875133,
+    "ast_hash": "52fd38f3357e1b93be6cb9d7e177fc57",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/legacy/desktop-menu.png": {
+    "mtime": 1792601557.5985863,
+    "seen": 1792683886.875134,
+    "ast_hash": "a58dd2d8f9ea6c6273da79ab8b3a19db",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/legacy/desktop-question-choice.png": {
+    "mtime": 1792601557.5995812,
+    "seen": 1792683886.875135,
+    "ast_hash": "6ec3a6f30148d7037e96f46ce80954ea",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/legacy/desktop-question-input.png": {
+    "mtime": 1792601557.6003015,
+    "seen": 1792683886.875136,
+    "ast_hash": "a1adff4c35757bf207f68d070dd4be30",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/legacy/desktop-study.png": {
+    "mtime": 1792601557.6010096,
+    "seen": 1792683886.875137,
+    "ast_hash": "9670408c8d953dabb529fea3af46bcb3",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/legacy/mobile-menu.png": {
+    "mtime": 1792601557.6017964,
+    "seen": 1792683886.875138,
+    "ast_hash": "4fd8d890983119d99f80e333693bff57",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/legacy/mobile-question.png": {
+    "mtime": 1792601557.6023061,
+    "seen": 1792683886.875139,
+    "ast_hash": "8deabd369013133bc7973e8f951ab882",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/mobile-menu.png": {
+    "mtime": 1792601557.6037018,
+    "seen": 1792683886.8751402,
+    "ast_hash": "7f36a4490f2706739806a0f4ac3792db",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/mobile-question.png": {
+    "mtime": 1792601557.6041126,
+    "seen": 1792683886.8751411,
+    "ast_hash": "201d2dc126d0902a060f7e7ddd977367",
+    "semantic_hash": ""
+  },
+  "banky/doplnovacka/04r-doplnovacka.json": {
+    "mtime": 1792684491.3010232,
+    "seen": 1792684684.678559,
+    "ast_hash": "36781cc6817a1795d22552911db8b342",
+    "semantic_hash": ""
+  },
+  "build_bank_recall.py": {
+    "mtime": 1792684370.8639054,
+    "seen": 1792684684.678567,
+    "ast_hash": "3af1f7afa49a82bebf668db2cb46329f",
+    "semantic_hash": ""
+  },
+  "test_doplnovacka.js": {
+    "mtime": 1793259353.658443,
+    "seen": 1793259354.180774,
+    "ast_hash": "20993d421ef89fb3b502645cf76a90bd",
+    "semantic_hash": ""
+  },
+  "TODO.md": {
+    "mtime": 1792684779.9151826,
+    "seen": 1792684780.38522,
+    "ast_hash": "76c6bd991da674874380c33a6483826f",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/desktop-recall-answered.png": {
+    "mtime": 1792685501.2726772,
+    "seen": 1793259326.042054,
+    "ast_hash": "24df719cffbd7c4f74cb91fdc071afa9",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/desktop-recall-menu.png": {
+    "mtime": 1792685610.1132927,
+    "seen": 1793259326.042055,
+    "ast_hash": "ee4008fb778f9279975a477844a75875",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/desktop-recall-question.png": {
+    "mtime": 1792685500.6989403,
+    "seen": 1793259326.0420558,
+    "ast_hash": "3fa9e5ed6d498089e309ec443a111319",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/mobile-recall-answered.png": {
+    "mtime": 1792685503.3636482,
+    "seen": 1793259326.042072,
+    "ast_hash": "abda9756d3355f2fdec08909eec53acc",
+    "semantic_hash": ""
+  }
+}
