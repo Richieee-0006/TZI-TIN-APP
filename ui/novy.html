@@ -340,6 +340,13 @@ h2 { margin: 0 0 12px; font-size: 1.05rem; font-weight: 700; letter-spacing: 0; 
   .solution { border-left: 3px solid var(--blue); padding: 4px 0 4px 16px; margin: 0 0 24px;
     white-space: pre-wrap; font: 500 .9375rem/1.65 var(--mono); overflow: auto; max-height: 60vh; display: none; overflow-wrap: normal; tab-size: 4; }
   .solution.explain { font: 400 1rem/1.55 var(--font); white-space: pre-wrap; overflow-wrap: anywhere; }
+  .frac, .binom > span { display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; font-size: .85em; line-height: 1.3; }
+  .frac { margin: 0 .1em; }
+  .frac > span { padding: 0 .25em; white-space: nowrap; }
+  .frac > span + span { border-top: 1.5px solid currentColor; }
+  .binom { display: inline-flex; align-items: center; vertical-align: middle; white-space: nowrap; }
+  .binom::before, .binom::after { font-size: 1.9em; font-weight: 300; line-height: 1; }
+  .binom::before { content: "("; } .binom::after { content: ")"; }
   .nav { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; padding-top: 4px; }
   .nav button { font-size: 1rem; }
   .btn-prev, .btn-end { background: none; border: 0; padding: 10px 4px; color: var(--muted); font-weight: 500; text-underline-offset: 3px; }
@@ -594,12 +601,46 @@ const LETTERS = 'ABCDEFGH';
 const letters = (q, keys) => keys.map(k => LETTERS[optOrder[q.id].indexOf(k)]).sort().join(', ');
 // Zápis z banky (a_n, Z^n, a_(n-1), ->) převede na HTML s dolními/horními indexy a šipkami.
 function fmt(s) {
-  s = String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  return s
+  s = String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\.\.\./g, '…');
+  return fracs(s)
+    .replace(/\(([^()<>]+?) nad ([^()<>]+?)\)/g, '<span class="binom"><span><span>$1</span><span>$2</span></span></span>')
     .replace(/_\(([^)]+)\)/g, '<sub>$1</sub>').replace(/_([A-Za-z0-9]+)/g, '<sub>$1</sub>')
     .replace(/\^\(([^)]+)\)/g, '<sup>$1</sup>').replace(/\^([A-Za-z0-9]+)/g, '<sup>$1</sup>')
     .replace(/[₀-₉]+/g, m => '<sub>' + [...m].map(c => '₀₁₂₃₄₅₆₇₈₉'.indexOf(c)).join('') + '</sub>')
-    .replace(/-&gt;/g, '→').replace(/&lt;-/g, '←').replace(/\.\.\./g, '…');
+    .replace(/-&gt;/g, '→').replace(/&lt;-/g, '←');
+}
+
+// „a / b“ jako zlomek nad sebou. Jen čísla, jednopísmenné proměnné, ! a závorky, ať „pravda (1) / nepravda (0)“ nebo A/∼ zůstanou textem.
+const isMath = t => /^[\p{L}\d!()·…+−\-,^_ ]+$/u.test(t) && !/\p{L}{2}/u.test(t);
+const unwrap = t => {
+  if (t[0] !== '(') return t;
+  for (let i = 0, d = 0; i < t.length; i++) { d += t[i] === '(' ? 1 : t[i] === ')' ? -1 : 0; if (!d) return i === t.length - 1 ? t.slice(1, -1) : t; }
+  return t;
+};
+function fracs(s) {
+  for (let i = s.indexOf('/'); i >= 0; i = s.indexOf('/', i + 1)) {
+    const a = s[i - 1] === ' ' ? i - 1 : i, b = s[i + 1] === ' ' ? i + 2 : i + 1;
+    let l = a, r = b, d = 0;
+    for (; l > 0; l--) { // čitatel: doleva po mezeru, závorky celé, součin „5 · 4“ patří celý
+      const c = s[l - 1];
+      if (c === ')') d++;
+      else if (c === '(') { if (!d) break; d--; }
+      else if (!d && /[\s=,;]/.test(c)) { if (s.slice(l - 3, l) === ' · ') { l -= 2; continue; } break; }
+    }
+    while (l < a && '−+-'.includes(s[l])) l++; // znaménko zůstane před zlomkem
+    for (d = 0; r < s.length; r++) { // jmenovatel: doprava po mezeru, závorky celé
+      const c = s[r];
+      if (c === '(') d++;
+      else if (c === ')') { if (!d) break; d--; }
+      else if (!d && /[\s=,;/.]/.test(c)) break;
+    }
+    const num = s.slice(l, a), den = s.slice(b, r);
+    if (!num || !den || !isMath(num) || !isMath(den) || !/[\d!]/.test(num + den)) continue;
+    const html = `<span class="frac"><span>${unwrap(num)}</span><span>${unwrap(den)}</span></span>`;
+    s = s.slice(0, l) + html + s.slice(r);
+    i = l + html.length - 1;
+  }
+  return s;
 }
 
 async function init() {

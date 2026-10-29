@@ -108,5 +108,15 @@ for (let t = 0; t < N; t++) {
 }
 pos.forEach((n, i) => { if (n < N * 0.15 || n > N * 0.35) { fail++; console.log(`FAIL pozice ${'ABCD'[i]}: ${n}× z ${N}`); } });
 console.log(`míchání: ${N} sad, správná odpověď na pozici A/B/C/D: ${pos.join('/')}, různých pořadí: ${orders.size}/24`);
+// zlomky a kombinační čísla ve fmt (texty z bank); [ ÷ ] = zlomek, { nad } = kombinační číslo
+const fm = s => run('fmt')(s).replace(/<span class="frac"><span>(.*?)<\/span><span>(.*?)<\/span><\/span>/g, '[$1 ÷ $2]')
+  .replace(/<span class="binom"><span><span>(.*?)<\/span><span>(.*?)<\/span><\/span><\/span>/g, '{$1 nad $2}');
+[['(n nad 0) = n! / (n! · 0!) = 1.', '{n nad 0} = [n! ÷ n! · 0!] = 1.'],
+ ['(5 nad 2) = 5 · 4 / 2! = 20 / 2 = 10.', '{5 nad 2} = [5 · 4 ÷ 2!] = [20 ÷ 2] = 10.'],
+ ['n·(n−1)·…·(n−k+1)/k!.', '[n·(n−1)·…·(n−k+1) ÷ k!].'], ['1 + 2 + ... + n = n(n + 1)/2 pro', '1 + 2 + … + n = [n(n + 1) ÷ 2] pro'],
+ ['(n+1 nad k+1)', '{n+1 nad k+1}'], ['např. 1/2, −3/4, 5', 'např. [1 ÷ 2], −[3 ÷ 4], 5'], ['(= 6!/3!).', '(= [6! ÷ 3!]).'],
+ ['pravda (1) / nepravda (0)', 'pravda (1) / nepravda (0)'], ['množina A/∼?', 'množina A/∼?'], ['(M/E)', '(M/E)'],
+ ['pro každé / pro všechna', 'pro každé / pro všechna'], ['a <b> / 2', 'a &lt;b&gt; / 2'],
+].forEach(([s, want]) => { const got = fm(s); if (got !== want) { fail++; console.log(`FAIL fmt: ${s}\n  dostal: ${got}\n  čekal:  ${want}`); } });
 console.log(`chyb: ${fail}`);
 process.exit(fail ? 1 : 0);
