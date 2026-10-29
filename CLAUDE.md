@@ -4,8 +4,16 @@ Kvíz na opakování přednášek KI/TIN. Vzor: MTCNA-app (stejné režimy a UI)
 
 ## Soubory
 
-- `tzi_trener.py`: server (stdlib `http.server`, port 5051), výběr UI (`?ui=`, cookie `tzi_ui`, `--klasicky`) a `/api/*` routy.
-- `ui/novy.html`: nové UI (výchozí), inline CSS a JS, barvy a písma přes proměnné v `:root`, dark mód.
+Kompletní popis architektury a rozdělení modulů je v [ARCHITECTURE.md](ARCHITECTURE.md).
+
+- `server.py`: hlavní vstupní bod aplikace (FastAPI + SQLite, port 5051). Spouští se: `.venv\Scripts\python.exe server.py`.
+- `webapp/`: FastAPI balíček (routy `routers/`, session tokeny, serverová validace otázek, git auto-sync).
+- `scoring/`: balíček pro bodování, adaptivní streak, denní cíle, žebříček a kompetitivní režimy (KotH, FFA, duel, lobby).
+- `db.py`: SQLite databáze s transakcemi ve WAL režimu, správa uživatelů a postupu.
+- `ui/novy.html`: moderní PWA rozhraní, načítá styly z `ui/css/style.css` a moduly z `ui/js/*.js`.
+- `ui/css/`: klientské styly a Catppuccin témata.
+- `ui/js/`: modulární frontendové skripty (core, format/KaTeX, quiz, recall/WASM, arena, rooms, gamifikace, účet).
+- `tzi_trener.py`: modul načítání bank otázek a legacy stdlib server.
 - `ui/klasicky.html`: původní UI, už se nevyvíjí (nahoře je upozornění, odkaz „Nový vzhled“); nové funkce jsou jen v `novy.html`. Zálohy: `zaloha/tzi_trener_v1.py`, git tag `ui-v1-klasicky`.
 - `banky/*.json`: jedna banka na přednášku, aplikace je najde sama. Typy otázek: `choice` (options, correct, explanation) a `input` (answer, solution). `input` s `reveal: true` je zadání bez políčka: tlačítko „Ukázat řešení“ odhalí `solution`, hodnotí si člověk sám (Zvládl/Nezvládl jsem).
 - `build_bank.py`, `build_bank_2.py`, `build_bank_3.py`: generují banku 1., 2. a 3. přednášky. Příklady na výsledek se počítají ve skriptu, odpovědi neměnit ručně v JSON.
