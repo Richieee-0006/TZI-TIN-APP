@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TZI Trenér</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#1e1e2e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TZI Trenér">
+<link rel="icon" type="image/svg+xml" href="/icon.svg">
+<link rel="apple-touch-icon" href="/icon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -43,27 +50,179 @@
     --exam-accent: #C2255C;
   }
 }
+
+:root[data-theme="catppuccin"] {
+  --paper: #1e1e2e;
+  --paper-2: #181825;
+  --ink: #cdd6f4;
+  --muted: #a6adc8;
+  --line: #313244;
+  --blue: #cba6f7;
+  --blue-ink: #11111b;
+  --ok: #a6e3a1;
+  --bad: #f38ba8;
+  --new: #6c7086;
+  --exam: #cba6f7;
+  --exam-text: #11111b;
+  --exam-accent: #f5c2e7;
+}
+
+/* User Header Bar */
+.user-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  background: var(--paper-2);
+  border: 1px solid var(--line);
+  padding: 0.6rem 1rem;
+  border-radius: 0.75rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+.user-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.user-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.user-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.badge-user {
+  font-weight: 700;
+  color: var(--blue);
+  background: rgba(203, 166, 247, 0.15);
+  padding: 0.25rem 0.6rem;
+  border-radius: 0.4rem;
+  border: 1px solid var(--line);
+}
+.badge-score {
+  font-weight: 700;
+  color: var(--ok);
+  background: rgba(166, 227, 161, 0.15);
+  padding: 0.25rem 0.6rem;
+  border-radius: 0.4rem;
+}
+.badge-streak {
+  font-weight: 700;
+  color: #fab387;
+  background: rgba(250, 179, 135, 0.15);
+  padding: 0.25rem 0.6rem;
+  border-radius: 0.4rem;
+}
+.badge-net {
+  font-weight: 700;
+  font-size: 0.8rem;
+  padding: 0.25rem 0.55rem;
+  border-radius: 0.4rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.badge-net-offline {
+  background: rgba(243, 139, 168, 0.2);
+  color: var(--bad);
+}
+.badge-net-sync {
+  background: rgba(249, 226, 175, 0.2);
+  color: #fab387;
+  animation: pulse 1.2s infinite ease-in-out;
+}
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+.theme-select {
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.4rem;
+  font-size: 0.85rem;
+  outline: none;
+  cursor: pointer;
+}
+.lnk-admin {
+  color: var(--blue);
+  background: rgba(203, 166, 247, 0.15);
+  text-decoration: none;
+  font-weight: 700;
+  padding: 0.25rem 0.6rem;
+  border-radius: 0.4rem;
+  transition: background 0.2s;
+  display: inline-flex;
+  align-items: center;
+}
+.lnk-admin:hover { background: rgba(203, 166, 247, 0.25); }
+.lnk-logout {
+  color: var(--bad);
+  background: rgba(243, 139, 168, 0.12);
+  text-decoration: none;
+  font-weight: 600;
+  padding: 0.25rem 0.6rem;
+  border-radius: 0.4rem;
+  transition: background 0.2s;
+  display: inline-flex;
+  align-items: center;
+}
+.lnk-logout:hover { background: rgba(243, 139, 168, 0.22); }
+
+/* Score Toast Notification */
+.score-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--paper-2);
+  border: 2px solid var(--blue);
+  color: var(--ink);
+  padding: 0.8rem 1.4rem;
+  border-radius: 0.75rem;
+  font-weight: 700;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+  transform: translateY(100px);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.score-toast.visible {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+
 :root[data-theme="dark"] {
   --paper: #0F1729; --paper-2: #1A2540; --ink: #E8EDF5; --muted: #9AA7BF; --line: #2C3957;
   --blue: #6F7DFF; --blue-ink: #0F1729; --ok: #4CC38A; --bad: #FF7BA5; --new: #66738F;
   --exam: #E8EDF5; --exam-text: #0F1729; --exam-accent: #C2255C;
 }
 
-html { -webkit-text-size-adjust: 100%; }
+html { -webkit-text-size-adjust: 100%; overflow-x: hidden; scroll-behavior: smooth; }
 body {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
   font: 400 16px/1.5 var(--font);
   min-height: 100vh;
+  overflow-x: hidden;
 }
 button { font: inherit; color: inherit; cursor: pointer; }
-:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; border-radius: 4px; }
+:focus-visible { outline: 2.5px solid var(--blue); outline-offset: 2.5px; border-radius: 4px; }
 
 #app {
   max-width: 1120px;
   margin: 0 auto;
-  padding: 40px 24px 56px;
+  padding: 36px 24px 56px;
 }
 
 /* ---------- hlavička ---------- */
@@ -143,8 +302,29 @@ h2 { margin: 0 0 12px; font-size: 1.05rem; font-weight: 700; letter-spacing: 0; 
 .legend .ok i { color: var(--ok); } .legend .bad i { color: var(--bad); } .legend .new i { color: var(--new); }
 
 /* ---------- režimy ---------- */
-.filter { display: inline-flex; background: var(--paper-2); border-radius: 10px; padding: 3px; margin-bottom: 24px; max-width: 100%; }
-.filter button { background: none; border: 0; padding: 8px 14px; border-radius: 8px; font-weight: 500; font-size: .9375rem; white-space: nowrap; }
+.filter {
+  display: flex;
+  background: var(--paper-2);
+  border-radius: 10px;
+  padding: 3px;
+  margin-bottom: 24px;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.filter::-webkit-scrollbar { display: none; }
+.filter button {
+  flex: 1 0 auto;
+  background: none;
+  border: 0;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: .9375rem;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
 .filter button[aria-pressed="true"] { background: var(--paper); box-shadow: 0 1px 2px rgba(19,32,58,.25); font-weight: 700; }
 
 .go {
@@ -192,15 +372,29 @@ h2 { margin: 0 0 12px; font-size: 1.05rem; font-weight: 700; letter-spacing: 0; 
 .ai { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: .8125rem; max-width: 70ch; }
 
 @media (max-width: 860px) {
-  .layout { grid-template-columns: 1fr; gap: 40px; margin-top: 32px; }
+  .layout { grid-template-columns: 1fr; gap: 36px; margin-top: 30px; }
   .top p { text-align: left; }
-  #app { padding: 28px 16px 40px; }
+  #app { padding: 24px 16px 44px; }
 }
-@media (max-width: 420px) {
+
+@media (max-width: 600px) {
+  #app { padding: 14px 10px 36px; }
+  .top h1 { font-size: 2.1rem; }
+  .top p { font-size: 0.875rem; text-align: left; }
+  .user-bar { padding: 0.5rem 0.65rem; gap: 0.45rem; }
+  .user-left { width: 100%; gap: 0.35rem; }
+  .user-left .badge-user,
+  .user-left .badge-score,
+  .user-left .badge-streak,
+  .user-left .badge-net { font-size: 0.76rem; padding: 0.2rem 0.45rem; }
+  .user-right { width: 100%; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 0.45rem; gap: 0.4rem; }
+  .theme-select { font-size: 0.8rem; padding: 0.2rem 0.4rem; max-width: 50%; }
+  .lnk-admin, .lnk-logout { font-size: 0.8rem; padding: 0.2rem 0.5rem; }
   .lec { grid-template-columns: 1.8rem 1fr; }
   .lec .d { grid-column: 2; }
-  .filter { display: flex; }
-  .filter button { flex: 1; padding: 8px 6px; font-size: .875rem; }
+  .filter .filter-sub { display: none; }
+  .filter button { padding: 7px 10px; font-size: .84rem; }
+  .foot { gap: 14px; }
 }
 
 .lnk { color: var(--muted); text-decoration: underline; text-underline-offset: 3px; padding: 4px 0; background: none; border: 0; font: inherit; }
@@ -305,23 +499,43 @@ h2 { margin: 0 0 12px; font-size: 1.05rem; font-weight: 700; letter-spacing: 0; 
   .opt .letter { font: 700 1rem/1 var(--mono); color: var(--muted); width: 1.9rem; height: 1.9rem; display: grid; place-items: center; border: 1.5px solid var(--line); border-radius: 6px; align-self: start; }
   .opt::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: transparent; }
   .opt::after { font: 700 .8125rem/1.2 var(--mono); white-space: nowrap; }
-  .opt:hover:not(.disabled) { background: var(--paper-2); }
-  .opt:hover:not(.disabled) .letter { border-color: var(--blue); color: var(--blue); }
+
+  @media (hover: hover) and (pointer: fine) {
+    .opt:hover:not(.disabled) { background: var(--paper-2); }
+    .opt:hover:not(.disabled):not(.selected):not(.correct):not(.wrong) .letter { border-color: var(--blue); color: var(--blue); }
+  }
+
   .opt.selected::before { background: var(--blue); }
   .opt.selected { font-weight: 600; }
-  .opt.selected .letter { background: var(--blue); border-color: var(--blue); color: var(--blue-ink); }
+  .opt.selected .letter,
+  .opt.selected:hover .letter {
+    background: var(--blue) !important;
+    border-color: var(--blue) !important;
+    color: var(--blue-ink) !important;
+  }
   .opt.selected::after { content: "vybráno"; color: var(--blue); font-family: var(--font); font-weight: 500; }
   .opt.disabled { cursor: default; color: var(--muted); }
   .opt.correct, .opt.wrong, .opt.missed { color: var(--ink); }
   .opt.correct::before { background: var(--ok); }
-  .opt.correct .letter { background: var(--ok); border-color: var(--ok); color: var(--paper); }
+  .opt.correct .letter,
+  .opt.correct:hover .letter {
+    background: var(--ok) !important;
+    border-color: var(--ok) !important;
+    color: var(--paper) !important;
+  }
   .opt.correct::after { content: "1 správně"; color: var(--ok); }
   .opt.wrong::before { background: var(--bad); }
-  .opt.wrong .letter { background: var(--bad); border-color: var(--bad); color: var(--paper); }
+  .opt.wrong .letter,
+  .opt.wrong:hover .letter {
+    background: var(--bad) !important;
+    border-color: var(--bad) !important;
+    color: var(--paper) !important;
+  }
   .opt.wrong::after { content: "0 špatně"; color: var(--bad); }
   .opt.wrong > span:nth-child(2) { text-decoration: line-through; text-decoration-color: var(--bad); text-decoration-thickness: 1.5px; }
   .opt.missed::before { background: repeating-linear-gradient(var(--ok) 0 5px, transparent 5px 9px); }
-  .opt.missed .letter { border-color: var(--ok); color: var(--ok); border-style: dashed; }
+  .opt.missed .letter,
+  .opt.missed:hover .letter { border-color: var(--ok) !important; color: var(--ok) !important; border-style: dashed; }
   .opt.missed::after { content: "1 chybělo"; color: var(--ok); }
   .ans-input { width: 100%; font: 500 1.5rem/1.3 var(--mono); padding: 12px 14px; border: 1.5px solid var(--ink); border-radius: 8px; margin-bottom: 20px; background: var(--paper); color: var(--ink); }
   .ans-input:focus { outline: 3px solid var(--blue); outline-offset: 2px; }
@@ -355,7 +569,7 @@ h2 { margin: 0 0 12px; font-size: 1.05rem; font-weight: 700; letter-spacing: 0; 
   @media (max-width: 600px) {
     .question-text { font-size: 1.2rem; }
     .question-text.calc { font-size: 1.05rem; }
-    .opt { grid-template-columns: 2rem 1fr; padding: 12px 6px 12px 12px; gap: 10px; font-size: 1rem; }
+    .opt { grid-template-columns: 2rem 1fr; padding: 12px 6px 12px 10px; gap: 10px; font-size: 1rem; }
     .opt::after { grid-column: 2; }
     .nav { grid-template-columns: 1fr 1fr; }
     .btn-next { grid-column: 1 / -1; grid-row: 1; width: 100%; }
@@ -402,166 +616,744 @@ h2 { margin: 0 0 12px; font-size: 1.05rem; font-weight: 700; letter-spacing: 0; 
   .bye .bits { margin-top: 28px; font: 700 1.5rem/1 var(--mono); letter-spacing: .5em; }
   /* END results */
 
+  /* Header & Status Panel (dle referenčního layoutu) */
+  .badge-net { cursor: pointer; font-family: var(--mono); font-size: .74rem; padding: 2px 8px; border-radius: 4px; border: 1px solid var(--line); display: inline-flex; align-items: center; gap: 5px; user-select: none; }
+  .badge-net-online { background: rgba(76, 195, 138, 0.12); color: var(--ok); border-color: color-mix(in srgb, var(--ok) 45%, transparent); }
+  .badge-net-offline { background: rgba(243, 139, 168, 0.18); color: var(--bad); border-color: color-mix(in srgb, var(--bad) 55%, transparent); }
+  .badge-net-sync { background: rgba(250, 179, 135, 0.18); color: #fab387; border-color: rgba(250, 179, 135, 0.45); }
+  .top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .top-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+  .top-user { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; font-size: .85rem; color: var(--muted); }
+  .top-user strong { color: var(--ink); font-weight: 700; display: inline-flex; align-items: center; gap: 5px; }
+  .top-lnk { color: var(--muted); text-decoration: underline; text-underline-offset: 3px; display: inline-flex; align-items: center; gap: 4px; font-weight: 500; background: none; border: 0; padding: 0; }
+  .top-lnk:hover { color: var(--ink); }
+  .top-user svg, .xp-stat svg, .mode .name svg { width: 14px; height: 14px; vertical-align: -2px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  .mode .name { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; }
+  .mode .name svg { color: var(--muted); width: 15px; height: 15px; }
+  .exam .mode .name svg { color: color-mix(in srgb, var(--exam-text) 72%, transparent); }
+
+  .status-panel { border: 1px solid var(--line); padding: 14px 16px; margin-top: 18px; background: color-mix(in srgb, var(--paper-2) 45%, transparent); }
+  .xp-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: .85rem; }
+  .lvl-box { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 26px; padding: 0 6px; background: var(--blue); color: var(--blue-ink); font: 800 .82rem/1 var(--mono); }
+  .lvl-title { font-weight: 800; font-size: .85rem; letter-spacing: .02em; margin-right: 4px; }
+  .xp-track { flex: 1; min-width: 140px; height: 7px; background: var(--paper-2); overflow: hidden; }
+  .xp-fill { height: 100%; width: 0%; background: var(--blue); transition: width .25s ease; }
+  .xp-stat { display: inline-flex; align-items: center; gap: 4px; color: var(--muted); white-space: nowrap; font-size: .82rem; }
+  .xp-stat b { color: var(--ink); font-family: var(--mono); font-weight: 700; }
+  .sound-btn { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 26px; background: none; border: 1px solid var(--line); color: var(--muted); padding: 0; }
+  .sound-btn:hover { color: var(--ink); border-color: var(--ink); }
+  .sound-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+  .daily-row { margin-top: 10px; }
+  .daily-label { display: flex; justify-content: space-between; align-items: baseline; font-size: .8rem; color: var(--muted); margin-bottom: 5px; }
+  .daily-label b { color: var(--ink); font-family: var(--mono); }
+  .daily-bar { height: 6px; background: var(--paper-2); overflow: hidden; }
+  .daily-bar-fill { height: 100%; width: 0%; background: var(--ok); transition: width .25s ease; }
+  .daily-bar-fill.done { background: var(--ok); }
+
+  .ach-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .ach-badge { font-size: .72rem; line-height: 1.2; padding: 4px 8px; border: 1px solid var(--line); color: var(--muted); background: transparent; white-space: nowrap; }
+  .ach-badge.unlocked { border-color: var(--ok); color: var(--ok); font-weight: 600; }
+
+  #comp-arena, #profile-view, #leaderboard-view { display: none; max-width: 860px; margin: 0 auto; padding-top: 8px; }
+  .subpage-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+  .subpage-top h1 { margin: 8px 0 4px; font-size: clamp(1.85rem, 4.8vw, 2.6rem); line-height: 1.08; font-weight: 800; letter-spacing: -0.03em; }
+  .subpage-top p { margin: 0; color: var(--muted); font-size: .92rem; }
+  .subpage-back { display: inline-flex; align-items: center; gap: 6px; background: var(--paper-2); border: 1px solid var(--line); border-radius: 8px; padding: 7px 14px; font-size: .85rem; font-weight: 600; color: var(--ink); text-decoration: none; cursor: pointer; }
+  .subpage-back:hover { border-color: var(--blue); color: var(--blue); }
+  .nav-pill-btn { display: inline-flex; align-items: center; gap: 5px; background: var(--paper-2); border: 1px solid var(--line); border-radius: 8px; padding: 5px 11px; font-size: .8rem; font-weight: 700; color: var(--ink); cursor: pointer; transition: border-color .15s, background .15s; }
+  .nav-pill-btn:hover { border-color: var(--blue); color: var(--blue); }
+
+  /* Competitive Arena Create Room Card */
+  .arena-create-card { background: var(--paper-2); border: 1px solid var(--line); border-radius: 16px; padding: 22px; margin-bottom: 22px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+  .arena-card-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .arena-card-head h2 { margin: 0; font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+  .arena-card-sub { font-size: .8rem; color: var(--muted); font-family: var(--mono); }
+  .arena-modes-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px; }
+  @media (max-width: 720px) { .arena-modes-grid { grid-template-columns: 1fr; } }
+  .arena-mode-card { position: relative; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; padding: 14px 16px; background: var(--paper); border: 2px solid var(--line); border-radius: 12px; text-align: left; cursor: pointer; transition: border-color .15s, transform .12s, background .15s; }
+  .arena-mode-card:hover { border-color: color-mix(in srgb, var(--blue) 60%, var(--line)); transform: translateY(-1px); }
+  .arena-mode-card.active { border-color: var(--blue); background: color-mix(in srgb, var(--blue) 8%, var(--paper)); box-shadow: 0 4px 14px color-mix(in srgb, var(--blue) 18%, transparent); }
+  .amc-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .amc-title { font-weight: 800; font-size: .96rem; color: var(--ink); display: flex; align-items: center; gap: 6px; }
+  .amc-badge { font-family: var(--mono); font-size: .76rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--paper-2); color: var(--blue); border: 1px solid var(--line); }
+  .amc-desc { font-size: .8rem; color: var(--muted); line-height: 1.35; }
+  .amc-meta { display: flex; justify-content: space-between; align-items: center; gap: 6px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: .75rem; color: var(--muted); }
+  .amc-solo-btn { background: none; border: 0; padding: 2px 0; color: var(--blue); font-size: .75rem; font-weight: 700; text-decoration: underline; cursor: pointer; }
+  .amc-solo-btn:hover { opacity: .85; }
+  .arena-form-bar { display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: center; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+  @media (max-width: 720px) { .arena-form-bar { grid-template-columns: 1fr; } }
+  .arena-input-wrap { display: flex; align-items: center; gap: 8px; background: var(--paper-2); border: 1px solid var(--line); border-radius: 9px; padding: 8px 12px; }
+  .arena-input-wrap:focus-within { border-color: var(--blue); }
+  .arena-input-wrap input { width: 100%; background: transparent; border: 0; color: var(--ink); font: 500 .9rem var(--font); outline: none; }
+  .arena-toggle { display: inline-flex; align-items: center; gap: 9px; cursor: pointer; user-select: none; font-size: .84rem; color: var(--ink); font-weight: 600; padding: 4px 6px; }
+  .arena-toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .arena-toggle-track { position: relative; width: 38px; height: 22px; background: var(--line); border-radius: 999px; transition: background .18s; flex-shrink: 0; }
+  .arena-toggle-track::after { content: ''; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; background: var(--ink); border-radius: 50%; transition: transform .18s; }
+  .arena-toggle input:checked + .arena-toggle-track { background: var(--ok); }
+  .arena-toggle input:checked + .arena-toggle-track::after { transform: translateX(16px); background: #0f1729; }
+  .room-create-btn { background: var(--blue); color: var(--blue-ink); border: none; border-radius: 10px; padding: 11px 20px; font-size: .9rem; font-weight: 800; cursor: pointer; white-space: nowrap; transition: filter .15s, transform .1s; }
+  .room-create-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+  .arena-section-card { background: var(--paper-2); border: 1px solid var(--line); border-radius: 16px; padding: 20px 22px; margin-bottom: 20px; }
+  .rooms-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 12px; font-size: .95rem; font-weight: 800; color: var(--ink); }
+  .rooms-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+  .room-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 14px; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; font-size: .88rem; color: var(--ink); }
+  .room-row-meta { font-size: .78rem; color: var(--muted); }
+  .room-join-btn { background: var(--blue); color: var(--blue-ink); border: 0; border-radius: 8px; padding: 7px 14px; font-size: .82rem; font-weight: 800; cursor: pointer; white-space: nowrap; }
+  .room-join-btn:hover { filter: brightness(1.1); }
+  .mode.comp-disabled { opacity: .42; cursor: not-allowed; filter: grayscale(0.6); }
+
+  /* Profile & Recap View + Leaderboard View */
+  .subpage-nav { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .subpage-head { margin-bottom: 24px; }
+  .subpage-head h1 { margin: 0 0 6px; font-size: clamp(1.85rem, 4.5vw, 2.5rem); line-height: 1.08; font-weight: 800; letter-spacing: -0.03em; }
+  .subpage-head p { margin: 0; color: var(--muted); font-size: .92rem; }
+  .prof-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 20px; }
+  @media (max-width: 720px) { .prof-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .prof-stat-box { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; justify-content: space-between; }
+  .prof-stat-box span { display: block; font-size: .74rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+  .prof-stat-box strong { font: 800 1.4rem/1.15 var(--mono); color: var(--ink); }
+  .recap-source-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
+  @media (max-width: 720px) { .recap-source-list { grid-template-columns: 1fr; } }
+  .recap-source-row { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+  .recap-source-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 8px; font-size: .85rem; }
+  .recap-bar { height: 6px; background: var(--paper-2); border-radius: 999px; overflow: hidden; display: flex; }
+  .recap-bar-ok { background: var(--ok); height: 100%; }
+  .recap-bar-bad { background: var(--bad); height: 100%; }
+  .ach-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; margin-top: 8px; }
+  .ach-badge { display: flex; flex-direction: column; justify-content: space-between; gap: 4px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; color: var(--muted); background: var(--paper); white-space: normal; transition: border-color .15s, background .15s; }
+  .ach-badge .ach-title { font-size: .82rem; font-weight: 700; color: var(--ink); display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+  .ach-badge .ach-hint { font-size: .72rem; line-height: 1.3; color: var(--muted); opacity: .82; font-weight: 400; }
+  .ach-badge.unlocked { border-color: color-mix(in srgb, var(--ok) 65%, var(--line)); background: color-mix(in srgb, var(--ok) 7%, var(--paper)); }
+  .ach-badge.unlocked .ach-title { color: var(--ok); }
+  .prof-form-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+  @media (max-width: 820px) { .prof-form-grid { grid-template-columns: 1fr; } }
+  .prof-form-box { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .prof-form-box h3 { margin: 0 0 2px; font-size: .92rem; font-weight: 700; color: var(--ink); }
+  .prof-input { width: 100%; box-sizing: border-box; background: var(--paper-2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 11px; color: var(--ink); font: 500 .86rem var(--font); }
+  .prof-btn { background: var(--blue); color: var(--blue-ink); border: 0; border-radius: 8px; padding: 9px 14px; font-size: .84rem; font-weight: 700; cursor: pointer; align-self: flex-start; margin-top: auto; }
+  .prof-btn:hover { filter: brightness(1.08); }
+  .prof-btn.danger { background: transparent; color: var(--bad); border: 1px solid color-mix(in srgb, var(--bad) 55%, var(--line)); }
+  .prof-btn.danger:hover { background: var(--bad); color: #0f1729; }
+  .danger-zone-bar { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .lb-table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+  .lb-table th, .lb-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--line); }
+  .lb-table th { color: var(--muted); font-size: .74rem; text-transform: uppercase; letter-spacing: .05em; }
+  .lb-table tr.me-row { background: color-mix(in srgb, var(--blue) 12%, transparent); font-weight: 700; }
+  .daily-day-dot { display: inline-block; font-family: var(--mono); font-size: .75rem; padding: 4px 9px; border: 1px solid var(--line); border-radius: 6px; margin-right: 6px; margin-top: 4px; color: var(--muted); background: var(--paper); }
+  .daily-day-dot.met { border-color: var(--ok); color: var(--ok); font-weight: 700; }
+
+  .koth-matches { list-style: none; padding: 6px 0 4px; margin: 4px 0 0; font-size: .78rem; color: color-mix(in srgb, var(--exam-text) 75%, transparent); border-top: 1px dashed color-mix(in srgb, var(--exam-text) 22%, transparent); }
+  .koth-matches li { display: flex; justify-content: space-between; gap: 8px; padding: 3px 0; }
+  .rooms-box { margin-top: 10px; padding-top: 10px; border-top: 1px solid color-mix(in srgb, var(--exam-text) 18%, transparent); }
+  .rooms-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; font-size: .82rem; font-weight: 700; color: var(--exam-text); }
+  .room-create-bar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .room-create-bar select, .room-create-bar input { background: color-mix(in srgb, var(--exam-bg) 75%, #000); color: var(--exam-text); border: 1px solid color-mix(in srgb, var(--exam-text) 28%, transparent); padding: 6px 9px; font-size: .8rem; font-family: inherit; }
+  .room-create-bar input { flex: 1 1 140px; min-width: 120px; }
+  .room-create-btn { background: var(--exam-text); color: var(--exam-bg); border: none; padding: 6px 12px; font-size: .8rem; font-weight: 700; cursor: pointer; }
+  .room-create-btn:hover { opacity: .9; }
+  .rooms-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 5px; }
+  .room-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 7px 10px; background: color-mix(in srgb, var(--exam-text) 7%, transparent); border: 1px solid color-mix(in srgb, var(--exam-text) 18%, transparent); font-size: .82rem; color: var(--exam-text); }
+  .room-row-meta { font-size: .74rem; opacity: .8; }
+  .room-join-btn { background: transparent; color: var(--exam-text); border: 1px solid var(--exam-text); padding: 4px 10px; font-size: .76rem; font-weight: 700; cursor: pointer; white-space: nowrap; }
+  .room-join-btn:hover { background: var(--exam-text); color: var(--exam-bg); }
+  #room-lobby { display: none; max-width: 620px; margin: 0 auto; }
+  .rl-card { background: var(--paper-2); border: 1px solid var(--line); padding: 22px; }
+  .rl-badge { display: inline-block; font-family: var(--mono); font-size: .75rem; padding: 3px 8px; border: 1px solid var(--line); margin-bottom: 8px; color: var(--muted); }
+  .rl-status { margin: 12px 0 16px; padding: 10px 12px; background: var(--paper); border-left: 3px solid var(--blue); font-size: .88rem; }
+  .rl-players { list-style: none; padding: 0; margin: 0 0 18px; border: 1px solid var(--line); background: var(--paper); }
+  .rl-players li { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--line); font-size: .9rem; }
+  .rl-players li:last-child { border-bottom: none; }
+  .rl-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+  .rl-actions button { padding: 10px 16px; font-weight: 700; cursor: pointer; border: 1px solid var(--line); background: var(--paper); color: var(--ink); }
+  .rl-actions button.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .room-standings { margin: 14px 0; border: 1px solid var(--line); background: var(--paper-2); padding: 12px; }
+  .room-standings h3 { margin: 0 0 8px; font-size: .88rem; }
+  .room-standings ul { list-style: none; padding: 0; margin: 0; }
+  .room-standings li { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed var(--line); font-size: .85rem; }
+  .room-standings li:last-child { border-bottom: none; }
+  .katex { font-size: 1.05em; }
   </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
 </head>
 <body>
-<div id="app">
+<main id="app">
 
-  <div id="menu">
+  <output id="score-toast" class="score-toast" role="status" aria-live="polite"></output>
+
+  <!-- Hlavní menu (HTML5 Section) -->
+  <section id="menu" aria-label="Hlavní menu">
     <header class="top">
       <h1>TZI Trenér</h1>
-      <p>Opakování přednášek z Teoretické informatiky, KI/TIN</p>
+      <div class="top-right">
+        <p>Opakování přednášek z Teoretické informatiky, KI/TIN</p>
+        <nav class="top-user" aria-label="Uživatelská navigace">
+          <button type="button" id="u-net" class="badge-net badge-net-online" onclick="toggleOfflineMode()" title="Toggle Online / Offline mode">Online</button>
+          <button type="button" class="nav-pill-btn" onclick="openLeaderboardView()" title="Leaderboard">Leaderboard</button>
+          <button type="button" class="nav-pill-btn" onclick="openProfileView()" title="Otevřít profil, rekapitulaci a nastavení účtu">
+            <svg viewBox="0 0 24 24" aria-hidden="true" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span id="u-badge">Profile</span>
+          </button>
+          <output id="u-score" style="display:none;"></output>
+          <a href="/admin" id="admin-link" class="top-lnk" style="display:none;">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Správa
+          </a>
+        </nav>
+      </div>
     </header>
+
+    <!-- Kompaktní status panel (detaily, odznaky a správa účtu jsou v Profilu) -->
+    <section class="status-panel" id="daily-progress-card" aria-label="Postup hráče a denní cíl">
+      <div class="xp-row">
+        <span class="lvl-box" id="u-lvl">1</span>
+        <strong class="lvl-title" id="u-rank-title">NPC</strong>
+        <div class="xp-track" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+          <div class="xp-fill" id="xp-bar-fill" style="width: 33%;"></div>
+        </div>
+        <span class="xp-stat"><b id="u-xp">0</b> XP</span>
+        <span class="xp-stat" title="Aktuální streak správných odpovědí">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+          <b id="u-streak">0</b>
+        </span>
+        <span class="xp-stat">rekord <b id="u-best-streak">0</b></span>
+        <span class="xp-stat" id="dp-streak-pill" title="Denní streak">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <b id="dp-streak">0</b> dní
+        </span>
+      </div>
+      <div class="daily-row">
+        <div class="daily-label">
+          <span id="dp-count">Denní cíl: <b>0</b>/5 odpovědí (+50 XP)</span>
+          <span id="dp-status"></span>
+        </div>
+        <div class="daily-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+          <div class="daily-bar-fill" id="dp-bar-fill"></div>
+        </div>
+      </div>
+    </section>
 
     <div class="layout">
       <section aria-labelledby="h-lec">
         <h2 id="h-lec">Přednáška</h2>
         <ul class="lectures" id="lectures"></ul>
 
-        <div class="bits-head">
+        <header class="bits-head">
           <h2 style="margin:0">Tvůj postup</h2>
-          <span id="bits-sum"></span>
-        </div>
-        <div class="bits" id="bits" role="group" aria-label="Postup po blocích, klikni na blok"></div>
-        <div class="legend" aria-hidden="true">
+          <output id="bits-sum"></output>
+        </header>
+        <figure class="bits" id="bits" role="group" aria-label="Postup po blocích, klikni na blok"></figure>
+        <footer class="legend" aria-hidden="true">
           <span class="ok"><i>1</i>správně</span>
           <span class="bad"><i>0</i>chybně</span>
           <span class="new"><i>·</i>nová</span>
-        </div>
+        </footer>
       </section>
 
       <section aria-label="Režimy">
-        <div class="filter" id="type-row" role="group" aria-label="Typ otázek">
+        <nav class="filter" id="type-row" role="toolbar" aria-label="Typ otázek">
           <button data-t="all" aria-pressed="true" onclick="setType('all')">Vše</button>
-          <button data-t="choice" aria-pressed="false" onclick="setType('choice')">Teorie (A/B/C/D)</button>
-          <button data-t="input" aria-pressed="false" onclick="setType('input')">Příklady (výsledek)</button>
+          <button data-t="choice" aria-pressed="false" onclick="setType('choice')"><span>Teorie</span><span class="filter-sub"> (A/B/C/D)</span></button>
+          <button data-t="input" aria-pressed="false" onclick="setType('input')"><span>Příklady</span><span class="filter-sub"> (výsledek)</span></button>
           <button data-t="recall" id="btn-recall" aria-pressed="false" onclick="setType('recall')">Doplňovačka</button>
-        </div>
+        </nav>
 
         <button class="go" id="go" onclick="goPrimary()">
           <strong id="go-title">Načítám…</strong>
           <span id="go-sub"></span>
         </button>
 
-        <div class="group">
-          <h2>Procvičuj</h2>
+        <section class="group" aria-labelledby="h-proc">
+          <h2 id="h-proc">Procvičuj</h2>
           <ul class="modes">
-            <li><button class="mode" onclick="showChunks()"><span class="name">Po <span id="menu-chunk-size">10</span></span><span class="desc">Postupně po blocích, v bloku si vybereš podmnožinu</span><span class="count" id="c-blocks"></span></button></li>
-            <li><button class="mode" onclick="startAll()"><span class="name">Vše popořadě</span><span class="desc">Celá banka od první otázky</span><span class="count" id="c-all"></span></button></li>
-            <li><button class="mode" onclick="showRandomModal('random')"><span class="name">Náhodný výběr</span><span class="desc">Zadáš kolik otázek chceš</span><span class="count">?</span></button></li>
-            <li><button class="mode" onclick="showRandomModal('study')"><span class="name">Studuj, pak testuj</span><span class="desc">Nejdřív otázky s odpovědí a postupem, potom test</span><span class="count"></span></button></li>
+            <li><button class="mode" onclick="showChunks()"><span class="name"><svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>Po <span id="menu-chunk-size">10</span></span><span class="desc">Postupně po blocích, v bloku si vybereš podmnožinu</span><span class="count" id="c-blocks"></span></button></li>
+            <li><button class="mode" onclick="startAll()"><span class="name"><svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>Vše popořadě</span><span class="desc">Celá banka od první otázky</span><span class="count" id="c-all"></span></button></li>
+            <li><button class="mode" onclick="showRandomModal('random')"><span class="name"><svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>Náhodný výběr</span><span class="desc">Zadáš kolik otázek chceš</span><span class="count">?</span></button></li>
+            <li><button class="mode" onclick="showRandomModal('study')"><span class="name"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Studuj, pak testuj</span><span class="desc">Nejdřív otázky s odpovědí a postupem, potom test</span><span class="count"></span></button></li>
           </ul>
-        </div>
+        </section>
 
-        <div class="group">
-          <h2>Vrať se k tomu, co ti nejde</h2>
+        <section class="group" aria-labelledby="h-rev">
+          <h2 id="h-rev">Vrať se k tomu, co ti nejde</h2>
           <ul class="modes">
-            <li><button class="mode new" id="btn-unseen" onclick="startUnseen()"><span class="name">Jen neprozkoumané</span><span class="desc">Na tyhle jsi ještě neodpovídal</span><span class="count" id="unseen-count"></span></button></li>
-            <li><button class="mode bad" id="btn-wrongs" onclick="startWrongs()"><span class="name">Jen chybné</span><span class="desc">Odpověděl jsi špatně</span><span class="count" id="wrongs-count"></span></button></li>
-            <li><button class="mode ok" id="btn-correct" onclick="startCorrect()"><span class="name">Zopakovat správné</span><span class="desc">Ať ti nevyprchaly z hlavy</span><span class="count" id="correct-count"></span></button></li>
+            <li><button class="mode new" id="btn-unseen" onclick="startUnseen()"><span class="name"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Jen neprozkoumané</span><span class="desc">Na tyhle jsi ještě neodpovídal</span><span class="count" id="unseen-count"></span></button></li>
+            <li><button class="mode bad" id="btn-wrongs" onclick="startWrongs()"><span class="name"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Jen chybné</span><span class="desc">Odpověděl jsi špatně</span><span class="count" id="wrongs-count"></span></button></li>
+            <li><button class="mode ok" id="btn-correct" onclick="startCorrect()"><span class="name"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Zopakovat správné</span><span class="desc">Ať ti nevyprchaly z hlavy</span><span class="count" id="correct-count"></span></button></li>
           </ul>
-        </div>
+        </section>
 
-        <div class="exam">
-          <h2>Zkouška nanečisto</h2>
+        <section class="exam" id="koth-section" aria-labelledby="h-exam">
+          <h2 id="h-exam">Zkouška nanečisto &amp; Kompetitivní aréna</h2>
           <ul class="modes">
-            <li><button class="mode" onclick="startExam()"><span class="name">Ostrý test</span><span class="desc"><span id="exam-n">15</span> otázek, <span id="exam-min">30</span> minut, na úspěch orientačně 60 %</span><span class="count" id="exam-clock">30:00</span></button></li>
-            <li><button class="mode" onclick="startSuddenDeath()"><span class="name">Sudden Death</span><span class="desc">Náhodné otázky, první chyba ukončí hru</span><span class="count">1 život</span></button></li>
+            <li><button class="mode" onclick="startExam()"><span class="name"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>Ostrý test</span><span class="desc"><span id="exam-n">15</span> otázek, <span id="exam-min">30</span> minut, na úspěch orientačně 60 %</span><span class="count" id="exam-clock">30:00</span></button></li>
+            <li><button class="mode" onclick="startSuddenDeath()"><span class="name"><svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Sudden Death</span><span class="desc">Náhodné otázky, první chyba ukončí hru</span><span class="count">1 život</span></button></li>
+            <li><button class="mode" id="btn-comp-arena" onclick="openCompArena()"><span class="name"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/><path d="M16 16l4 4"/><path d="M19 21l2-2"/><path d="M9.5 17.5L21 6V3h-3L6.5 14.5"/><path d="M11 19l-6-6"/><path d="M8 16l-4 4"/><path d="M5 21l-2-2"/></svg>Kompetitivní aréna</span><span class="desc" id="comp-arena-desc">Vytvoř nebo se připoj do místnosti · FFA, 1v1 Duel &amp; King of the Hill</span><span class="count" id="comp-arena-badge">Aréna →</span></button></li>
           </ul>
-        </div>
+        </section>
 
-        <div class="foot">
-          <button class="lnk" onclick="clearSourceProgress()">Smazat postup této přednášky</button>
-          <button class="lnk" onclick="shutdown()">Ukončit server</button>
-          <a class="lnk" href="/?ui=klasicky">Starý vzhled</a>
-        </div>
+        <nav class="foot" aria-label="Quick links">
+          <button class="lnk" onclick="openProfileView()">Profile &amp; Study Recap</button>
+          <button class="lnk" onclick="openLeaderboardView()">Leaderboard</button>
+        </nav>
       </section>
     </div>
-  </div>
+  </section>
 
-  <div id="chunks">
-    <h1>Otázky po <span id="chunks-size-label">10</span></h1>
-    <div class="chunk-size-row">
+  <!-- Pohled: Otázky po blocích -->
+  <section id="chunks" aria-labelledby="chunks-heading">
+    <h1 id="chunks-heading">Otázky po <span id="chunks-size-label">10</span></h1>
+    <form class="chunk-size-row" onsubmit="event.preventDefault(); applyChunkSize();">
       <label for="chunk-size-input">Velikost bloku</label>
       <input type="number" id="chunk-size-input" min="1" step="1">
-      <button onclick="applyChunkSize()">Použít</button>
-    </div>
-    <div class="chunk-list" id="chunk-list"></div>
+      <button type="submit">Použít</button>
+    </form>
+    <section class="chunk-list" id="chunk-list" aria-label="Seznam bloků"></section>
     <button class="chunk-back" onclick="showMenu()">Zpět do menu</button>
-  </div>
+  </section>
 
-  <div id="chunk-detail">
+  <!-- Pohled: Detail bloku -->
+  <article id="chunk-detail" aria-labelledby="chunk-detail-title">
     <h1 id="chunk-detail-title"></h1>
     <div class="chunk-detail-wrap">
-      <div class="chunk-detail-btns">
+      <nav class="chunk-detail-btns" aria-label="Filtrování otázek v bloku">
         <button onclick="startChunkSubset('all')">Vše</button>
         <button onclick="startChunkSubset(undefined)">Neznámé</button>
         <button onclick="startChunkSubset('wrong')">Chybné</button>
         <button onclick="startChunkSubset('correct')">Správné</button>
         <button onclick="startChunkStudy()">Studuj, pak testuj</button>
-      </div>
-      <div class="cd-section good"><h3><i>1</i>Správné</h3><div class="cd-qlist" id="cd-good"></div></div>
-      <div class="cd-section bad"><h3><i>0</i>Chybné</h3><div class="cd-qlist" id="cd-bad"></div></div>
-      <div class="cd-section new"><h3><i>·</i>Neznámé</h3><div class="cd-qlist" id="cd-new"></div></div>
+      </nav>
+      <section class="cd-section good"><h3><i>1</i>Správné</h3><div class="cd-qlist" id="cd-good"></div></section>
+      <section class="cd-section bad"><h3><i>0</i>Chybné</h3><div class="cd-qlist" id="cd-bad"></div></section>
+      <section class="cd-section new"><h3><i>·</i>Neznámé</h3><div class="cd-qlist" id="cd-new"></div></section>
     </div>
     <button class="chunk-back" onclick="showChunks()">Zpět na bloky</button>
-  </div>
+  </article>
 
-  <div class="overlay" id="random-modal">
-    <div class="modal">
-      <h2>Kolik otázek?</h2>
+  <!-- Modální dialog: Náhodný výběr -->
+  <aside class="overlay" id="random-modal" role="dialog" aria-modal="true" aria-labelledby="rand-modal-title">
+    <form class="modal" onsubmit="event.preventDefault(); startRandom();">
+      <h2 id="rand-modal-title">Kolik otázek?</h2>
       <input type="number" id="rand-count" min="1" value="10">
-      <div class="modal-btns">
-        <button class="btn-cancel" onclick="closeModal()">Zrušit</button>
-        <button class="btn-ok" onclick="startRandom()">Spustit</button>
+      <menu class="modal-btns">
+        <button type="button" class="btn-cancel" onclick="closeModal()">Zrušit</button>
+        <button type="submit" class="btn-ok">Spustit</button>
+      </menu>
+    </form>
+  </aside>
+
+  <!-- Pohled: Competitive Arena (Subpage) -->
+  <section id="comp-arena" aria-labelledby="arena-heading">
+    <div class="subpage-nav">
+      <button type="button" class="subpage-back" onclick="showMenu()">← Back to Menu</button>
+      <button type="button" class="nav-pill-btn" onclick="openLeaderboardView()">Leaderboard</button>
+    </div>
+    <div class="subpage-head">
+      <h1 id="arena-heading">Competitive Arena</h1>
+      <p>Select a mode, host a lobby room for live matches, or join an open challenge.</p>
+    </div>
+
+    <div class="arena-create-card" id="comp-rooms-panel">
+      <div class="arena-card-head">
+        <h2>Create Lobby Room</h2>
+        <span class="arena-card-sub">10 timed questions · identical question set for all players</span>
+      </div>
+
+      <select id="room-mode-select" aria-label="Room Mode" style="display:none;">
+        <option value="ffa" selected>Free For All (FFA)</option>
+        <option value="duel">1v1 Duel</option>
+        <option value="koth">King of the Hill</option>
+      </select>
+
+      <div class="arena-modes-grid" role="radiogroup" aria-label="Select competitive mode">
+        <div class="arena-mode-card active" data-mode="ffa" onclick="selectArenaRoomMode('ffa')">
+          <div>
+            <div class="amc-top">
+              <span class="amc-title">Free For All (FFA)</span>
+              <span class="amc-badge" id="ffa-leader-score">0 pts</span>
+            </div>
+            <div class="amc-desc"><span id="ffa-leader-name">Arena open</span> · <span id="ffa-leader-sub">Up to 8 players competing for top score</span></div>
+          </div>
+          <div class="amc-meta">
+            <span id="ffa-players-badge">0 players</span>
+            <button type="button" class="amc-solo-btn" id="btn-ffa-start" onclick="event.stopPropagation(); startCompetitiveMode('ffa')">Solo FFA →</button>
+          </div>
+        </div>
+
+        <div class="arena-mode-card" data-mode="duel" onclick="selectArenaRoomMode('duel')">
+          <div>
+            <div class="amc-top">
+              <span class="amc-title">1v1 Duel</span>
+              <span class="amc-badge" id="duel-top-wins">1v1</span>
+            </div>
+            <div class="amc-desc"><span id="duel-status-name">Open 1v1 challenge</span> · <span id="duel-status-sub">Head-to-head match on 10 questions</span></div>
+          </div>
+          <div class="amc-meta">
+            <span id="duel-open-badge">0 open</span>
+            <button type="button" class="amc-solo-btn" id="btn-duel-start" onclick="event.stopPropagation(); startCompetitiveMode('duel')">Async 1v1 →</button>
+          </div>
+        </div>
+
+        <div class="arena-mode-card" data-mode="koth" onclick="selectArenaRoomMode('koth')">
+          <div>
+            <div class="amc-top">
+              <span class="amc-title">King of the Hill</span>
+              <span class="amc-badge" id="koth-king-score">0 pts</span>
+            </div>
+            <div class="amc-desc"><span id="koth-king-name">Throne unclaimed</span> · <span id="koth-king-sub">Beat the current holder's score</span></div>
+          </div>
+          <div class="amc-meta">
+            <span id="koth-defenses-badge">0×</span>
+            <button type="button" class="amc-solo-btn" id="btn-koth-start" onclick="event.stopPropagation(); startKothChallenge()">Challenge →</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="arena-form-bar">
+        <div class="arena-input-wrap">
+          <input type="text" id="room-name-input" maxlength="50" placeholder="Room name (optional, e.g. TZI Finals)">
+        </div>
+        <label class="arena-toggle" title="Automatically start the match once the room reaches capacity">
+          <input type="checkbox" id="room-autostart-chk" checked>
+          <span class="arena-toggle-track"></span>
+          <span>Auto-start on full</span>
+        </label>
+        <button type="button" class="room-create-btn" id="btn-create-room" onclick="createRoomFromUI()">+ Create Room</button>
       </div>
     </div>
-  </div>
 
-  <div id="quiz">
-    <div id="sudden-banner" class="sudden-banner" style="display:none">Sudden Death<span>1 život, první chyba ukončí hru</span></div>
-    <div class="header">
-      <span class="prog" id="prog-label"></span>
-      <span class="score" id="score-label"></span>
+    <div class="arena-section-card">
+      <div class="rooms-head">
+        <span>Active Lobby Rooms</span>
+        <span id="rooms-count-badge" style="font-family:var(--mono);font-size:.8rem;color:var(--blue);">0 open</span>
+      </div>
+      <ul class="rooms-list" id="comp-rooms-list"></ul>
     </div>
+
+    <div class="arena-section-card">
+      <div class="rooms-head">
+        <span>Recent Matches &amp; Open Challenges</span>
+      </div>
+      <ul class="koth-matches" id="koth-history-list"></ul>
+    </div>
+  </section>
+
+  <!-- Pohled: Leaderboard (Subpage) -->
+  <section id="leaderboard-view" aria-labelledby="lb-heading">
+    <div class="subpage-nav">
+      <button type="button" class="subpage-back" onclick="showMenu()">← Back to Menu</button>
+      <button type="button" class="nav-pill-btn" onclick="openCompArena()">Competitive Arena →</button>
+    </div>
+    <div class="subpage-head">
+      <h1 id="lb-heading">Leaderboard</h1>
+      <p>Global XP standings, answer streaks, and Competitive Arena records.</p>
+    </div>
+
+    <div class="prof-grid" id="lb-my-summary">
+      <div class="prof-stat-box"><span>Your Rank</span><strong id="lb-my-rank">#-</strong></div>
+      <div class="prof-stat-box"><span>Total XP</span><strong id="lb-my-xp">0 XP</strong></div>
+      <div class="prof-stat-box"><span>Best Streak</span><strong id="lb-my-streak">0</strong></div>
+      <div class="prof-stat-box"><span>Daily Streak</span><strong id="lb-my-dstreak">0d</strong></div>
+    </div>
+
+    <div class="arena-section-card">
+      <div class="rooms-head">
+        <span>Study XP Standings</span>
+        <span id="lb-total-users" style="font-family:var(--mono);font-size:.8rem;color:var(--muted);"></span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="lb-table">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Player</th>
+              <th>Level</th>
+              <th>Total XP</th>
+              <th>Best Streak</th>
+              <th>Daily Streak</th>
+            </tr>
+          </thead>
+          <tbody id="lb-table-body">
+            <tr><td colspan="6" style="color:var(--muted);">Loading standings...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="arena-section-card">
+      <div class="rooms-head">
+        <span>Arena Records</span>
+      </div>
+      <ul class="koth-matches" id="lb-comp-summary"></ul>
+    </div>
+  </section>
+
+  <!-- Pohled: Profile & Study Recap (Subpage) -->
+  <section id="profile-view" aria-labelledby="prof-heading">
+    <div class="subpage-nav">
+      <button type="button" class="subpage-back" onclick="showMenu()">← Back to Menu</button>
+      <a href="/logout" class="subpage-back" style="color:var(--bad);border-color:color-mix(in srgb, var(--bad) 40%, var(--line));">Sign out</a>
+    </div>
+    <div class="subpage-head">
+      <h1 id="prof-heading">Profile &amp; Study Recap</h1>
+      <p id="prof-subtitle">Overview of your lecture mastery, unlocked achievements, and account settings.</p>
+    </div>
+
+    <!-- Study Recap -->
+    <div class="arena-section-card">
+      <div class="rooms-head">
+        <span>Study Recap</span>
+        <span id="prof-role-badge" style="font-family:var(--mono);font-size:.78rem;color:var(--blue);"></span>
+      </div>
+      <div class="prof-grid">
+        <div class="prof-stat-box"><span>Level &amp; Rank</span><strong id="prof-lvl-title">1 · NPC</strong></div>
+        <div class="prof-stat-box"><span>Accuracy</span><strong id="prof-accuracy">0 %</strong></div>
+        <div class="prof-stat-box"><span>Mastered</span><strong id="prof-mastered">0 / 0</strong></div>
+        <div class="prof-stat-box"><span>Best Streak</span><strong id="prof-best-streak">0</strong></div>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <div style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:6px;">Last 7 Days Activity</div>
+        <div id="dp-history"></div>
+      </div>
+
+      <div style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-top:16px;margin-bottom:6px;">Lecture Breakdown</div>
+      <div class="recap-source-list" id="profile-recap-sources"></div>
+    </div>
+
+    <!-- Achievements (English titles + subtle hints) -->
+    <div class="arena-section-card">
+      <div class="rooms-head">
+        <span>Achievements</span>
+        <span id="prof-ach-count" style="font-family:var(--mono);font-size:.8rem;color:var(--ok);">0 / 17</span>
+      </div>
+      <div class="ach-grid" id="ach-list" aria-label="Achievements">
+        <div class="ach-badge" data-ach="first" data-label="First Step" data-hint="Answer your first question correctly"><span class="ach-title">First Step</span><small class="ach-hint">Answer your first question correctly</small></div>
+        <div class="ach-badge" data-ach="start" data-label="Warming Up" data-hint="Master 5 questions or reach 15 XP"><span class="ach-title">Warming Up</span><small class="ach-hint">Master 5 questions or reach 15 XP</small></div>
+        <div class="ach-badge" data-ach="lucky" data-label="On Target" data-hint="Reach a 3x correct answer streak"><span class="ach-title">On Target</span><small class="ach-hint">Reach a 3x correct answer streak</small></div>
+        <div class="ach-badge" data-ach="wave" data-label="Flow State" data-hint="Reach a 5x correct answer streak"><span class="ach-title">Flow State</span><small class="ach-hint">Reach a 5x correct answer streak</small></div>
+        <div class="ach-badge" data-ach="invincible" data-label="Unstoppable" data-hint="Reach a 15x correct answer streak"><span class="ach-title">Unstoppable</span><small class="ach-hint">Reach a 15x correct answer streak</small></div>
+        <div class="ach-badge" data-ach="fast" data-label="Quick Learner" data-hint="Accumulate at least 30 XP"><span class="ach-title">Quick Learner</span><small class="ach-hint">Accumulate at least 30 XP</small></div>
+        <div class="ach-badge" data-ach="memory" data-label="Sharp Recall" data-hint="Accumulate at least 100 XP"><span class="ach-title">Sharp Recall</span><small class="ach-hint">Accumulate at least 100 XP</small></div>
+        <div class="ach-badge" data-ach="fifty" data-label="Half Century" data-hint="Master 50 questions or reach 150 XP"><span class="ach-title">Half Century</span><small class="ach-hint">Master 50 questions or reach 150 XP</small></div>
+        <div class="ach-badge" data-ach="marathon" data-label="Centurion" data-hint="Master 100 unique questions"><span class="ach-title">Centurion</span><small class="ach-hint">Master 100 unique questions</small></div>
+        <div class="ach-badge" data-ach="twohundred" data-label="Grandmaster Bank" data-hint="Master 200 questions or reach 600 XP"><span class="ach-title">Grandmaster Bank</span><small class="ach-hint">Master 200 questions or reach 600 XP</small></div>
+        <div class="ach-badge" data-ach="learn" data-label="Trial &amp; Error" data-hint="Log a mistake and master 3+ questions"><span class="ach-title">Trial &amp; Error</span><small class="ach-hint">Log a mistake and master 3+ questions</small></div>
+        <div class="ach-badge" data-ach="done" data-label="Daily Target" data-hint="Complete your daily minimum goal"><span class="ach-title">Daily Target</span><small class="ach-hint">Complete your daily minimum goal</small></div>
+        <div class="ach-badge" data-ach="routine" data-label="Routine" data-hint="Maintain a 2-day daily streak"><span class="ach-title">Routine</span><small class="ach-hint">Maintain a 2-day daily streak</small></div>
+        <div class="ach-badge" data-ach="regular" data-label="Consistent" data-hint="Maintain a 3-day daily streak"><span class="ach-title">Consistent</span><small class="ach-hint">Maintain a 3-day daily streak</small></div>
+        <div class="ach-badge" data-ach="week" data-label="Weekly Streak" data-hint="Maintain a 7-day daily streak"><span class="ach-title">Weekly Streak</span><small class="ach-hint">Maintain a 7-day daily streak</small></div>
+        <div class="ach-badge" data-ach="advanced" data-label="Veteran" data-hint="Reach 500 XP (Level 5)"><span class="ach-title">Veteran</span><small class="ach-hint">Reach 500 XP (Level 5)</small></div>
+        <div class="ach-badge" data-ach="master" data-label="Theory Master" data-hint="Reach 1,200 XP (Level 7)"><span class="ach-title">Theory Master</span><small class="ach-hint">Reach 1,200 XP (Level 7)</small></div>
+      </div>
+    </div>
+
+    <!-- Account Settings -->
+    <div class="arena-section-card">
+      <div class="rooms-head">
+        <span>Account Settings</span>
+      </div>
+      <div class="prof-form-grid">
+        <div class="prof-form-box">
+          <h3>Appearance &amp; Audio</h3>
+          <label for="theme-switcher" style="font-size:.8rem;color:var(--muted);">Color Theme</label>
+          <select class="prof-input" id="theme-switcher" onchange="applyUserTheme(this.value)" aria-label="Color Theme">
+            <option value="dark">Dark</option>
+            <option value="catppuccin">Catppuccin</option>
+            <option value="light">Light</option>
+            <option value="auto">System Auto</option>
+          </select>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:6px;">
+            <span style="font-size:.82rem;color:var(--muted);">Answer Sound Effects</span>
+            <button type="button" class="nav-pill-btn" id="btn-sound" onclick="toggleSound()">Sound On</button>
+          </div>
+        </div>
+
+        <form class="prof-form-box" onsubmit="event.preventDefault(); submitUsernameChange();">
+          <h3>Change Username</h3>
+          <label for="prof-new-username" style="font-size:.8rem;color:var(--muted);">New username (3–25 chars)</label>
+          <input type="text" id="prof-new-username" class="prof-input" minlength="3" maxlength="25" placeholder="Enter new username..." required>
+          <button type="submit" class="prof-btn">Save Username</button>
+        </form>
+
+        <form class="prof-form-box" onsubmit="event.preventDefault(); submitPasswordChange();">
+          <h3>Change Password</h3>
+          <input type="password" id="prof-cur-pw" class="prof-input" placeholder="Current password" required>
+          <input type="password" id="prof-new-pw" class="prof-input" minlength="6" placeholder="New password (min. 6 chars)" required>
+          <input type="password" id="prof-new-pw2" class="prof-input" minlength="6" placeholder="Confirm new password" required>
+          <button type="submit" class="prof-btn">Update Password</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Danger Zone (Revalidated Data Deletion) -->
+    <div class="arena-section-card" style="border-color:color-mix(in srgb, var(--bad) 35%, var(--line));">
+      <div class="danger-zone-bar">
+        <div>
+          <div style="font-size:.95rem;font-weight:800;color:var(--bad);margin-bottom:4px;">Data Management &amp; Progress Reset</div>
+          <p style="margin:0;font-size:.82rem;color:var(--muted);">Deleting study progress is permanent and requires password revalidation.</p>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;">
+          <button type="button" class="prof-btn danger" onclick="clearSourceProgress()">Reset Current Lecture</button>
+          <button type="button" class="prof-btn danger" onclick="openRevalidateModal('all')">Reset All Progress</button>
+          <button type="button" class="prof-btn danger" id="btn-remove-profile" onclick="openDeleteProfileModal()" style="border-width:2px;font-weight:800;">Remove Profile</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Modal: Password Revalidation before Data Deletion -->
+  <aside class="overlay" id="revalidate-modal" role="dialog" aria-modal="true" aria-labelledby="reval-modal-title">
+    <form class="modal" onsubmit="event.preventDefault(); confirmRevalidatedDelete();">
+      <h2 id="reval-modal-title" style="font-size:1.25rem;">Confirm Data Reset</h2>
+      <p id="reval-modal-desc" style="font-size:.86rem;color:var(--muted);margin:0 0 14px;">Enter your account password to confirm progress deletion.</p>
+      <input type="password" id="reval-password-input" class="prof-input" placeholder="Enter password to confirm..." required style="margin-bottom:8px;">
+      <div id="reval-error-msg" style="color:var(--bad);font-size:.8rem;min-height:1.2em;"></div>
+      <menu class="modal-btns" style="margin-top:16px;">
+        <button type="button" class="btn-cancel" onclick="closeRevalidateModal()">Cancel</button>
+        <button type="submit" class="btn-ok" style="background:var(--bad);color:#0f1729;">Confirm Reset</button>
+      </menu>
+    </form>
+  </aside>
+
+  <!-- Modal: 3-Step Confirmation for Removing Profile -->
+  <aside class="overlay" id="delete-profile-modal" role="dialog" aria-modal="true" aria-labelledby="del-prof-title">
+    <form class="modal" style="width:min(100%, 420px);" onsubmit="event.preventDefault(); submitDeleteProfileStep();">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <h2 id="del-prof-title" style="font-size:1.2rem;margin:0;color:var(--bad);">Remove Profile</h2>
+        <span id="del-prof-step-badge" style="font-family:var(--mono);font-size:.75rem;padding:2px 8px;border:1px solid var(--line);border-radius:999px;color:var(--muted);">Step 1 / 3</span>
+      </div>
+
+      <!-- Step 1: Warning & Checkbox -->
+      <div id="del-prof-step-1">
+        <p style="font-size:.86rem;color:var(--muted);margin:0 0 12px;line-height:1.45;">
+          This action will permanently remove your user account, XP standings, streaks, unlocked achievements, and all lecture history.
+        </p>
+        <label style="display:flex;align-items:flex-start;gap:8px;font-size:.84rem;color:var(--ink);cursor:pointer;padding:10px;background:var(--paper-2);border:1px solid var(--line);border-radius:8px;">
+          <input type="checkbox" id="del-prof-ack-chk" style="margin-top:3px;">
+          <span>I understand that removing my profile is permanent and cannot be undone.</span>
+        </label>
+      </div>
+
+      <!-- Step 2: Username & Phrase Confirmation -->
+      <div id="del-prof-step-2" style="display:none;">
+        <p style="font-size:.85rem;color:var(--muted);margin:0 0 10px;">
+          Step 2: Type your exact username (<b id="del-prof-expected-user" style="color:var(--ink);"></b>) and the word <b>DELETE</b> below.
+        </p>
+        <input type="text" id="del-prof-user-inp" class="prof-input" placeholder="Your exact username" style="margin-bottom:8px;" autocomplete="off">
+        <input type="text" id="del-prof-phrase-inp" class="prof-input" placeholder="Type DELETE to confirm" autocomplete="off">
+      </div>
+
+      <!-- Step 3: Final Password Revalidation -->
+      <div id="del-prof-step-3" style="display:none;">
+        <p style="font-size:.85rem;color:var(--muted);margin:0 0 10px;">
+          Step 3 (Final): Enter your account password to permanently remove your profile.
+        </p>
+        <input type="password" id="del-prof-pw-inp" class="prof-input" placeholder="Account password" autocomplete="current-password">
+      </div>
+
+      <div id="del-prof-err" style="color:var(--bad);font-size:.8rem;min-height:1.3em;margin-top:8px;"></div>
+      <menu class="modal-btns" style="margin-top:14px;">
+        <button type="button" class="btn-cancel" onclick="closeDeleteProfileModal()">Cancel</button>
+        <button type="submit" class="btn-ok" id="del-prof-submit-btn" style="background:var(--bad);color:#0f1729;">Continue (1/3) →</button>
+      </menu>
+    </form>
+  </aside>
+
+  <!-- Pohled: Čekárna místnosti (Room Lobby) -->
+  <section id="room-lobby" aria-labelledby="rl-title">
+    <div class="rl-card">
+      <span class="rl-badge" id="rl-mode-badge">LOBBY ROOM</span>
+      <h1 id="rl-title" style="margin:0 0 4px;font-size:1.35rem;">Room</h1>
+      <p id="rl-subtitle" style="margin:0;color:var(--muted);font-size:.85rem;">10 timed questions</p>
+      <div class="rl-status" id="rl-status-banner">Waiting for players to join or host to start the match...</div>
+      <h3 style="margin:0 0 8px;font-size:.82rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);">Players in Lobby (<span id="rl-player-count">1/8</span>)</h3>
+      <ul class="rl-players" id="rl-players-list"></ul>
+      <div class="rl-actions">
+        <button type="button" class="primary" id="btn-rl-start" onclick="startActiveRoomByHost()">Start Match Now</button>
+        <button type="button" onclick="leaveActiveRoom()">Leave Room</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pohled: Kvíz -->
+  <section id="quiz" aria-live="polite">
+    <aside id="sudden-banner" class="sudden-banner" style="display:none">Sudden Death<span>1 život, první chyba ukončí hru</span></aside>
+    <header class="header">
+      <output class="prog" id="prog-label"></output>
+      <output class="score" id="score-label"></output>
+    </header>
     <div class="pchain" id="pchain" aria-hidden="true"></div>
-    <div class="progress-bar"><div class="fill" id="pbar"></div></div>
-    <div class="question-box">
-      <div class="qsrc" id="q-src"></div>
+    <figure class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"><div class="fill" id="pbar"></div></figure>
+    <article class="question-box">
+      <header class="qsrc" id="q-src"></header>
       <div class="question-text" id="q-text"></div>
-      <div class="hint" id="q-hint"></div>
-    </div>
-    <div class="options" id="opts"></div>
+      <aside class="hint" id="q-hint"></aside>
+    </article>
+    <fieldset class="options" id="opts" style="border:none; padding:0; margin:0;"></fieldset>
     <input type="text" class="ans-input" id="ans-input" autocomplete="off" autocapitalize="characters" spellcheck="false" style="display:none" oninput="onInput()">
-    <div class="feedback" id="feedback"></div>
-    <div class="solution" id="solution"></div>
-    <div class="nav">
+    <output class="feedback" id="feedback"></output>
+    <section class="solution" id="solution"></section>
+    <nav class="nav" aria-label="Navigace v kvízu">
       <button class="btn-prev" id="btn-prev" onclick="prevQ()">Předchozí</button>
       <button class="btn-end" onclick="finishEarly()">Ukončit předčasně</button>
       <button class="btn-next" id="btn-action" onclick="handleAction()">Potvrdit<span class="kh">Enter</span></button>
-    </div>
-  </div>
+    </nav>
+  </section>
 
-  <div id="results">
+  <!-- Pohled: Výsledky -->
+  <section id="results" aria-labelledby="res-title">
     <h1 id="res-title"></h1>
-    <div class="res-head">
-      <div class="big-pct" id="res-pct"></div>
+    <header class="res-head">
+      <output class="big-pct" id="res-pct"></output>
       <p class="res-detail" id="res-detail"></p>
-    </div>
-    <div class="res-bits" id="res-bits" role="img"></div>
+    </header>
+    <figure class="res-bits" id="res-bits" role="img" aria-label="Grafický přehled výsledků"></figure>
     <p class="res-note" id="res-note"></p>
-    <div id="res-meter-wrap" style="display:none">
+    <section class="room-standings" id="room-results-board" style="display:none"><h3>🏆 Pořadí hráčů v místnosti</h3><ul id="room-results-list"></ul></section>
+    <section id="res-meter-wrap" style="display:none">
       <div class="res-meter" id="res-meter"><i></i><u></u></div>
       <div class="res-meter-lab"><span>hranice 60 %</span></div>
-    </div>
-    <div class="res-btns">
+    </section>
+    <nav class="res-btns" aria-label="Akce po vyhodnocení">
       <button class="primary" onclick="restartSame()">Restartovat stejný výběr</button>
       <button id="btn-wrong" onclick="practiceWrong()" style="display:none" class="warning-btn"></button>
       <button onclick="backFromResults()">Hlavní menu</button>
-    </div>
-  </div>
+    </nav>
+  </section>
 
-</div>
+  <!-- Globální patička -->
+  <footer style="margin-top: 2.5rem; padding-top: 1.2rem; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.8rem; text-align: center; line-height: 1.6;">
+    Made with AI · Poděkování <b>Zdenax</b> za vytvoření apky · <a href="https://github.com/zdenax/TZI-TIN-APP" target="_blank" rel="noopener noreferrer" style="color: var(--blue); text-decoration: underline;">GitHub: TZI-TIN-APP</a>
+  </footer>
+
+  <!-- HTML5 Templates pro dynamicky generované komponenty -->
+  <template id="tpl-option">
+    <div class="opt">
+      <span class="letter"></span>
+      <span class="opt-text"></span>
+    </div>
+  </template>
+
+  <template id="tpl-chunk-item">
+    <button class="chunk-btn" type="button">
+      <span class="chunk-name"></span>
+      <span class="chunk-bits" aria-hidden="true"></span>
+      <span class="chunk-stats"></span>
+    </button>
+  </template>
+
+  <template id="tpl-lecture-item">
+    <li>
+      <button class="lec" type="button">
+        <span class="num"></span>
+        <span class="title"></span>
+        <span class="count"></span>
+      </button>
+    </li>
+  </template>
+
+</main>
 <script>
 let FULL = [];        // všechny otázky zdroje
 let ALL = [];         // po filtru typu
@@ -576,38 +1368,1170 @@ let typeFilter = 'all';
 let queue = [], idx = 0, history = [], checked = false, suddenDeath = false;
 let selected = new Set(), modalMode = 'random', studyMode = false, studyPicks = [];
 let examMode = false, examTimer = null, examEndTime = 0;
+let kothMode = false, compMode = null, activeDuelId = null, activeRoomId = null, activeRoomData = null, roomPollTimer = null, kothStartTime = 0, kothLastResult = null;
 let optOrder = {};    // q.id → zamíchané původní klíče možností, stálé po celou sadu (i po „Předchozí“)
 
 const $ = id => document.getElementById(id);
-const plural = (n, one, few, many) => n === 1 ? one : (n >= 2 && n <= 4 ? few : many);
+const plural = (n, one, few, many) => { const c = WASM_CORE.exp.pluralCategory(n | 0); return c === 0 ? one : (c === 1 ? few : many); };
 const show = id => {
-  for (const s of ['menu','chunks','chunk-detail','quiz','results']) $(s).style.display = (s === id) ? 'block' : 'none';
+  for (const s of ['menu','chunks','chunk-detail','comp-arena','leaderboard-view','profile-view','room-lobby','quiz','results']) {
+    const el = $(s);
+    if (el) el.style.display = (s === id) ? 'block' : 'none';
+  }
 };
-const norm = s => { s = (s || '').toUpperCase().replace(/[\s_]/g, ''); return s.replace(/^0+(?=.)/, ''); };
+const norm = s => {
+  const l = WASM_CORE.writeStr(1024, String(s || '').normalize('NFC'));
+  const outLen = WASM_CORE.exp.normInput(1024, l, 5120);
+  return WASM_CORE.readStr(5120, outLen);
+};
 const isRecall = q => q.type === 'recall';
 const isInput = q => q.type === 'input' || isRecall(q); // recall = psaná odpověď z paměti
 const isReveal = q => q.reveal === true; // zadání bez políčka, řešení se jen odhalí
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-const shuffle = a => { a = [...a]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }; // Fisher-Yates
+const shuffle = a => {
+  a = [...a];
+  if (a.length <= 1) return a;
+  const seed = ((Math.random() * 0xFFFFFFFF) >>> 0) || 1;
+  WASM_CORE.exp.shuffleIndices(a.length, seed);
+  const idxView = new Int32Array(WASM_CORE.exp.memory.buffer, 512, a.length);
+  const res = new Array(a.length);
+  for (let i = 0; i < a.length; i++) res[i] = a[idxView[i]];
+  return res;
+}; // Fisher-Yates (100% WASM)
 // Možnosti se zobrazují zamíchané, ale všude uvnitř (selected, history, id opt-*) zůstávají původní klíče.
 const LETTERS = 'ABCDEFGH';
 const letters = (q, keys) => keys.map(k => LETTERS[optOrder[q.id].indexOf(k)]).sort().join(', ');
-// Zápis z banky (a_n, Z^n, a_(n-1), ->) převede na HTML s dolními/horními indexy a šipkami.
+
+function renderLatexExpr(tex, displayMode) {
+  if (typeof katex !== 'undefined' && katex && typeof katex.renderToString === 'function') {
+    try {
+      return katex.renderToString(tex, { displayMode: !!displayMode, throwOnError: false });
+    } catch (e) {}
+  }
+  return `<span class="math-tex katex-fallback" data-display="${displayMode ? '1' : '0'}">${esc(tex)}</span>`;
+}
+
+// Zápis z banky (LaTeX $...$, $$...$$, \(...\), \[...\] + a_n, Z^n, a_(n-1), ->) převede na HTML s KaTeXem a indexy.
+function toLatexMathStr(raw) {
+  let t = String(raw || '').trim();
+  t = t.replace(/\(([A-Za-z0-9+\-−\s]+?)\s+nad\s+([A-Za-z0-9+\-−\s?]+?)\)/g, '\\binom{$1}{$2}');
+  t = t.replace(/−/g, '-').replace(/·/g, ' \\cdot ').replace(/…|\.{3}/g, ' \\dots ');
+  t = t.replace(/≤/g, ' \\le ').replace(/≥/g, ' \\ge ').replace(/≠/g, ' \\ne ');
+  t = t.replace(/⊆/g, ' \\subseteq ').replace(/⊂/g, ' \\subset ').replace(/⊇/g, ' \\supseteq ');
+  t = t.replace(/∩/g, ' \\cap ').replace(/∪/g, ' \\cup ').replace(/∈/g, ' \\in ').replace(/∉/g, ' \\notin ').replace(/∅/g, ' \\emptyset ');
+  t = t.replace(/∧/g, ' \\land ').replace(/∨/g, ' \\lor ').replace(/¬/g, ' \\neg ').replace(/⇒/g, ' \\Rightarrow ').replace(/⇔/g, ' \\Leftrightarrow ').replace(/→/g, ' \\to ').replace(/∼/g, ' \\sim ');
+  t = t.replace(/∀/g, ' \\forall ').replace(/∃/g, ' \\exists ');
+  t = t.replace(/ᵢ/g, '_i').replace(/ⱼ/g, '_j').replace(/ₖ/g, '_k').replace(/ₙ/g, '_n').replace(/′/g, "'");
+  t = t.replace(/[₀-₉]+/g, m => '_{' + [...m].map(c => '₀₁₂₃₄₅₆₇₈₉'.indexOf(c)).join('') + '}');
+  t = t.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹]+/g, m => '^{' + [...m].map(c => '⁰¹²³⁴⁵⁶⁷⁸⁹'.indexOf(c)).join('') + '}');
+  t = t.replace(/_\(([^)]+)\)/g, '_{$1}').replace(/\^\(([^)]+)\)/g, '^{$1}');
+  return t;
+}
+
 function fmt(s) {
-  s = String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  return s
+  s = String(s);
+  const mathBlocks = [];
+  const pushMath = (tex, display = false) => {
+    const idx = mathBlocks.length;
+    mathBlocks.push(renderLatexExpr(tex, display));
+    return `\x00MATH${idx}\x00`;
+  };
+
+  if (s.includes('$') || s.includes('\\(') || s.includes('\\[')) {
+    s = s.replace(/\$\$([\s\S]+?)\$\$|\\\[([\s\S]+?)\\\]|\\\(([\s\S]+?)\\\)|\$([^\$\n]+?)\$/g, (m, d1, d2, i1, i2) => {
+      const isDisplay = d1 !== undefined || d2 !== undefined;
+      const tex = (d1 !== undefined ? d1 : d2 !== undefined ? d2 : i1 !== undefined ? i1 : i2).trim();
+      return pushMath(tex, isDisplay);
+    });
+  }
+
+  // Automatic LaTeX/KaTeX conversion for plain-text math in banks when real KaTeX is loaded
+  if (typeof katex !== 'undefined' && katex && katex.version && mathBlocks.length === 0) {
+    const trimmed = s.trim();
+    // 1. Pure fraction option/expression (e.g. "n! / ((n-k)! · k!)", "(n-k)! · k! / n!", "n·(n-1)·…·(n-k+1) / k!")
+    const fracMatch = trimmed.match(/^([0-9A-Za-z()−\-+·…!\s_]+)\s*\/\s*([0-9A-Za-z()−\-+·…!\s_]+)$/);
+    if (fracMatch && (trimmed.includes('!') || trimmed.includes('−') || trimmed.includes('·'))) {
+      let num = fracMatch[1].trim();
+      let den = fracMatch[2].trim();
+      if (den.startsWith('((') && den.endsWith('))')) den = den.slice(1, -1);
+      else if (den.startsWith('(') && den.endsWith(')') && !den.slice(1, -1).includes('(')) den = den.slice(1, -1);
+      return renderLatexExpr(`\\frac{${toLatexMathStr(num)}}{${toLatexMathStr(den)}}`, false);
+    }
+    // 2. Pure equation option (e.g. "n! = n·(n−1)·…·(n−k+1)·(n−k)!", "a = a_n·Z^n + a_(n-1)·Z^(n-1) + ... + a_1·Z^1 + a_0·Z^0")
+    if (/^(?:n!|\(n[−\-]k\)!|\(k\+1\)!|a)\s*=\s*[0-9A-Za-z()_\^−\-+·….\s!]+$/.test(trimmed)) {
+      return renderLatexExpr(toLatexMathStr(trimmed), false);
+    }
+    // 3. Inline C(n, k) = (n nad k) or (a nad b)
+    s = s.replace(/(?:C\([A-Za-z0-9+\-−,\s]+\)\s*=\s*)?\(([A-Za-z0-9+\-−\s]+?)\s+nad\s+([A-Za-z0-9+\-−\s?]+?)\)/g, m => pushMath(toLatexMathStr(m), false));
+    // 4. Inline fractions with factorials
+    s = s.replace(/([0-9A-Za-z()−\-+·…]+!)\s*\/\s*(\(\([0-9A-Za-z()−\-+·!\s]+\)\)|\([0-9A-Za-z−\-+·!\s]+\)!?|[0-9A-Za-z]+!)/g, (_, num, den) => {
+      let d = den.trim();
+      if (d.startsWith('((') && d.endsWith('))')) d = d.slice(1, -1);
+      return renderLatexExpr(`\\frac{${toLatexMathStr(num)}}{${toLatexMathStr(d)}}`, false);
+    });
+    // 5. Inline factorial equations & combinatorial expressions C(...), V(...), P(...)
+    s = s.replace(/\([A-Za-z0-9+\-−]+\)!\s*=\s*[A-Za-z0-9()+\-−·…!\s]+/g, m => pushMath(toLatexMathStr(m), false));
+    s = s.replace(/C'\([^)]+\)|C\([^)]+\)(?:\s*[+=]\s*C\([^)]+\))*/g, m => pushMath(toLatexMathStr(m), false));
+    s = s.replace(/\([A-Za-z][−\-][A-Za-z](?:[−\-]1)?\)!|\([A-Za-z]\+1\)!|\b[0-9nkv]!\b/g, m => pushMath(toLatexMathStr(m), false));
+    // 6. Inequalities & symbolic relations (0 ≤ k ≤ n, k+1 ≤ n, k ≤ n, k < n, i ≠ j, Aᵢ ∩ Aⱼ = ∅, X ⊆ Y, x ∧ y, x ⇒ y, etc.)
+    s = s.replace(/[0-9A-Za-zᵢⱼ′'+\-−_()]+\s*(?:[≤≥≠∩∪⊆∈∉∧∨⇒⇔∼]\s*[0-9A-Za-zᵢⱼ′'∅¬+\-−_()]+\s*)+/g, m => pushMath(toLatexMathStr(m), false));
+    s = s.replace(/¬[A-Za-z]\s*⇒\s*¬[A-Za-z]|∀[A-Za-z]\s*∈\s*[A-Za-z];\s*[A-Za-z0-9]+/g, m => pushMath(toLatexMathStr(m), false));
+  }
+
+  s = s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  s = s
     .replace(/_\(([^)]+)\)/g, '<sub>$1</sub>').replace(/_([A-Za-z0-9]+)/g, '<sub>$1</sub>')
     .replace(/\^\(([^)]+)\)/g, '<sup>$1</sup>').replace(/\^([A-Za-z0-9]+)/g, '<sup>$1</sup>')
     .replace(/[₀-₉]+/g, m => '<sub>' + [...m].map(c => '₀₁₂₃₄₅₆₇₈₉'.indexOf(c)).join('') + '</sub>')
     .replace(/-&gt;/g, '→').replace(/&lt;-/g, '←').replace(/\.\.\./g, '…');
+  if (mathBlocks.length > 0) {
+    s = s.replace(/\x00MATH(\d+)\x00/g, (_, i) => mathBlocks[Number(i)]);
+  }
+  return s;
 }
 
+
+let currentUserData = null;
+
+function showToast(html) {
+  const t = document.getElementById('score-toast');
+  if (!t) return;
+  t.innerHTML = html;
+  t.classList.add('visible');
+  setTimeout(() => t.classList.remove('visible'), 2800);
+}
+
+function applyUserTheme(th) {
+  localStorage.setItem('tzi_theme', th);
+  if (typeof document !== 'undefined' && document.documentElement) {
+    if (th === 'auto') {
+      document.documentElement.removeAttribute('data-theme');
+    } else {
+      document.documentElement.setAttribute('data-theme', th);
+    }
+  }
+}
+
+// PWA Service Worker Registration
+if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator && typeof window !== 'undefined') {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(e => console.warn('[TZI] SW reg failed:', e));
+  });
+}
+
+const OFFLINE_QUEUE_KEY = 'tzi_offline_sync_queue';
+
+function getOfflineQueue() {
+  try { return JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY) || '[]'); }
+  catch(e) { return []; }
+}
+
+function saveOfflineQueue(q) {
+  try { localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(q)); }
+  catch(e) {}
+  updateNetStatus();
+}
+
+let forceOffline = localStorage.getItem('tzi_force_offline') === '1';
+let serverUnreachable = false;
+const isOnline = () => !forceOffline && (typeof navigator === 'undefined' || navigator.onLine !== false);
+
+function toggleOfflineMode() {
+  if (!forceOffline && serverUnreachable) {
+    forceOffline = false;
+    serverUnreachable = false;
+  } else {
+    forceOffline = !forceOffline;
+    if (!forceOffline) serverUnreachable = false;
+  }
+  localStorage.setItem('tzi_force_offline', forceOffline ? '1' : '0');
+  updateNetStatus();
+  if (!forceOffline && isOnline()) {
+    showToast('Switched to <b>Online mode</b>. Syncing...');
+    syncOfflineQueue();
+    refreshUserStats();
+  } else {
+    showToast('Switched to <b>Offline mode</b>. Progress is saved locally.');
+  }
+}
+
+function updateNetStatus() {
+  const netEl = document.getElementById('u-net');
+  if (!netEl) return;
+  const q = getOfflineQueue();
+  netEl.style.display = 'inline-flex';
+  if (!isOnline() || serverUnreachable) {
+    netEl.className = 'badge-net badge-net-offline';
+    netEl.textContent = `Offline${forceOffline ? ' (manual)' : ''}${q.length ? ` · ${q.length}` : ''}`;
+    netEl.title = 'Offline režim: postup se ukládá v prohlížeči a odešle se po připojení (klikni pro přepnutí)';
+  } else if (isSyncing || q.length > 0) {
+    netEl.className = 'badge-net badge-net-sync';
+    netEl.textContent = `Syncing (${q.length})...`;
+    netEl.title = 'Probíhá synchronizace offline odpovědí se serverem';
+  } else {
+    netEl.className = 'badge-net badge-net-online';
+    netEl.textContent = 'Online';
+    netEl.title = 'Online režim: spojení se serverem je aktivní (kliknutím lze přepnout do Offline režimu)';
+  }
+  updateCompArenaMenuState();
+}
+
+function updateCompArenaMenuState(openRoomsCount = null, kingName = null) {
+  const btn = document.getElementById('btn-comp-arena');
+  const desc = document.getElementById('comp-arena-desc');
+  const badge = document.getElementById('comp-arena-badge');
+  if (!btn) return;
+  const offline = !isOnline() || serverUnreachable;
+  btn.disabled = offline;
+  if (offline) {
+    btn.classList.add('comp-disabled');
+    if (desc) desc.textContent = 'Nedostupné v offline režimu – vyžaduje spojení s backendem';
+    if (badge) badge.textContent = 'Offline';
+  } else {
+    btn.classList.remove('comp-disabled');
+    if (desc && openRoomsCount !== null) {
+      const kTxt = kingName ? ` · King: ${kingName}` : '';
+      desc.textContent = `Otevřené místnosti: ${openRoomsCount}${kTxt} · FFA, 1v1 Duel & KotH`;
+    } else if (desc && String(desc.textContent || '').includes('Nedostupné')) {
+      desc.textContent = 'Vytvoř nebo se připoj do místnosti · FFA, 1v1 Duel & King of the Hill';
+    }
+    if (badge) {
+      badge.textContent = (openRoomsCount && openRoomsCount > 0) ? `${openRoomsCount} roomek` : 'Aréna →';
+    }
+  }
+}
+
+function selectArenaRoomMode(mode) {
+  const sel = document.getElementById('room-mode-select');
+  if (sel) sel.value = mode;
+  const cards = document.querySelectorAll('.arena-mode-card');
+  if (cards && cards.forEach) {
+    cards.forEach(c => {
+      if (c.getAttribute('data-mode') === mode) c.classList.add('active');
+      else c.classList.remove('active');
+    });
+  }
+}
+
+async function openCompArena() {
+  if (!isOnline()) {
+    updateCompArenaMenuState();
+    showToast('⚡ Kompetitivní aréna není v offline režimu dostupná.');
+    return;
+  }
+  try {
+    const res = await fetch('/api/competitive/overview');
+    if (!res.ok) throw new Error('Backend unreachable');
+    serverUnreachable = false;
+    updateNetStatus();
+    const ov = await res.json();
+    if (ov.ffa) renderFfaUI(ov.ffa);
+    if (ov.duel) renderDuelUI(ov.duel);
+    if (ov.koth) renderKothUI(ov.koth, ov);
+    if (ov.rooms) renderRoomsListUI(ov.rooms);
+    const waitingCount = ov.rooms && Array.isArray(ov.rooms.active_rooms) ? ov.rooms.active_rooms.filter(r => r.status === 'waiting').length : 0;
+    const kingUser = ov.koth && ov.koth.king ? ov.koth.king.username : null;
+    updateCompArenaMenuState(waitingCount, kingUser);
+  } catch (e) {
+    serverUnreachable = true;
+    updateNetStatus();
+    showToast('⚠️ Server pro kompetitivní arénu je momentálně nedostupný.');
+    return;
+  }
+  show('comp-arena');
+}
+
+async function openLeaderboardView() {
+  show('leaderboard-view');
+  if (!isOnline()) return;
+  try {
+    const [lbRes, compRes] = await Promise.all([
+      fetch('/api/leaderboard'),
+      fetch('/api/competitive/overview')
+    ]);
+    if (lbRes.ok) {
+      const lb = await lbRes.json();
+      if ($('lb-my-rank')) $('lb-my-rank').textContent = lb.rank !== '-' ? `#${lb.rank} z ${lb.total}` : 'Host';
+      if ($('lb-my-xp')) $('lb-my-xp').textContent = `${lb.points || 0} XP`;
+      if ($('lb-my-streak')) $('lb-my-streak').textContent = `${lb.best_streak || 0}`;
+      if ($('lb-my-dstreak')) $('lb-my-dstreak').textContent = `${lb.daily_streak || 0} dní`;
+      if ($('lb-total-users')) $('lb-total-users').textContent = `${lb.total || 0} registrovaných`;
+      const tbody = $('lb-table-body');
+      const rows = Array.isArray(lb.leaderboard) ? lb.leaderboard : [];
+      const myName = currentUserData ? currentUserData.username : '';
+      if (tbody) {
+        tbody.innerHTML = rows.length ? rows.map((r, i) => {
+          const rInfo = getRankInfo(r.points || 0);
+          const isMe = myName && r.username === myName;
+          return `<tr class="${isMe ? 'me-row' : ''}">
+            <td><b>#${i + 1}</b></td>
+            <td><b>${esc(r.username)}</b>${isMe ? ' <small style="color:var(--blue)">(You)</small>' : ''}</td>
+            <td><span style="font-family:var(--mono);font-size:.8rem;">Lvl ${rInfo.lvl} · ${rInfo.title}</span></td>
+            <td><b style="color:var(--ok);font-family:var(--mono);">${r.points || 0} XP</b></td>
+            <td>${r.best_streak || 0}</td>
+            <td>${r.daily_streak || 0}d</td>
+          </tr>`;
+        }).join('') : '<tr><td colspan="6">Zatím žádné záznamy.</td></tr>';
+      }
+    }
+    if (compRes.ok) {
+      const ov = await compRes.json();
+      const compEl = $('lb-comp-summary');
+      if (compEl) {
+        const items = [];
+        if (ov.koth && ov.koth.king) {
+          items.push(`<li><span>👑 <b>Král kopce (KotH):</b> ${esc(ov.koth.king.username)} (obhájení ${ov.koth.king.defenses_count || 0}×)</span><span><b>${ov.koth.king.score} b.</b></span></li>`);
+        }
+        if (ov.ffa && Array.isArray(ov.ffa.leaderboard) && ov.ffa.leaderboard.length) {
+          ov.ffa.leaderboard.slice(0, 3).forEach((r, idx) => {
+            items.push(`<li><span>🏟️ <b>FFA #${idx + 1}:</b> ${esc(r.username)} (${r.best_correct}/10 správně)</span><span><b>${r.best_score} b.</b></span></li>`);
+          });
+        }
+        if (ov.duel && Array.isArray(ov.duel.leaderboard) && ov.duel.leaderboard.length) {
+          ov.duel.leaderboard.slice(0, 3).forEach((r, idx) => {
+            items.push(`<li><span>⚔️ <b>1v1 Duel #${idx + 1}:</b> ${esc(r.username)}</span><span><b>🏆 ${r.wins} výher</b></span></li>`);
+          });
+        }
+        compEl.innerHTML = items.length ? items.join('') : '<li><span>Zatím žádné odehrané kompetitivní zápasy.</span></li>';
+      }
+    }
+  } catch (e) {}
+}
+
+async function openProfileView() {
+  show('profile-view');
+  await refreshDailyProgress();
+  const u = currentUserData || {};
+  const rInfo = getRankInfo(u.points || 0);
+  if ($('prof-lvl-title')) $('prof-lvl-title').textContent = `Lvl ${rInfo.lvl} · ${rInfo.title}`;
+  if ($('prof-best-streak')) $('prof-best-streak').textContent = `${u.best_streak || 0}`;
+  if ($('prof-role-badge')) $('prof-role-badge').textContent = u.role === 'admin' ? 'Administrator' : (u.role === 'trial' ? 'Trial Guest' : `Player: ${u.username || ''}`);
+  if ($('prof-new-username') && u.username && u.role !== 'trial') $('prof-new-username').value = u.username;
+
+  if (!isOnline()) {
+    const localVals = Object.values(progress || {});
+    const c = localVals.filter(v => v === 'correct').length;
+    const w = localVals.filter(v => v === 'wrong').length;
+    const acc = WASM_CORE.exp.calcRecapAccuracy(c | 0, w | 0);
+    if ($('prof-accuracy')) $('prof-accuracy').textContent = `${acc} %`;
+    if ($('prof-mastered')) $('prof-mastered').textContent = `${c} správně`;
+    return;
+  }
+  try {
+    const res = await fetch('/api/account/recap');
+    if (res.ok) {
+      const recap = await res.json();
+      const tc = recap.total_correct || 0;
+      const tw = recap.total_wrong || 0;
+      const tq = recap.total_questions || 0;
+      const acc = WASM_CORE.exp.calcRecapAccuracy(tc | 0, tw | 0);
+      const cov = WASM_CORE.exp.calcPercentage(tc | 0, tq | 0);
+      if ($('prof-accuracy')) $('prof-accuracy').textContent = `${acc} %`;
+      if ($('prof-mastered')) $('prof-mastered').textContent = `${tc} / ${tq} (${cov} %)`;
+      const listEl = $('profile-recap-sources');
+      if (listEl && Array.isArray(recap.sources)) {
+        listEl.innerHTML = recap.sources.map(s => {
+          const okPct = WASM_CORE.exp.calcPercentage(s.correct | 0, s.total | 0);
+          const badPct = WASM_CORE.exp.calcPercentage(s.wrong | 0, s.total | 0);
+          return `<div class="recap-source-row">
+            <div class="recap-source-top">
+              <strong>${esc(s.title)}</strong>
+              <span style="font-family:var(--mono);font-size:.8rem;color:var(--muted);"><b style="color:var(--ok)">${s.correct}✓</b> · <b style="color:var(--bad)">${s.wrong}✗</b> / ${s.total} (${okPct} %)</span>
+            </div>
+            <div class="recap-bar">
+              <div class="recap-bar-ok" style="width:${okPct}%"></div>
+              <div class="recap-bar-bad" style="width:${badPct}%"></div>
+            </div>
+          </div>`;
+        }).join('');
+      }
+    }
+  } catch (e) {}
+}
+
+async function submitUsernameChange() {
+  const inp = $('prof-new-username');
+  if (!inp) return;
+  const username = inp.value.trim();
+  try {
+    const res = await fetch('/api/account/username', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-TZI': '1'},
+      body: JSON.stringify({ username })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      showToast('⚠️ ' + (data.detail || 'Změna přezdívky se nezdařila.'));
+      return;
+    }
+    showToast(`✅ Přezdívka změněna na <b>${esc(data.username)}</b>`);
+    await refreshUserStats();
+    await openProfileView();
+  } catch (e) {
+    showToast('⚠️ Chyba spojení se serverem.');
+  }
+}
+
+async function submitPasswordChange() {
+  const curEl = $('prof-cur-pw'), newEl = $('prof-new-pw'), new2El = $('prof-new-pw2');
+  if (!curEl || !newEl || !new2El) return;
+  try {
+    const res = await fetch('/api/account/password', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-TZI': '1'},
+      body: JSON.stringify({
+        current_password: curEl.value,
+        new_password: newEl.value,
+        new_password_confirm: new2El.value
+      })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      showToast('⚠️ ' + (data.detail || 'Změna hesla selhala.'));
+      return;
+    }
+    curEl.value = ''; newEl.value = ''; new2El.value = '';
+    showToast('✅ Heslo bylo úspěšně změněno.');
+  } catch (e) {
+    showToast('⚠️ Chyba spojení se serverem.');
+  }
+}
+
+let pendingDeleteScope = 'source';
+function openRevalidateModal(scope = 'source') {
+  pendingDeleteScope = scope;
+  const isTrial = currentUserData && currentUserData.role === 'trial';
+  const descEl = $('reval-modal-desc');
+  const inpEl = $('reval-password-input');
+  const errEl = $('reval-error-msg');
+  if (errEl) errEl.textContent = '';
+  if (inpEl) {
+    inpEl.value = '';
+    inpEl.type = isTrial ? 'text' : 'password';
+    inpEl.placeholder = isTrial ? 'Napiš SMAZAT pro potvrzení...' : 'Zadej heslo svého účtu...';
+  }
+  if (descEl) {
+    descEl.textContent = scope === 'all'
+      ? (isTrial ? 'Chystáš se smazat veškerý postup. Napiš slovo SMAZAT.' : 'Chystáš se nenávratně smazat veškerý postup všech přednášek. Potvrď akci svým heslem.')
+      : (isTrial ? 'Chystáš se smazat postup aktuální přednášky. Napiš slovo SMAZAT.' : `Chystáš se smazat postup přednášky (${currentSource || 'aktuální'}). Potvrď akci svým heslem.`);
+  }
+  const modal = $('revalidate-modal');
+  if (modal) modal.classList.add('show');
+  if (inpEl) inpEl.focus();
+}
+
+
+let deleteProfileStep = 1;
+function openDeleteProfileModal() {
+  if (currentUserData && currentUserData.role === 'trial') {
+    showToast('Trial guest profile does not have a registered account to remove.');
+    return;
+  }
+  deleteProfileStep = 1;
+  if ($('del-prof-ack-chk')) $('del-prof-ack-chk').checked = false;
+  if ($('del-prof-user-inp')) $('del-prof-user-inp').value = '';
+  if ($('del-prof-phrase-inp')) $('del-prof-phrase-inp').value = '';
+  if ($('del-prof-pw-inp')) $('del-prof-pw-inp').value = '';
+  if ($('del-prof-err')) $('del-prof-err').textContent = '';
+  if ($('del-prof-expected-user')) $('del-prof-expected-user').textContent = (currentUserData && currentUserData.username) || '';
+  renderDeleteProfileStepUI();
+  const modal = $('delete-profile-modal');
+  if (modal) modal.classList.add('show');
+}
+
+function closeDeleteProfileModal() {
+  const modal = $('delete-profile-modal');
+  if (modal) modal.classList.remove('show');
+}
+
+function renderDeleteProfileStepUI() {
+  if ($('del-prof-step-1')) $('del-prof-step-1').style.display = deleteProfileStep === 1 ? 'block' : 'none';
+  if ($('del-prof-step-2')) $('del-prof-step-2').style.display = deleteProfileStep === 2 ? 'block' : 'none';
+  if ($('del-prof-step-3')) $('del-prof-step-3').style.display = deleteProfileStep === 3 ? 'block' : 'none';
+  if ($('del-prof-step-badge')) $('del-prof-step-badge').textContent = `Step ${deleteProfileStep} / 3`;
+  const btn = $('del-prof-submit-btn');
+  if (btn) {
+    btn.textContent = deleteProfileStep === 1 ? 'Continue (1/3) →' : deleteProfileStep === 2 ? 'Continue (2/3) →' : 'Permanently Remove Profile (3/3)';
+  }
+}
+
+async function submitDeleteProfileStep() {
+  const errEl = $('del-prof-err');
+  if (errEl) errEl.textContent = '';
+
+  if (deleteProfileStep === 1) {
+    const chk = $('del-prof-ack-chk');
+    if (!chk || !chk.checked) {
+      if (errEl) errEl.textContent = 'Please check the confirmation box to proceed.';
+      return;
+    }
+    deleteProfileStep = 2;
+    renderDeleteProfileStepUI();
+    if ($('del-prof-user-inp')) $('del-prof-user-inp').focus();
+    return;
+  }
+
+  if (deleteProfileStep === 2) {
+    const uInp = ($('del-prof-user-inp') ? $('del-prof-user-inp').value : '').trim();
+    const pInp = ($('del-prof-phrase-inp') ? $('del-prof-phrase-inp').value : '').trim().toUpperCase();
+    const expected = (currentUserData && currentUserData.username) || '';
+    if (uInp !== expected) {
+      if (errEl) errEl.textContent = `Username must match "${expected}" exactly.`;
+      return;
+    }
+    if (pInp !== 'DELETE') {
+      if (errEl) errEl.textContent = 'Please type DELETE in the second field.';
+      return;
+    }
+    deleteProfileStep = 3;
+    renderDeleteProfileStepUI();
+    if ($('del-prof-pw-inp')) $('del-prof-pw-inp').focus();
+    return;
+  }
+
+  const pw = $('del-prof-pw-inp') ? $('del-prof-pw-inp').value : '';
+  if (!pw) {
+    if (errEl) errEl.textContent = 'Please enter your password.';
+    return;
+  }
+  try {
+    const res = await fetch('/api/account/delete-profile', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-TZI': '1'},
+      body: JSON.stringify({
+        step1_ack: true,
+        confirm_username: ($('del-prof-user-inp') ? $('del-prof-user-inp').value : '').trim(),
+        confirm_phrase: ($('del-prof-phrase-inp') ? $('del-prof-phrase-inp').value : '').trim(),
+        password: pw
+      })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      if (errEl) errEl.textContent = data.detail || 'Profile deletion failed.';
+      return;
+    }
+    localStorage.clear();
+    window.location.href = data.redirect || '/login';
+  } catch (e) {
+    if (errEl) errEl.textContent = 'Connection error while removing profile.';
+  }
+}
+
+function closeRevalidateModal() {
+  const modal = $('revalidate-modal');
+  if (modal) modal.classList.remove('show');
+}
+
+async function confirmRevalidatedDelete() {
+  const inpEl = $('reval-password-input');
+  const errEl = $('reval-error-msg');
+  const password = inpEl ? inpEl.value : '';
+  if (!password) return;
+  try {
+    const res = await fetch('/api/account/revalidate-delete', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-TZI': '1'},
+      body: JSON.stringify({
+        password,
+        scope: pendingDeleteScope,
+        source: currentSource
+      })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      if (errEl) errEl.textContent = data.detail || 'Ověření selhalo.';
+      return;
+    }
+    closeRevalidateModal();
+    if (pendingDeleteScope === 'all') {
+      progress = {};
+      session = null;
+      localStorage.removeItem('tzi_local_progress_' + currentSource);
+      showToast('🗑️ Veškerý studijní postup byl po ověření smazán.');
+    } else {
+      const ids = new Set(FULL.map(q => q.id));
+      const keep = Object.fromEntries(Object.entries(progress).filter(([k]) => !ids.has(k)));
+      progress = keep;
+      session = null;
+      localStorage.setItem('tzi_local_progress_' + currentSource, JSON.stringify(keep));
+      showToast('🗑️ Postup vybrané přednášky byl po ověření smazán.');
+    }
+    updateMenuStats(false);
+    if ($('profile-view') && $('profile-view').style.display === 'block') {
+      await openProfileView();
+    }
+  } catch (e) {
+    if (errEl) errEl.textContent = 'Chyba spojení se serverem při ověřování.';
+  }
+}
+
+let isSyncing = false;
+async function syncOfflineQueue() {
+  if (isSyncing || !isOnline()) return;
+  const oq = getOfflineQueue();
+  if (!oq.length) {
+    updateNetStatus();
+    refreshUserStats();
+    return;
+  }
+  isSyncing = true;
+  updateNetStatus();
+  try {
+    const res = await fetch('/api/sync', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-TZI': '1'},
+      body: JSON.stringify({
+        source: currentSource || '_default',
+        seen: progress,
+        answers: oq
+      })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      localStorage.removeItem(OFFLINE_QUEUE_KEY);
+      updateNetStatus();
+      if (data.points_awarded > 0) {
+        showToast(`🔄 Synchronizováno: <b>+${data.points_awarded} b.</b> (${data.synced_count} otázek)`);
+      } else if (data.synced_count > 0) {
+        showToast(`🔄 Synchronizováno ${data.synced_count} offline odpovědí.`);
+      }
+      refreshUserStats();
+    }
+  } catch(e) {
+    console.warn('[TZI] Sync offline failed, will retry', e);
+  } finally {
+    isSyncing = false;
+    updateNetStatus();
+  }
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('online', () => { updateNetStatus(); syncOfflineQueue(); });
+  window.addEventListener('offline', () => { updateNetStatus(); });
+}
+
+async function prefetchBanksForOffline() {
+  if (!isOnline()) return;
+  try {
+    const sRes = await fetch('/api/sources');
+    if (!sRes.ok) return;
+    const sData = await sRes.json();
+    const srcs = (sData.sources || []).map(s => s.id);
+    for (const src of srcs) {
+      fetch(`/api/questions?source=${encodeURIComponent(src)}`).catch(() => {});
+    }
+    fetch('/api/recall').catch(() => {});
+  } catch(e) {}
+}
+
+let soundEnabled = localStorage.getItem('tzi_sound') !== '0';
+function toggleSound() {
+  soundEnabled = !soundEnabled;
+  localStorage.setItem('tzi_sound', soundEnabled ? '1' : '0');
+  const b = document.getElementById('btn-sound');
+  if (b) b.style.opacity = soundEnabled ? '1' : '0.45';
+}
+
+const RANK_TITLES = ['', 'NPC', 'Nováček', 'Učeň', 'Student', 'Pokročilý', 'Teoretik', 'Mistr'];
+function getRankInfo(xp) {
+  const lvl = WASM_CORE.exp.calcRankLevel(xp | 0);
+  const pct = WASM_CORE.exp.calcRankPct(xp | 0);
+  return { lvl, title: RANK_TITLES[lvl] || 'NPC', pct };
+}
+
+const ACH_BIT_KEYS = ['first','start','wave','invincible','fifty','twohundred','marathon','learn','memory','regular','week','lucky','fast','done','routine','advanced','master'];
+function updateAchievements(u, dp) {
+  const listEl = document.getElementById('ach-list');
+  if (!listEl || !listEl.querySelectorAll) return;
+  const xp = (u && u.points) || 0;
+  const bestStreak = (u && u.best_streak) || 0;
+  const dStreak = (dp && dp.daily_streak) ?? (u && u.daily_streak) ?? 0;
+  const goalMet = ((dp && dp.goal_met) ?? (u && u.daily_goal_met)) ? 1 : 0;
+  const vals = Object.values(progress || {});
+  const doneCount = vals.filter(v => v === 'correct').length;
+  const hasWrong = vals.some(v => v === 'wrong') ? 1 : 0;
+  const mask = WASM_CORE.exp.calcAchievementMask(xp | 0, bestStreak | 0, dStreak | 0, goalMet, doneCount | 0, hasWrong);
+  let unlockedCount = 0;
+
+  listEl.querySelectorAll('.ach-badge').forEach(el => {
+    const key = el.getAttribute('data-ach');
+    const bitIdx = ACH_BIT_KEYS.indexOf(key);
+    const baseName = el.getAttribute('data-label') || key;
+    const hint = el.getAttribute('data-hint') || '';
+    const isUnl = bitIdx >= 0 && (mask & (1 << bitIdx)) !== 0;
+    if (isUnl) {
+      unlockedCount++;
+      el.classList.add('unlocked');
+    } else {
+      el.classList.remove('unlocked');
+    }
+    el.innerHTML = `<span class="ach-title"><span>${esc(baseName)}</span><span>${isUnl ? '✓' : ''}</span></span>` +
+      (hint ? `<small class="ach-hint">${esc(hint)}</small>` : '');
+  });
+  const cntEl = document.getElementById('prof-ach-count');
+  if (cntEl) cntEl.textContent = `${unlockedCount} / ${ACH_BIT_KEYS.length} unlocked`;
+}
+
+function renderDailyProgressUI(dp) {
+  if (!dp) return;
+  const goal = dp.daily_goal || 5;
+  const ans = dp.questions_answered ?? dp.questions_today ?? 0;
+  const met = !!(dp.goal_met ?? dp.daily_goal_met);
+  const dStreak = dp.daily_streak ?? 0;
+  const pct = WASM_CORE.exp.calcPercentage(ans | 0, goal | 0);
+
+  const stEl = document.getElementById('dp-streak');
+  if (stEl) stEl.textContent = String(dStreak);
+  const cntEl = document.getElementById('dp-count');
+  if (cntEl) cntEl.innerHTML = `Denní cíl: <b>${ans}</b>/${goal} odpovědí (+50 XP)`;
+  const barEl = document.getElementById('dp-bar-fill');
+  if (barEl) {
+    barEl.style.width = `${pct}%`;
+    barEl.className = 'daily-bar-fill' + (met ? ' done' : '');
+  }
+  const statusEl = document.getElementById('dp-status');
+  if (statusEl) {
+    statusEl.textContent = met ? 'Splněno ✓' : '';
+    statusEl.style.color = met ? 'var(--ok)' : 'var(--muted)';
+  }
+  const histEl = document.getElementById('dp-history');
+  if (histEl && Array.isArray(dp.history)) {
+    histEl.innerHTML = dp.history.slice(0, 7).map(h =>
+      `<span class="daily-day-dot${h.goal_met ? ' met' : ''}" title="${esc(h.date)}: ${h.questions_answered} otázek">${esc(String(h.date).slice(5))} ${h.goal_met ? '✓' : '·'}</span>`
+    ).join('');
+  }
+  updateAchievements(currentUserData, dp);
+}
+
+async function refreshDailyProgress() {
+  if (!isOnline()) return;
+  try {
+    const res = await fetch('/api/daily-progress');
+    if (res.ok) {
+      const dp = await res.json();
+      renderDailyProgressUI(dp);
+    }
+  } catch (e) {}
+}
+
+function renderFfaUI(st) {
+  if (!st) return;
+  const leader = st.leader;
+  const nameEl = document.getElementById('ffa-leader-name');
+  const subEl = document.getElementById('ffa-leader-sub');
+  const badgeEl = document.getElementById('ffa-players-badge');
+  const scoreEl = document.getElementById('ffa-leader-score');
+  if (leader && leader.username) {
+    if (nameEl) nameEl.textContent = `Lídr: ${leader.username}`;
+    if (subEl) subEl.textContent = `${leader.best_correct || 0} správně (${Math.round((leader.best_time_ms || 0) / 1000)}s)`;
+    if (scoreEl) scoreEl.textContent = `${leader.best_score || 0} b.`;
+  } else {
+    if (nameEl) nameEl.textContent = 'Aréna je otevřená!';
+    if (subEl) subEl.textContent = '10 otázek o nejvyšší skóre';
+    if (scoreEl) scoreEl.textContent = '0 b.';
+  }
+  if (badgeEl) badgeEl.textContent = `${st.total_players || 0} hráčů`;
+}
+
+function renderDuelUI(st) {
+  if (!st) return;
+  const openList = Array.isArray(st.open_challenges) ? st.open_challenges : [];
+  const lb = Array.isArray(st.leaderboard) ? st.leaderboard : [];
+  const nameEl = document.getElementById('duel-status-name');
+  const subEl = document.getElementById('duel-status-sub');
+  const badgeEl = document.getElementById('duel-open-badge');
+  const winsEl = document.getElementById('duel-top-wins');
+  if (openList.length > 0) {
+    const ch = openList[0];
+    if (nameEl) nameEl.textContent = `Výzva od: ${ch.creator_username}`;
+    if (subEl) subEl.textContent = `Skóre k překonání: ${ch.creator_score} b.`;
+  } else {
+    if (nameEl) nameEl.textContent = 'Založ novou 1v1 výzvu';
+    if (subEl) subEl.textContent = 'Vyzvi soupeře na stejných 10 otázkách';
+  }
+  if (badgeEl) badgeEl.textContent = `${openList.length} otevřených`;
+  if (winsEl) winsEl.textContent = lb.length > 0 ? `🏆 ${lb[0].wins}×` : '1v1';
+}
+
+function renderKothUI(st, overview) {
+  if (!st) return;
+  const king = st.king;
+  const nameEl = document.getElementById('koth-king-name');
+  const subEl = document.getElementById('koth-king-sub');
+  const scoreEl = document.getElementById('koth-king-score');
+  const defEl = document.getElementById('koth-defenses-badge');
+  if (king && king.username) {
+    if (nameEl) nameEl.textContent = `Král: ${king.username}`;
+    if (subEl) subEl.textContent = `${king.correct || 0} správně (${Math.round((king.time_ms || 0) / 1000)}s)`;
+    if (scoreEl) scoreEl.textContent = `${king.score} b.`;
+    if (defEl) defEl.textContent = `obhájení ${king.defenses_count || 0}×`;
+  } else {
+    if (nameEl) nameEl.textContent = 'Kopec je volný!';
+    if (subEl) subEl.textContent = '10 otázek na čas';
+    if (scoreEl) scoreEl.textContent = '0 b.';
+    if (defEl) defEl.textContent = '0×';
+  }
+  const listEl = document.getElementById('koth-history-list');
+  if (listEl) {
+    const items = [];
+    const duelSt = overview && overview.duel ? overview.duel : null;
+    const ffaSt = overview && overview.ffa ? overview.ffa : null;
+    if (duelSt && Array.isArray(duelSt.open_challenges)) {
+      duelSt.open_challenges.slice(0, 2).forEach(ch => {
+        items.push(`<li><span>⚔️ <b>1v1 výzva: ${esc(ch.creator_username)}</b> (${ch.creator_score} b.)</span><span><button class="lnk" onclick="startCompetitiveMode('duel', ${Number(ch.id)})">Přijmout 1v1</button></span></li>`);
+      });
+    }
+    if (duelSt && Array.isArray(duelSt.recent_duels)) {
+      duelSt.recent_duels.slice(0, 2).forEach(d => {
+        const winTxt = d.winner_username ? `🏆 ${esc(d.winner_username)}` : '🤝 Remíza';
+        items.push(`<li><span>⚔️ 1v1: <b>${esc(d.creator_username)}</b> (${d.creator_score}) vs <b>${esc(d.opponent_username)}</b> (${d.opponent_score})</span><span><b>${winTxt}</b></span></li>`);
+      });
+    }
+    if (ffaSt && Array.isArray(ffaSt.leaderboard) && ffaSt.leaderboard.length > 0) {
+      const topFfa = ffaSt.leaderboard.slice(0, 2).map((r, i) => `#${i+1} ${esc(r.username)} (${r.best_score} b.)`).join(' · ');
+      items.push(`<li><span>🏟️ <b>FFA TOP:</b> ${topFfa}</span><span><b>${ffaSt.total_players} hráčů</b></span></li>`);
+    }
+    if (Array.isArray(st.recent_matches)) {
+      st.recent_matches.slice(0, 3).forEach(m => {
+        items.push(`<li><span>${m.won_throne ? '👑' : '🛡️'} KotH: <b>${esc(m.challenger_username)}</b> (${m.correct_count}/${m.total_questions})</span><span><b>${m.challenger_score} b.</b></span></li>`);
+      });
+    }
+    listEl.innerHTML = items.slice(0, 6).join('');
+  }
+}
+
+function modeBadgeLabel(m) {
+  return m === 'ffa' ? 'FFA' : m === 'duel' ? '1v1 Duel' : 'King of the Hill';
+}
+
+function renderRoomsListUI(roomsData) {
+  const listEl = document.getElementById('comp-rooms-list');
+  const badgeEl = document.getElementById('rooms-count-badge');
+  if (!listEl) return;
+  const active = roomsData && Array.isArray(roomsData.active_rooms) ? roomsData.active_rooms : [];
+  const waiting = active.filter(r => r.status === 'waiting');
+  if (badgeEl) badgeEl.textContent = `${waiting.length} otevřených`;
+  if (!active.length) {
+    listEl.innerHTML = `<li class="room-row"><span class="room-row-meta">Žádná aktivní místnost – vytvoř novou roomku výše a počkej na hráče nebo ji spusť jako 👑!</span></li>`;
+    return;
+  }
+  const myUid = currentUserData ? currentUserData.user_id : 0;
+  listEl.innerHTML = active.slice(0, 6).map(r => {
+    const isMember = Array.isArray(r.players) && r.players.some(p => p.user_id === myUid);
+    const playersNames = Array.isArray(r.players) ? r.players.map(p => (p.is_host ? '👑 ' : '') + esc(p.username)).join(', ') : '';
+    const btnLabel = r.status === 'waiting'
+      ? (isMember ? 'Otevřít lobby 👑' : 'Připojit se')
+      : (isMember ? 'Probíhá (Vstoupit)' : 'Probíhá');
+    const canClick = r.status === 'waiting' || isMember;
+    return `<li class="room-row">
+      <div>
+        <div><b>${modeBadgeLabel(r.mode)} · ${esc(r.name)}</b> <span class="room-row-meta">(${r.player_count}/${r.max_players} hráčů · ${r.question_count} ot.)</span></div>
+        <div class="room-row-meta">Hráči: ${playersNames || esc(r.host_username)}</div>
+      </div>
+      ${canClick ? `<button type="button" class="room-join-btn" onclick="joinCompRoom(${Number(r.id)})">${btnLabel}</button>` : `<span class="room-row-meta">Hraje se</span>`}
+    </li>`;
+  }).join('');
+}
+
+async function refreshKothStatus() {
+  if (!isOnline()) {
+    updateCompArenaMenuState();
+    return;
+  }
+  try {
+    const res = await fetch('/api/competitive/overview');
+    if (res.ok) {
+      serverUnreachable = false;
+      const ov = await res.json();
+      if (ov.ffa) renderFfaUI(ov.ffa);
+      if (ov.duel) renderDuelUI(ov.duel);
+      if (ov.koth) renderKothUI(ov.koth, ov);
+      if (ov.rooms) renderRoomsListUI(ov.rooms);
+      const waitingCount = ov.rooms && Array.isArray(ov.rooms.active_rooms) ? ov.rooms.active_rooms.filter(r => r.status === 'waiting').length : 0;
+      const kingUser = ov.koth && ov.koth.king ? ov.koth.king.username : null;
+      updateCompArenaMenuState(waitingCount, kingUser);
+      return;
+    } else {
+      updateCompArenaMenuState();
+    }
+  } catch (e) {
+    updateCompArenaMenuState();
+  }
+  try {
+    const res = await fetch('/api/koth/status');
+    if (res.ok) {
+      const st = await res.json();
+      renderKothUI(st);
+    }
+  } catch (e) {}
+}
+
+function stopRoomPolling() {
+  if (roomPollTimer) {
+    clearInterval(roomPollTimer);
+    roomPollTimer = null;
+  }
+}
+
+function renderRoomLobbyView(room) {
+  if (!room) return;
+  activeRoomData = room;
+  activeRoomId = room.id;
+  const myUid = currentUserData ? currentUserData.user_id : 0;
+  const isHost = room.host_id === myUid || (Array.isArray(room.players) && room.players.some(p => p.user_id === myUid && p.is_host));
+  if ($('rl-mode-badge')) $('rl-mode-badge').textContent = `${modeBadgeLabel(room.mode)} · MÍSTNOST #${room.id}`;
+  if ($('rl-title')) $('rl-title').textContent = room.name;
+  if ($('rl-subtitle')) $('rl-subtitle').textContent = `${room.question_count} otázek na čas · Zakladatel: 👑 ${room.host_username}`;
+  if ($('rl-player-count')) $('rl-player-count').textContent = `${room.player_count}/${room.max_players}`;
+  if ($('rl-status-banner')) {
+    $('rl-status-banner').textContent = isHost
+      ? (room.player_count > 1
+          ? `✅ Připojeno ${room.player_count} hráčů! Jako 👑 hostitel můžeš hru kdykoliv odstartovat.`
+          : `⏳ Čeká se na připojení dalšího hráče do místnosti, nebo hru odstartuj rovnou tlačítkem 👑 Spustit hru hned.`)
+      : `⏳ Čeká se, až se připojí další hráči nebo 👑 ${room.host_username} spustí hru...`;
+  }
+  const plEl = $('rl-players-list');
+  if (plEl && Array.isArray(room.players)) {
+    plEl.innerHTML = room.players.map(p => `
+      <li>
+        <span>${p.is_host ? '👑' : '👤'} <b>${esc(p.username)}</b> ${p.is_host ? '<small style="color:var(--muted)">(Hostitel)</small>' : ''}</span>
+        <span style="font-family:var(--mono);font-size:.8rem;color:var(--ok);">Připraven</span>
+      </li>
+    `).join('');
+  }
+  const startBtn = $('btn-rl-start');
+  if (startBtn) {
+    startBtn.style.display = isHost ? 'inline-block' : 'none';
+    startBtn.textContent = room.player_count > 1 ? `👑 Spustit hru (${room.player_count} hráčů)` : '👑 Spustit hru hned';
+  }
+}
+
+function launchRoomQuiz(room, questions) {
+  stopRoomPolling();
+  let qs = Array.isArray(questions) && questions.length ? questions : [];
+  if (!qs.length && room && Array.isArray(room.question_ids) && room.question_ids.length) {
+    const idSet = new Set(room.question_ids.map(String));
+    qs = FULL.filter(q => idSet.has(String(q.id)));
+  }
+  if (!qs.length) {
+    qs = shuffle(ALL.filter(q => !q.reveal)).slice(0, (room && room.question_count) || 10);
+  }
+  if (!qs.length) return;
+  queue = qs; idx = 0; history = []; optOrder = {};
+  suddenDeath = false; studyMode = false; examMode = false;
+  kothMode = true;
+  compMode = (room && room.mode) || 'ffa';
+  activeRoomId = room ? room.id : activeRoomId;
+  activeRoomData = room || activeRoomData;
+  kothStartTime = Date.now(); kothLastResult = null;
+  const pNames = room && Array.isArray(room.players) ? room.players.map(p => (p.is_host ? '👑' : '') + esc(p.username)).join(' vs ') : '';
+  $('sudden-banner').innerHTML = `${modeBadgeLabel(compMode)} · ${esc(room ? room.name : 'Místnost')}<span>Hráči v místnosti: ${pNames}</span>`;
+  $('sudden-banner').style.display = 'block';
+  show('quiz');
+  renderQ();
+}
+
+function startRoomLobbyPolling(roomId) {
+  stopRoomPolling();
+  roomPollTimer = setInterval(async () => {
+    try {
+      const res = await fetch(`/api/rooms/${roomId}`);
+      if (!res.ok) {
+        stopRoomPolling();
+        return;
+      }
+      const data = await res.json();
+      if (!data.room) return;
+      if (data.room.status === 'in_progress') {
+        launchRoomQuiz(data.room, data.questions);
+        return;
+      }
+      renderRoomLobbyView(data.room);
+    } catch (e) {}
+  }, 1500);
+}
+
+async function createRoomFromUI(forcedMode = null) {
+  if (currentUserData && currentUserData.role === 'trial') {
+    showToast('⚠️ Pro vytvoření kompetitivní místnosti je nutné se přihlásit.');
+    return;
+  }
+  const modeSel = document.getElementById('room-mode-select');
+  const nameInp = document.getElementById('room-name-input');
+  const mode = forcedMode || (modeSel ? modeSel.value : 'ffa');
+  const name = nameInp ? nameInp.value.trim() : '';
+  try {
+    const res = await fetch('/api/rooms/create', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-TZI': '1'},
+      body: JSON.stringify({ mode, name, count: 10, source: currentSource })
+    });
+    if (!res.ok) {
+      showToast('⚠️ Nepodařilo se vytvořit místnost.');
+      return;
+    }
+    const data = await res.json();
+    if (nameInp) nameInp.value = '';
+    renderRoomLobbyView(data.room);
+    show('room-lobby');
+    startRoomLobbyPolling(data.room.id);
+    refreshKothStatus();
+  } catch (e) {
+    showToast('⚠️ Chyba spojení při vytváření místnosti.');
+  }
+}
+
+async function joinCompRoom(roomId) {
+  if (currentUserData && currentUserData.role === 'trial') {
+    showToast('⚠️ Pro připojení do místnosti je nutné se přihlásit.');
+    return;
+  }
+  const autoChk = document.getElementById('room-autostart-chk');
+  const autoStartDuel = autoChk ? autoChk.checked : true;
+  try {
+    const res = await fetch(`/api/rooms/${roomId}/join`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-TZI': '1'},
+      body: JSON.stringify({ auto_start_duel: autoStartDuel })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      showToast('⚠️ ' + (err.detail || 'Nelze se připojit do místnosti.'));
+      refreshKothStatus();
+      return;
+    }
+    const data = await res.json();
+    if (data.room && data.room.status === 'in_progress') {
+      launchRoomQuiz(data.room, data.questions);
+      return;
+    }
+    renderRoomLobbyView(data.room);
+    show('room-lobby');
+    startRoomLobbyPolling(roomId);
+  } catch (e) {}
+}
+
+async function startActiveRoomByHost() {
+  if (!activeRoomId) return;
+  try {
+    const res = await fetch(`/api/rooms/${activeRoomId}/start`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-TZI': '1'}
+    });
+    if (res.ok) {
+      const data = await res.json();
+      launchRoomQuiz(data.room, data.questions);
+    } else {
+      const err = await res.json().catch(() => ({}));
+      showToast('⚠️ ' + (err.detail || 'Hru může spustit pouze 👑 hostitel.'));
+    }
+  } catch (e) {}
+}
+
+async function leaveActiveRoom() {
+  stopRoomPolling();
+  const rid = activeRoomId;
+  activeRoomId = null;
+  activeRoomData = null;
+  if (rid) {
+    try {
+      await fetch(`/api/rooms/${rid}/leave`, { method: 'POST', headers: {'X-TZI': '1'} });
+    } catch (e) {}
+  }
+  openCompArena();
+}
+
+function renderRoomStandingsBoard(room) {
+  const wrap = $('room-results-board');
+  const list = $('room-results-list');
+  if (!wrap || !list || !room || !Array.isArray(room.players)) {
+    if (wrap) wrap.style.display = 'none';
+    return;
+  }
+  wrap.style.display = 'block';
+  list.innerHTML = room.players.map((p, i) => {
+    const st = p.status === 'finished' ? `<b>${p.score} b.</b> (${p.correct_count}/${p.total_questions} · ${Math.round((p.time_ms || 0)/1000)}s)` : '⏳ Hraje...';
+    const crown = i === 0 && p.status === 'finished' ? '🏆 ' : (p.is_host ? '👑 ' : '');
+    return `<li><span>#${i+1} ${crown}<b>${esc(p.username)}</b></span><span>${st}</span></li>`;
+  }).join('');
+}
+
+async function refreshUserStats() {
+  updateNetStatus();
+  if (!isOnline()) return;
+  let data = null;
+  try {
+    const res = await fetch('/api/me');
+    if (!res.ok) throw new Error('Not OK');
+    data = await res.json();
+    serverUnreachable = false;
+    updateNetStatus();
+  } catch (e) {
+    serverUnreachable = true;
+    updateNetStatus();
+    return;
+  }
+  try {
+    currentUserData = data;
+    const xp = currentUserData.points || 0;
+    const rk = getRankInfo(xp);
+    const lvlEl = document.getElementById('u-lvl');
+    if (lvlEl) lvlEl.textContent = String(rk.lvl);
+    const titleEl = document.getElementById('u-rank-title');
+    if (titleEl) titleEl.textContent = rk.title;
+    const xpFill = document.getElementById('xp-bar-fill');
+    if (xpFill) xpFill.style.width = `${rk.pct}%`;
+    const xpEl = document.getElementById('u-xp');
+    if (xpEl) xpEl.textContent = String(xp);
+    const bestEl = document.getElementById('u-best-streak');
+    if (bestEl) bestEl.textContent = String(currentUserData.best_streak || 0);
+
+    if (currentUserData.role === 'trial') {
+      document.getElementById('u-badge').textContent = 'Trial Guest';
+      document.getElementById('u-score').textContent = 'Trial';
+      document.getElementById('u-streak').textContent = '0';
+    } else {
+      document.getElementById('u-badge').textContent = currentUserData.username;
+      document.getElementById('u-score').textContent = `${currentUserData.rank}. of ${currentUserData.total_users} (${xp} XP)`;
+      document.getElementById('u-streak').textContent = String(currentUserData.streak || 0);
+      renderDailyProgressUI(currentUserData);
+    }
+    if (currentUserData.role === 'admin') {
+      const al = document.getElementById('admin-link');
+      if (al) al.style.display = 'inline-flex';
+    }
+  } catch (e) {}
+  refreshDailyProgress();
+  refreshKothStatus();
+}
+
+// Initial theme load
+(function initTheme() {
+  const saved = localStorage.getItem('tzi_theme') || 'catppuccin';
+  applyUserTheme(saved);
+  if (typeof window !== 'undefined') {
+    window.addEventListener('DOMContentLoaded', () => {
+      const sw = document.getElementById('theme-switcher');
+      if (sw) sw.value = saved;
+    });
+  }
+})();
+
 async function init() {
-  const r = await fetch('/api/sources');
-  const data = await r.json();
-  sources = data.sources;
-  currentSource = data.default;
-  RECALL = await fetch('/api/recall').then(r => r.ok ? r.json() : []).catch(() => []); // starý server endpoint nemá
+  updateNetStatus();
+  refreshUserStats();
+  syncOfflineQueue();
+  prefetchBanksForOffline();
+
+  try {
+    const r = await fetch('/api/sources');
+    const data = await r.json();
+    sources = data.sources || [];
+    currentSource = data.default || (sources[0] ? sources[0].id : '');
+  } catch(e) {
+    sources = [];
+  }
+  RECALL = await fetch('/api/recall').then(r => r.ok ? r.json() : []).catch(() => []);
   renderLectures();
   await loadSource(currentSource);
 }
@@ -639,14 +2563,28 @@ function renderLectures() {
 }
 
 async function loadSource(source) {
-  const [qr, pr] = await Promise.all([
-    fetch(`/api/questions?source=${encodeURIComponent(source)}`),
-    fetch(`/api/progress?source=${encodeURIComponent(source)}`)
-  ]);
-  FULL = await qr.json();
-  const pd = await pr.json();
-  progress = pd.seen || {};
-  session = pd.session || null;
+  if (!source) return;
+  try {
+    const qr = await fetch(`/api/questions?source=${encodeURIComponent(source)}`);
+    if (qr.ok) FULL = await qr.json();
+  } catch (e) {}
+
+  try {
+    const pr = await fetch(`/api/progress?source=${encodeURIComponent(source)}`);
+    if (pr.ok) {
+      const pd = await pr.json();
+      progress = pd.seen || {};
+      session = pd.session || null;
+    } else {
+      throw new Error('Offline');
+    }
+  } catch (e) {
+    try {
+      const local = JSON.parse(localStorage.getItem('tzi_local_progress_' + source) || '{}');
+      progress = local.seen || progress || {};
+      session = local.session || null;
+    } catch(err) {}
+  }
   applyFilter();
 }
 
@@ -681,7 +2619,8 @@ function updateMenuStats(animate) {
   $('btn-wrongs').disabled = bad === 0;
   $('btn-correct').disabled = good === 0;
   $('btn-recall').style.display = RECALL.length ? '' : 'none'; // starý server /api/recall nemá
-  const n = Math.min(15, total), min = Math.max(5, Math.round(n * 2));
+  const eligible = ALL.filter(q => !q.reveal);
+  const n = Math.min(15, eligible.length), min = Math.max(5, Math.round(n * 2));
   $('exam-n').textContent = n;
   $('exam-min').textContent = min;
   $('exam-clock').textContent = String(min).padStart(2, '0') + ':00';
@@ -723,16 +2662,71 @@ async function saveProgress() {
   for (const h of history) m[h.id] = h.isCorrect ? 'correct' : 'wrong';
   const newProgress = Object.assign({}, progress, m);
   const recall = queue.length > 0 && isRecall(queue[0]); // doplňovačka: bez rozdělané sady, nesmí přepsat sadu přednášky
-  const newSession = (idx < queue.length && !examMode && !recall) ? {queue_ids: queue.map(q => q.id), idx, sudden_death: suddenDeath, history} : null;
-  await fetch(`/api/progress?source=${encodeURIComponent(recall ? '_recall' : currentSource)}`, {
-    method: 'POST', headers: {'Content-Type': 'application/json', 'X-TZI': '1'},
-    body: JSON.stringify({seen: newProgress, session: newSession})
-  });
-  progress = newProgress; if (!recall) session = newSession;
+  const newSession = (idx < queue.length && !examMode && !kothMode && !recall) ? {queue_ids: queue.map(q => q.id), idx, sudden_death: suddenDeath, history} : null;
+  const latestRec = history.length ? history[history.length - 1] : null;
+
+  progress = newProgress;
+  if (!recall && !kothMode) session = newSession;
+
+  // Uložit lokálně pro offline režim
+  try {
+    localStorage.setItem('tzi_local_progress_' + (recall ? '_recall' : currentSource), JSON.stringify({seen: newProgress, session: newSession}));
+  } catch(e) {}
+
+  if (!isOnline()) {
+    if (latestRec) {
+      const qItem = { id: latestRec.id, user_answer: latestRec.userKeys, timestamp: Date.now() };
+      const oq = getOfflineQueue();
+      const filtered = oq.filter(item => item.id !== qItem.id);
+      filtered.push(qItem);
+      saveOfflineQueue(filtered);
+    }
+    updateNetStatus();
+    return;
+  }
+
+  try {
+    const payloadLatest = latestRec ? { id: latestRec.id, userKeys: latestRec.userKeys, isCorrect: latestRec.isCorrect } : null;
+    const pRes = await fetch(`/api/progress?source=${encodeURIComponent(recall ? '_recall' : currentSource)}`, {
+      method: 'POST', headers: {'Content-Type': 'application/json', 'X-TZI': '1'},
+      body: JSON.stringify({seen: newProgress, session: newSession, latest: payloadLatest})
+    });
+    if (pRes.ok) {
+      serverUnreachable = false;
+      updateNetStatus();
+      const pData = await pRes.json();
+      if (pData && pData.score) {
+        const s = pData.score;
+        renderDailyProgressUI(s);
+        let toastText = '';
+        if (s.points_awarded > 0) {
+          toastText = `<b>+${s.points_awarded} b.</b> (${s.difficulty})`;
+          if (s.streak >= 5) toastText += ` 🔥 Streak ${s.streak}! (+${s.streak_bonus} b.)`;
+        }
+        if (s.daily_goal_just_met) {
+          toastText += (toastText ? ' · ' : '') + `📅 Denní cíl splněn! Streak: <b>${s.daily_streak} dní</b>`;
+        }
+        if (toastText) showToast(toastText);
+        refreshUserStats();
+      }
+    } else {
+      throw new Error('Save failed');
+    }
+  } catch(e) {
+    serverUnreachable = true;
+    if (latestRec) {
+      const qItem = { id: latestRec.id, user_answer: latestRec.userKeys, timestamp: Date.now() };
+      const oq = getOfflineQueue();
+      const filtered = oq.filter(item => item.id !== qItem.id);
+      filtered.push(qItem);
+      saveOfflineQueue(filtered);
+    }
+    updateNetStatus();
+  }
 }
 
 let fromChunks = false;
-function showMenu() { updateMenuStats(false); show('menu'); }
+function showMenu() { show('menu'); stopRoomPolling(); kothMode = false; activeRoomId = null; activeRoomData = null; if ($('room-results-board')) $('room-results-board').style.display = 'none'; updateMenuStats(false); refreshDailyProgress(); refreshKothStatus(); show('menu'); }
 function showResults() { show('results'); renderResults(); }
 
 // ── bloky ──
@@ -832,13 +2826,14 @@ function startStudy(qs) {
   $('sudden-banner').style.display = 'none';
   show('quiz'); renderQ();
 }
-function startSuddenDeath() { beginSession(shuffle(ALL), true); }
+function startSuddenDeath() { beginSession(shuffle(ALL.filter(q => !q.reveal)), true); }
 
 function startExam() {
-  const n = Math.min(15, ALL.length);
+  const eligible = ALL.filter(q => !q.reveal);
+  const n = Math.min(15, eligible.length);
   if (!n) return;
   examMode = true; studyMode = false;
-  queue = shuffle(ALL).slice(0, n); idx = 0; history = []; optOrder = {}; suddenDeath = false;
+  queue = shuffle(eligible).slice(0, n); idx = 0; history = []; optOrder = {}; suddenDeath = false;
   $('sudden-banner').style.display = 'none';
   show('quiz');
   startExamTimer(Math.max(5, n * 2) * 60);
@@ -854,9 +2849,88 @@ function updateExamTimer() {
 
 function beginSession(qs, sd) {
   if (!qs.length) return;
-  queue = qs; idx = 0; history = []; optOrder = {}; suddenDeath = sd; studyMode = false; examMode = false;
+  queue = qs; idx = 0; history = []; optOrder = {}; suddenDeath = sd; studyMode = false; examMode = false; kothMode = false;
+  $('sudden-banner').innerHTML = 'Sudden Death<span>1 život, první chyba ukončí hru</span>';
   $('sudden-banner').style.display = sd ? 'block' : 'none';
   show('quiz'); renderQ();
+}
+
+async function startCompetitiveMode(mode = 'koth', duelId = null) {
+  if (currentUserData && currentUserData.role === 'trial') {
+    showToast('⚠️ Pro kompetitivní režimy je nutné se přihlásit.');
+    return;
+  }
+  let qs = [];
+  let matchedDuel = null;
+  const endpoint = mode === 'ffa' ? '/api/ffa/start' : mode === 'duel' ? '/api/duel/start' : '/api/koth/start';
+  try {
+    const payload = { count: 10, source: currentSource };
+    if (mode === 'duel' && duelId !== null) payload.duel_id = duelId;
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-TZI': '1'},
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data.questions) && data.questions.length) qs = data.questions;
+      if (data.duel) matchedDuel = data.duel;
+    }
+  } catch (e) {}
+  if (!qs.length) {
+    qs = shuffle(ALL.filter(q => !q.reveal)).slice(0, 10);
+  }
+  if (!qs.length) return;
+  queue = qs; idx = 0; history = []; optOrder = {};
+  suddenDeath = false; studyMode = false; examMode = false;
+  kothMode = true; compMode = mode; activeDuelId = matchedDuel ? matchedDuel.id : duelId;
+  kothStartTime = Date.now(); kothLastResult = null;
+  if (mode === 'ffa') {
+    $('sudden-banner').innerHTML = '🏟️ Free For All Aréna<span>Získej co nejvyšší skóre v žebříčku všech hráčů (10 otázek na čas)!</span>';
+  } else if (mode === 'duel') {
+    const opp = matchedDuel && matchedDuel.creator_username ? `Soupeř: ${esc(matchedDuel.creator_username)} (${matchedDuel.creator_score} b.)` : 'Zakládáš novou 1v1 výzvu pro soupeře';
+    $('sudden-banner').innerHTML = `⚔️ 1v1 Duel<span>${opp}</span>`;
+  } else {
+    $('sudden-banner').innerHTML = '👑 King of the Hill<span>Překonej skóre krále kopce v 10 otázkách na čas!</span>';
+  }
+  $('sudden-banner').style.display = 'block';
+  show('quiz');
+  renderQ();
+}
+
+async function startKothChallenge() {
+  return startCompetitiveMode('koth');
+}
+
+async function submitKothResults() {
+  const elapsed = Math.max(0, Date.now() - (kothStartTime || Date.now()));
+  const mode = compMode || 'koth';
+  const endpoint = activeRoomId
+    ? `/api/rooms/${activeRoomId}/submit`
+    : (mode === 'ffa' ? '/api/ffa/submit' : mode === 'duel' ? '/api/duel/submit' : '/api/koth/submit');
+  try {
+    const payload = {
+      answers: history.map(h => ({ id: h.id, userKeys: h.userKeys, isCorrect: h.isCorrect })),
+      time_ms: elapsed,
+      total_questions: queue.length
+    };
+    if (mode === 'duel' && activeDuelId !== null) payload.duel_id = activeDuelId;
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-TZI': '1'},
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      kothLastResult = await res.json();
+      if (kothLastResult.room) {
+        renderRoomStandingsBoard(kothLastResult.room);
+      } else if ($('room-results-board')) {
+        $('room-results-board').style.display = 'none';
+      }
+      refreshKothStatus();
+      refreshUserStats();
+    }
+  } catch (e) {}
 }
 
 // ── doplňovačka ──
@@ -867,27 +2941,71 @@ function wordsLabel(w) {
 }
 
 // ── doplňovačka: porovnání odpovědi ──
-// malá písmena, bez diakritiky, interpunkce a pomlčky na mezery, jedna mezera mezi slovy
-const recallNorm = s => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
-  .replace(/[.,;:!?'"„“”‚‘’()\[\]{}_\/…\-–—−]/g, ' ').replace(/\s+/g, ' ').trim();
-// Levenshtein ≤ 1: jedna záměna, vložení nebo vypuštění znaku
+// WebAssembly (AssemblyScript) jádro pro normalizaci, Levenshteinovu vzdálenost <= 1, vyhodnocení a míchání
+const WASM_BASE64 = 'AGFzbQEAAAABKgZgAn9/AX9gAX8Bf2ADf39/AX9gBH9/f38Bf2ACf38AYAZ/f39/f38BfwMPDgIDBAIBAAAAAAEBAAEFBQMBAAEGHwV/AEGABAt/AEGACAt/AEGAGAt/AEGAKAt/AEGAOAsHvgIUC1NIVUZGTEVfUFRSAwAJU0xPVDBfUFRSAwEJU0xPVDFfUFRSAwIJU0xPVDJfUFRSAwMJU0xPVDNfUFRSAwQOc2h1ZmZsZUluZGljZXMAAglub3JtSW5wdXQAAA1yZWNhbGxOb3JtQnVmAAMHbGV2MUJ1ZgABFW1hdGNoTm9ybWFsaXplZFJlY2FsbAAFEmV2YWx1YXRlQ2hvaWNlTWFzawAHFGV2YWx1YXRlSW5wdXRCdWZmZXJzAAYOcGx1cmFsQ2F0ZWdvcnkABA5jYWxjUGVyY2VudGFnZQALDmNhbGNFeGFtTmVlZGVkAAwNY2FsY1JhbmtMZXZlbAAKC2NhbGNSYW5rUGN0AAkTY2FsY0FjaGlldmVtZW50TWFzawANEWNhbGNSZWNhcEFjY3VyYWN5AAgGbWVtb3J5AgAKiRcOxQMBBX8DQCABIAVKBEAgACAFQQF0ai8BACIEQaABRiAEQSBNciAEQd8ARnJFBEAgAiADQQF0agJ/IARBIGsgBEH6AE0gBEHhAE9xDQAaAkACQAJAAkACQAJAAkACQAJAAkACQAJAAkACQAJAIARB4QFHBEAgBEGNAkYNASAEQY8CRg0CIARB6QFGDQMgBEGbAkYNBCAEQe0BRg0FIARByAJGDQYgBEHzAUYNByAEQdkCRg0IIARB4QJGDQkgBEHlAkYNCiAEQfoBRg0LIARB7wJGDQwgBEH9AUYNDSAEQf4CRg0ODA8LQcEBDA8LQYwCDA4LQY4CDA0LQckBDAwLQZoCDAsLQc0BDAoLQccCDAkLQdMBDAgLQdgCDAcLQeACDAYLQeQCDAULQdoBDAQLQe4CDAMLQd0BDAILQf0CDAELIAQLOwEAIANBAWohAwsgBUEBaiEFDAELCwNAIAcgA0EBa0gEfyACIAdBAXRqLwEAQTBGBUEACwRAIAdBAWohBwwBCwsgB0EASgRAIAMgB2shAANAIAAgBkoEQCACIAZBAXRqIAIgBiAHakEBdGovAQA7AQAgBkEBaiEGDAELCyAADwsgAwudAgEDfyABIANrIAMgAWsgASADShtBAUoEQEEADwsgASADIAEgA0gbIQUDQCAEIAVIBH8gBEEBdCIGIABqLwEAIAIgBmovAQBGBUEACwRAIARBAWohBAwBCwsgAyAERiABIARGcQRAQQEPCyABIANGBEAgBEEBaiEDA0AgASADSgRAIANBAXQiBCAAai8BACACIARqLwEARwRAQQAPCyADQQFqIQMMAQsLBSABIANKBEADQCADIARKBEAgACAEQQFqQQF0ai8BACACIARBAXRqLwEARwRAQQAPCyAEQQFqIQQMAQsLBQNAIAEgBEoEQCAAIARBAXRqLwEAIAIgBEEBakEBdGovAQBHBEBBAA8LIARBAWohBAwBCwsLC0EBC7QBAQJ/A0AgACACSgRAIAJBAnQgAjYCgAQgAkEBaiECDAELCyABQbnz3fF5IAEbIQIgAEEBayEBA0AgAUEASgRAIAFBAnQiAEGABGooAgAhAyAAIAFBAWqsIAJB9fOt6QZqIgJBAXIgAiACQQ92c2wiACAAQT1yIAAgAEEHdnNsIABqcyIAQQ52IABzrX5CIIinQQJ0IgBBgARqKAIANgKABCAAIAM2AoAEIAFBAWshAQwBCwsLhAYBBH9BASEFA0AgASAGSgRAIAAgBkEBdGovAQAiBEHvBk0gBEGABk9xRQRAAn9BASAEQaABRiAEQSBNcg0AGgJAAkAgBEEuRg0AIARBLEYNACAEQTtGDQAgBEE6Rg0AIARBIUYNACAEQT9GDQAgBEEnRg0AIARBIkYNACAEQShGDQAgBEEpRg0AIARB2wBGDQAgBEHdAEYNACAEQfsARg0AIARB/QBGDQAgBEHfAEYNACAEQS9GDQAgBEEtRg0AIARBnsAARg0AIARBnMAARg0AIARBncAARg0AIARBmsAARg0AIARBmMAARg0AIARBmcAARg0AIARBpsAARg0AIARBk8AARg0AIARBlMAARg0AIARBksQARg0ADAELQQEMAQtBAAsEfyAFBH8gAwUgAiADQQF0akEgOwEAQQEhBSADQQFqCwUgAiADQQF0agJ/IARBIGogBEHaAE0gBEHBAE9xDQAaIAQgBEH6AE0gBEHhAE9xBH9BAQUgBEE5TSAEQTBPcQsNABoCQAJAAkACQAJAAkACQAJAAkACQAJAAkACQAJAAkAgBEHAAWsOvwEAAAAOAA4OAQMDAwMEBAQEDgYHBwcOBw4OCwsLCwwODgAAAA4ADg4BAwMDAwQEBAQOBgcHBw4HDg4LCwsLDA4MDg4ODg4ODg4ODg4OAQECAg4ODg4ODg4ODg4DAw4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4OBQUODgUFDg4ODg4ODg4GBg4ODg4ODg4ODg4OCAgODggIDg4ODg4OCQkODgoKDg4ODg4ODg4LCw4ODg4ODg4ODA4ODg4NDQ4LQeEADA4LQeMADA0LQeQADAwLQeUADAsLQekADAoLQewADAkLQe4ADAgLQe8ADAcLQfIADAYLQfMADAULQfQADAQLQfUADAMLQfkADAILQfoADAELIAQLOwEAQQAhBSADQQFqCyEDCyAGQQFqIQYMAQsLIANBAWsiACADIANBAEoEfyACIABBAXRqLwEAQSBGBUEACxsLLQBBACAAayAAIABBAEgbIgBBAUYEQEEADwsgAEEETCAAQQJOcQRAQQEPC0ECC7EDAQh/AkAgAUEATCAAQQBMcg0AAn9BACAAIAFHDQAaA0AgACADSgRAQQAgA0EBdCIFQYAoai8BACAFQYA4ai8BAEcNAhogA0EBaiEDDAELC0EBCwRAQQEPCwNAIAEgAkogACAESnEEQCAEIQUDQCAAIAVKBH8gBUEBdEGAKGovAQBBIEcFQQALBEAgBUEBaiEFDAELCyACIQMDQCABIANKBH8gA0EBdEGAOGovAQBBIEcFQQALBEAgA0EBaiEDDAELCyAEQQF0QYAoaiEHIAJBAXRBgDhqIQYCf0EAIAUgBGsiBCADIAJrIghHDQAaQQAhAgNAIAIgBEgEQEEAIAJBAXQiCSAHai8BACAGIAlqLwEARw0CGiACQQFqIQIMAQsLQQELRQRAIARBAEwgCEEFTHINA0EAIQICfwNAIAIgCEgEQEEAIAYgAkEBdGovAQAiCUHhAEkgCUH6AEtyDQIaIAJBAWohAgwBCwtBAQtFDQMgBi8BACAHLwEARw0DIAYgCCAHIAQQAUUNAwsgBUEBaiEEIANBAWohAgwBCwsgASACSiAAIARKcg0AQQIPC0EAC1wBAX9BgAggAEGAKBAAIQACf0EAQYAYIAFBgDgQACAARw0AGkEAIQEDQCAAIAFKBEBBACABQQF0IgJBgChqLwEAIAJBgDhqLwEARw0CGiABQQFqIQEMAQsLQQELCw8AIAAgAUZBACABG0EARwtIACAAQQBMIAAgAWoiAUEATHIEQEEADwsgAEEATAR/QQAFQeQAIABB5ABsQQEgASABQQFMGyIAQQF1aiAAbSIAIABB5ABKGwsLqgEBAn8gAEGwCU4Ef0GwCSEBQdAPBSAAQaAGTgR/QaAGIQFBsAkFIABB9ANOBH9B9AMhAUGgBgUgAEGsAk4Ef0GsAiEBQfQDBSAAQZYBTgR/QZYBIQFBrAIFIABBMk4Ef0EyIQFBlgEFQTILCwsLCwsgAWshAiAAIAFrIgBBAEwEf0EABUHkACAAQeQAbEEBIAIgAkEBTBsiAEEBdWogAG0iACAAQeQAShsLC0sAIABBsAlOBEBBBw8LIABBoAZOBEBBBg8LIABB9ANOBEBBBQ8LIABBrAJOBEBBBA8LIABBlgFOBEBBAw8LIABBMk4EQEECDwtBAQsyACAAQQBMBEBBAA8LQeQAIABB5ABsQQEgASABQQFMGyIAQQF1aiAAbSIAIABB5ABKGwsYACAAQQBMBEBBAA8LIABBA2xBBGpBBW0LiQIBAX8gBEEASiAAQQBKciIGQQJyIAYgAEEPTiAEQQVOchsiBkEEciAGIAFBBU4bIgZBCHIgBiABQQ9OGyIGQRByIAYgAEGWAU4gBEEyTnIbIgZBIHIgBiAAQdgETiAEQcgBTnIbIgZBwAByIAYgBEHkAE4bIgZBgAFyIAYgBEEDTkEAIAUbGyIEQYACciAEIABB5ABOGyIEQYAEciAEIAJBA04bIgRBgAhyIAQgAkEHThsiBEGAEHIgBCABQQNOGyIBQYAgciABIABBHk4bIgFBgMAAciABIAMbIgFBgIABciABIAJBAk4bIgFBgIACciABIABB9ANOGyIBQYCABHIgASAAQbAJThsL';
+
+const WASM_CORE = (() => {
+  const b64 = WASM_BASE64;
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+  const lookup = new Uint8Array(128);
+  for (let i = 0; i < chars.length; i++) lookup[chars.charCodeAt(i)] = i;
+  const pad = b64.endsWith('==') ? 2 : b64.endsWith('=') ? 1 : 0;
+  const bytes = new Uint8Array((b64.length * 3 / 4) - pad);
+  let p = 0;
+  for (let i = 0; i < b64.length; i += 4) {
+    const a = lookup[b64.charCodeAt(i)], b = lookup[b64.charCodeAt(i + 1)];
+    const c = lookup[b64.charCodeAt(i + 2)], d = lookup[b64.charCodeAt(i + 3)];
+    const n = (a << 18) | (b << 12) | (c << 6) | d;
+    bytes[p++] = (n >> 16) & 255;
+    if (p < bytes.length) bytes[p++] = (n >> 8) & 255;
+    if (p < bytes.length) bytes[p++] = n & 255;
+  }
+  const inst = new WebAssembly.Instance(new WebAssembly.Module(bytes));
+  let exp = inst.exports;
+  if (exp.memory && exp.memory.buffer.byteLength < 65536) exp.memory.grow(1);
+  const writeStr = (ptr, s) => {
+    s = String(s || '');
+    const len = Math.min(s.length, 1000);
+    const view = new Uint16Array(exp.memory.buffer, ptr, len);
+    for (let i = 0; i < len; i++) view[i] = s.charCodeAt(i);
+    return len;
+  };
+  const readStr = (ptr, len) => {
+    const view = new Uint16Array(exp.memory.buffer, ptr, len);
+    let out = '';
+    for (let i = 0; i < len; i++) out += String.fromCharCode(view[i]);
+    return out;
+  };
+  return { get exp() { return exp; }, writeStr, readStr };
+})();
+
+// malá písmena, bez diakritiky, interpunkce a pomlčky na mezery, jedna mezera mezi slovy (WASM)
+const recallNorm = s => {
+  const len = WASM_CORE.writeStr(1024, String(s ?? '').normalize('NFC'));
+  const outLen = WASM_CORE.exp.recallNormBuf(1024, len, 5120);
+  return WASM_CORE.readStr(5120, outLen);
+};
+// Levenshtein ≤ 1: jedna záměna, vložení nebo vypuštění znaku (WASM)
 function lev1(a, b) {
-  if (Math.abs(a.length - b.length) > 1) return false;
-  let i = 0; while (i < a.length && a[i] === b[i]) i++;
-  if (a.length === b.length) return a.slice(i + 1) === b.slice(i + 1);
-  return a.length > b.length ? a.slice(i + 1) === b.slice(i) : a.slice(i) === b.slice(i + 1);
+  const lA = WASM_CORE.writeStr(1024, a);
+  const lB = WASM_CORE.writeStr(3072, b);
+  return WASM_CORE.exp.lev1Buf(1024, lA, 3072, lB) === 1;
 }
-// {variant, typo} nebo null. Překlep jen u slov delších než 5 písmen (bez číslic) a se stejným
+// {variant, typo} nebo null (WASM). Překlep jen u slov delších než 5 písmen (bez číslic) a se stejným
 // prvním písmenem, ať neprojde symetrická × asymetrická nebo reflexivní × ireflexivní.
 function matchRecall(answer, accept) {
-  const a = recallNorm(answer);
-  if (!a) return null;
-  for (const v of accept) if (recallNorm(v) === a) return {variant: v, typo: false};
-  const aw = a.split(' ');
+  const lA = WASM_CORE.writeStr(1024, String(answer ?? '').normalize('NFC'));
+  const nA = WASM_CORE.exp.recallNormBuf(1024, lA, 5120);
+  if (nA <= 0) return null;
   for (const v of accept) {
-    const vw = recallNorm(v).split(' ');
-    if (vw.length === aw.length && vw.every((w, i) => w === aw[i] ||
-      (w.length > 5 && /^[a-z]+$/.test(w) && w[0] === aw[i][0] && lev1(w, aw[i])))) return {variant: v, typo: true};
+    const lV = WASM_CORE.writeStr(3072, String(v ?? '').normalize('NFC'));
+    const nV = WASM_CORE.exp.recallNormBuf(3072, lV, 7168);
+    if (WASM_CORE.exp.matchNormalizedRecall(nA, nV) === 1) return {variant: v, typo: false};
+  }
+  for (const v of accept) {
+    const lV = WASM_CORE.writeStr(3072, String(v ?? '').normalize('NFC'));
+    const nV = WASM_CORE.exp.recallNormBuf(3072, lV, 7168);
+    if (WASM_CORE.exp.matchNormalizedRecall(nA, nV) === 2) return {variant: v, typo: true};
   }
   return null;
 }
@@ -899,12 +3017,22 @@ function evaluate(q) {
     return {userKeys: [v], correctKeys: [q.accept[0]], isCorrect: !!m, typo: m && m.typo ? m.variant : null};
   }
   if (isInput(q)) {
-    const v = norm($('ans-input').value);
-    return {userKeys: [v], correctKeys: [norm(q.answer)], isCorrect: v === norm(q.answer)};
+    const rawU = $('ans-input').value;
+    const v = norm(rawU), c = norm(q.answer);
+    const lU = WASM_CORE.writeStr(1024, String(rawU ?? '').normalize('NFC'));
+    const lE = WASM_CORE.writeStr(3072, String(q.answer ?? '').normalize('NFC'));
+    const ok = WASM_CORE.exp.evaluateInputBuffers(lU, lE) === 1;
+    return {userKeys: [v], correctKeys: [c], isCorrect: ok};
   }
   const cs = new Set(q.correct);
-  return {userKeys: [...selected], correctKeys: [...cs],
-    isCorrect: selected.size === cs.size && [...selected].every(k => cs.has(k))};
+  const allKeys = Object.keys(q.options || {});
+  let selMask = 0, corMask = 0;
+  allKeys.forEach((k, bit) => {
+    if (selected.has(k)) selMask |= (1 << bit);
+    if (cs.has(k)) corMask |= (1 << bit);
+  });
+  const isOk = WASM_CORE.exp.evaluateChoiceMask(selMask, corMask) === 1;
+  return {userKeys: [...selected], correctKeys: [...cs], isCorrect: isOk};
 }
 function record(q) {
   if (isReveal(q)) return null; // bez vyhodnocení, do výsledků se nezapočítá
@@ -944,12 +3072,24 @@ function renderQ() {
   inp.setAttribute('autocapitalize', isRecall(q) ? 'off' : 'characters');
   if (!isInput(q)) {
     const keys = optOrder[q.id] || (optOrder[q.id] = shuffle(Object.keys(q.options)));
+    const tpl = $('tpl-option');
     keys.forEach((letter, i) => {
-      const div = document.createElement('div');
-      div.className = 'opt'; div.id = 'opt-' + letter;
-      div.innerHTML = `<span class="letter">${LETTERS[i]}</span><span>${fmt(q.options[letter])}</span>`;
-      div.addEventListener('click', () => toggleOpt(letter));
-      optsEl.appendChild(div);
+      let div;
+      if (tpl && 'content' in tpl) {
+        const frag = tpl.content.cloneNode(true);
+        div = frag.firstElementChild;
+        div.id = 'opt-' + letter;
+        div.querySelector('.letter').textContent = LETTERS[i];
+        div.querySelector('.opt-text').innerHTML = fmt(q.options[letter]);
+        div.addEventListener('click', () => toggleOpt(letter));
+        optsEl.appendChild(frag);
+      } else {
+        div = document.createElement('div');
+        div.className = 'opt'; div.id = 'opt-' + letter;
+        div.innerHTML = `<span class="letter">${LETTERS[i]}</span><span class="opt-text">${fmt(q.options[letter])}</span>`;
+        div.addEventListener('click', () => toggleOpt(letter));
+        optsEl.appendChild(div);
+      }
     });
   }
 
@@ -1122,23 +3262,77 @@ function prevQ() {
   if (examMode && hasAnswer()) record(queue[idx]);
   idx--; renderQ();
 }
-function nextQ() { idx++; if (idx < queue.length) { renderQ(); saveProgress(); } else { saveProgress(); showResults(); } }
+function nextQ() {
+  idx++;
+  if (idx < queue.length) {
+    renderQ();
+    saveProgress();
+  } else {
+    saveProgress();
+    if (kothMode) {
+      submitKothResults().then(() => showResults());
+    } else {
+      showResults();
+    }
+  }
+}
 
 function finishEarly() {
-  if (!history.length) { if (confirm('Zatím žádné odpovědi. Vrátit se do menu?')) { clearExamTimer(); examMode = false; backFromResults(); } return; }
-  if (confirm('Ukončit sadu předčasně a uložit postup?')) { clearExamTimer(); saveProgress(); showResults(); }
+  if (!history.length) { if (confirm('Zatím žádné odpovědi. Vrátit se do menu?')) { clearExamTimer(); examMode = false; kothMode = false; backFromResults(); } return; }
+  if (confirm('Ukončit sadu předčasně a uložit postup?')) {
+    clearExamTimer();
+    saveProgress();
+    if (kothMode) {
+      submitKothResults().then(() => showResults());
+    } else {
+      showResults();
+    }
+  }
 }
 
 function renderResults() {
   const n = history.length;
   const correct = history.filter(h => h.isCorrect).length;
-  const pct = Math.round(correct / Math.max(n, 1) * 100);
+  const pct = WASM_CORE.exp.calcPercentage(correct | 0, n | 0);
   const passed = pct >= 60;
   const sdEnd = suddenDeath && !examMode && pct < 100;
-  $('res-title').textContent = examMode ? (passed ? 'Ostrý test splněn' : 'Ostrý test nesplněn')
-    : sdEnd ? 'Konec hry' : suddenDeath ? 'Sada bez chyby' : 'Výsledky sady';
-  const p = $('res-pct'); p.innerHTML = pct + '<small>%</small>'; p.className = 'big-pct ' + (passed && !sdEnd ? 'good' : 'bad');
-  $('res-detail').innerHTML = `<b>${correct} z ${n}</b>správně ze zodpovězených otázek`;
+  let compGood = passed && !sdEnd;
+  if (kothMode && kothLastResult) {
+    const m = kothLastResult.mode || compMode || 'koth';
+    if (m === 'ffa') {
+      compGood = kothLastResult.rank === 1 || passed;
+      $('res-title').textContent = kothLastResult.is_leader ? '🏆 Vedeš Free For All arénu!' : `🏟️ Free For All: #${kothLastResult.rank}. místo`;
+    } else if (m === 'duel') {
+      if (kothLastResult.resolved) {
+        compGood = Boolean(kothLastResult.won_duel || kothLastResult.tied);
+        $('res-title').textContent = kothLastResult.won_duel ? '⚔️ Vítězství v 1v1 souboji!' : kothLastResult.tied ? '🤝 Remíza v 1v1 souboji!' : '🛡️ Prohra v 1v1 souboji';
+      } else {
+        compGood = true;
+        $('res-title').textContent = '⚔️ 1v1 výzva založena!';
+      }
+    } else {
+      compGood = Boolean(kothLastResult.won_throne);
+      $('res-title').textContent = kothLastResult.won_throne ? '👑 Jsi nový Král kopce!' : '🛡️ Král kopce ubránil trůn';
+    }
+  } else {
+    $('res-title').textContent = examMode ? (passed ? 'Ostrý test splněn' : 'Ostrý test nesplněn')
+      : sdEnd ? 'Konec hry' : suddenDeath ? 'Sada bez chyby' : 'Výsledky sady';
+  }
+  const p = $('res-pct'); p.innerHTML = pct + '<small>%</small>'; p.className = 'big-pct ' + (compGood ? 'good' : 'bad');
+  if (kothMode && kothLastResult) {
+    const m = kothLastResult.mode || compMode || 'koth';
+    if (m === 'ffa') {
+      $('res-detail').innerHTML = `<b>${kothLastResult.score} bodů (${correct} z ${n})</b>Umístění v aréně: #${kothLastResult.rank}`;
+    } else if (m === 'duel') {
+      $('res-detail').innerHTML = kothLastResult.resolved
+        ? `<b>${kothLastResult.my_score} b. vs ${kothLastResult.opponent_score} b. (${esc(kothLastResult.opponent_username || 'Soupeř')})</b>`
+        : `<b>${kothLastResult.my_score} bodů (${correct} z ${n})</b>Výzva #${kothLastResult.duel_id} čeká na soupeře`;
+    } else {
+      $('res-detail').innerHTML = `<b>${kothLastResult.challenger_score} bodů (${correct} z ${n})</b>${kothLastResult.won_throne ? 'Překonal jsi dosavadního krále!' : `Král drží ${kothLastResult.previous_king_score} b.`}`;
+    }
+  } else {
+    $('res-detail').innerHTML = `<b>${correct} z ${n}</b>správně ze zodpovězených otázek`;
+  }
   // řetězec 1/0 právě dokončené sady
   const rb = $('res-bits');
   rb.className = 'res-bits anim';
@@ -1149,8 +3343,25 @@ function renderResults() {
   }).join('');
   const note = $('res-note'), mw = $('res-meter-wrap');
   mw.style.display = examMode ? 'block' : 'none';
-  if (examMode) {
-    const need = Math.ceil(n * 0.6), diff = correct - need;
+  if (kothMode && kothLastResult) {
+    const m = kothLastResult.mode || compMode || 'koth';
+    if (m === 'ffa') {
+      note.textContent = kothLastResult.is_leader
+        ? `Skvělý výkon! Držíš 1. místo ve Free For All aréně se skóre ${kothLastResult.score} b.`
+        : `Získal jsi ${kothLastResult.score} b. a jsi na #${kothLastResult.rank}. místě v aréně.`;
+    } else if (m === 'duel') {
+      note.textContent = kothLastResult.resolved
+        ? (kothLastResult.won_duel ? `Porazil jsi hráče ${kothLastResult.opponent_username} (${kothLastResult.my_score} : ${kothLastResult.opponent_score} b.)!`
+          : kothLastResult.tied ? `Souboj s hráčem ${kothLastResult.opponent_username} skončil remízou (${kothLastResult.my_score} b.).`
+          : `Hráč ${kothLastResult.opponent_username} měl vyšší skóre (${kothLastResult.opponent_score} b. vs ${kothLastResult.my_score} b.).`)
+        : `Tvoje 1v1 výzva byla uložena se skóre ${kothLastResult.my_score} b. Jakmile ji jiný hráč přijme, rozhodne se o vítězi!`;
+    } else {
+      note.textContent = kothLastResult.won_throne
+        ? `Gratulace! Usadil ses na trůnu se skóre ${kothLastResult.challenger_score} b.`
+        : `Na převzetí trůnu bylo potřeba překonat ${kothLastResult.previous_king_score} b. Zkus to znovu!`;
+    }
+  } else if (examMode) {
+    const need = WASM_CORE.exp.calcExamNeeded(n | 0), diff = correct - need;
     $('res-meter').className = 'res-meter ' + (passed ? 'good' : 'bad');
     $('res-meter').firstChild.style.width = pct + '%';
     note.textContent = passed ? `Hranice 60 % je splněná, potřeba bylo ${need} správných.`
@@ -1168,20 +3379,17 @@ function renderResults() {
   if (wrongQ.length && !suddenDeath) { wb.style.display = 'block'; wb.textContent = `Procvičit jen chyby (${wrongQ.length})`; wb._wrongQ = wrongQ; }
   else wb.style.display = 'none';
   examMode = false;
+  kothMode = false;
+  compMode = null;
+  activeDuelId = null;
 }
 
 function backFromResults() { if (fromChunks) showChunks(); else showMenu(); }
 function restartSame() { beginSession([...queue], suddenDeath); }
 function practiceWrong() { beginSession([...$('btn-wrong')._wrongQ], false); }
 
-async function clearSourceProgress() {
-  if (!confirm('Smazat postup u vybrané přednášky? Akci nelze vrátit.')) return;
-  const ids = new Set(FULL.map(q => q.id));
-  const keep = Object.fromEntries(Object.entries(progress).filter(([k]) => !ids.has(k)));
-  await fetch(`/api/progress?source=${encodeURIComponent(currentSource)}`, {
-    method: 'POST', headers: {'Content-Type': 'application/json', 'X-TZI': '1'}, body: JSON.stringify({seen: keep, session: null})
-  });
-  progress = keep; session = null; updateMenuStats();
+function clearSourceProgress() {
+  openRevalidateModal('source');
 }
 
 document.addEventListener('keydown', e => {
@@ -1194,12 +3402,6 @@ document.addEventListener('keydown', e => {
   else { const k = e.key.toUpperCase(), key = /^[A-D]$/.test(k) && (optOrder[queue[idx]?.id] || [])[LETTERS.indexOf(k)]; if (key) toggleOpt(key); }
 });
 $('rand-count').addEventListener('keydown', e => { if (e.key === 'Enter') startRandom(); if (e.key === 'Escape') closeModal(); });
-
-async function shutdown() {
-  if (!confirm('Zastavit server TZI Trenér?')) return;
-  document.body.innerHTML = '<main class="bye"><h1>Server je zastavený</h1><p>Tuto záložku můžeš zavřít. Postup je uložený.</p><div class="bits" aria-hidden="true"><span style="color:var(--ok)">1</span><span style="color:var(--bad)">0</span><span style="color:var(--ok)">1</span><span style="color:var(--new)">·</span></div></main>';
-  try { await fetch('/shutdown', {method: 'POST', headers: {'X-TZI': '1'}}); } catch {}
-}
 
 init();
 </script>

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e1e2e"/>
+      <stop offset="100%" stop-color="#11111b"/>
+    </linearGradient>
+    <linearGradient id="primary" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#cba6f7"/>
+      <stop offset="100%" stop-color="#89b4fa"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#cba6f7" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <rect x="24" y="24" width="464" height="464" rx="96" fill="none" stroke="#313244" stroke-width="4"/>
+  <g filter="url(#shadow)">
+    <path d="M256 96 L392 148 V276 C392 360 256 424 256 424 C256 424 120 360 120 276 V148 Z" 
+          fill="none" stroke="url(#primary)" stroke-width="20" stroke-linejoin="round"/>
+  </g>
+  <!-- Binary symbols inside shield -->
+  <text x="256" y="245" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" 
+        font-weight="800" font-size="76" fill="#cba6f7" text-anchor="middle" letter-spacing="4">TZI</text>
+  <text x="256" y="315" font-family="'JetBrains Mono', monospace" 
+        font-weight="700" font-size="34" fill="#a6e3a1" text-anchor="middle" letter-spacing="6">0101</text>
+</svg>

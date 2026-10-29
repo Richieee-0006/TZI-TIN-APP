@@ -1,0 +1,9 @@
+{
+  "name": "tzi-tin-app",
+  "version": "2.0.0",
+  "description": "TZI Trenér - KI/TIN Quiz App with WebAssembly core",
+  "scripts": {
+    "build:wasm": "npx -p assemblyscript asc wasm/quiz_core.ts -o ui/quiz.wasm --optimize --runtime stub --initialMemory 1",
+    "test:js": "node test_doplnovacka.js"
+  }
+}

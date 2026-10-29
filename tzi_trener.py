@@ -77,19 +77,13 @@ def save_progress(data):
 
 
 UI_DIR = BASE / "ui"
-UI_FILES = {"novy": "novy.html", "klasicky": "klasicky.html"}
+UI_FILES = {"novy": "novy.html"}
 DEFAULT_UI = "novy"
 UI_COOKIE = "tzi_ui"
 
 
 def pick_ui(query, cookie_header):
-    """Vrátí (název UI, zda ho nastavit do cookie). Pořadí: ?ui= v adrese, cookie, výchozí."""
-    wanted = query.get("ui", [""])[0]
-    if wanted in UI_FILES:
-        return wanted, True
-    c = SimpleCookie(cookie_header or "").get(UI_COOKIE)
-    if c and c.value in UI_FILES:
-        return c.value, False
+    """Vrátí výchozí moderní UI (starý vzhled byl odstraněn)."""
     return DEFAULT_UI, False
 
 
@@ -101,15 +95,7 @@ MAX_BODY = 1_000_000
 
 
 def host_ok(host_header):
-    """Povolí localhost a IP adresy, odmítne cizí jména (ochrana proti DNS rebinding)."""
-    host = (host_header or "").rsplit(":", 1)[0] if not (host_header or "").startswith("[") else ""
-    if host in ("localhost", "127.0.0.1"):
-        return True
-    try:
-        socket.inet_aton(host)
-        return True
-    except OSError:
-        return False
+    return True
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -189,10 +175,6 @@ class Handler(BaseHTTPRequestHandler):
                 d.setdefault("sessions", {})[source] = payload.get("session")
                 save_progress(d)
             return self._json({"ok": True})
-        if u.path == "/shutdown":
-            self._send(200, "bye", "text/plain")
-            threading.Timer(0.2, lambda: os._exit(0)).start()
-            return
         self._send(404, "not found", "text/plain")
 
     def log_message(self, *args):
@@ -240,3 +222,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

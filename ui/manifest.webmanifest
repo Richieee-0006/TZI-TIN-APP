@@ -1,0 +1,19 @@
+{
+  "name": "TZI Trenér",
+  "short_name": "TZI Trenér",
+  "description": "Interaktivní trenažér teoretické informatiky KI/TIN",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1e1e2e",
+  "theme_color": "#1e1e2e",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
