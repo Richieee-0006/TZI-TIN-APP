@@ -39,7 +39,7 @@ def post_login(response: Response, username: str = Form(...), password: str = Fo
             admin_user = {"id": 1, "username": "Admin", "role": "admin", "theme": "games"}
             token = create_session_token(admin_user)
             resp = RedirectResponse(url="/", status_code=303)
-            resp.set_cookie(SESSION_COOKIE, token, max_age=SESSION_MAX_AGE, httponly=True, samesite="lax")
+            resp.set_cookie(SESSION_COOKIE, token, max_age=SESSION_MAX_AGE, httponly=True, samesite="lax", secure=True)
             return resp
 
     # 2. Student login check via database
@@ -47,7 +47,7 @@ def post_login(response: Response, username: str = Form(...), password: str = Fo
     if user:
         token = create_session_token(user)
         resp = RedirectResponse(url="/", status_code=303)
-        resp.set_cookie(SESSION_COOKIE, token, max_age=SESSION_MAX_AGE, httponly=True, samesite="lax")
+        resp.set_cookie(SESSION_COOKIE, token, max_age=SESSION_MAX_AGE, httponly=True, samesite="lax", secure=True)
         return resp
 
     return RedirectResponse(url="/login?error=Špatné+přihlašovací+jméno+nebo+heslo", status_code=303)
@@ -77,8 +77,8 @@ def post_register(
     pwd = password.strip()
     uname = username.strip() if username else None
 
-    if len(pwd) < 4:
-        return RedirectResponse(url="/register?error=Heslo+musí+mít+alespoň+4+znaky", status_code=303)
+    if len(pwd) < 8:
+        return RedirectResponse(url="/register?error=Heslo+musí+mít+alespoň+8+znaků", status_code=303)
 
     if password_confirm is not None and password_confirm.strip() != pwd:
         return RedirectResponse(url="/register?error=Zadaná+hesla+se+neshodují", status_code=303)
@@ -95,7 +95,7 @@ def post_register(
     token = create_session_token(user)
     assigned_nick = user["username"]
     resp = RedirectResponse(url=f"/?welcome_nick={assigned_nick}", status_code=303)
-    resp.set_cookie(SESSION_COOKIE, token, max_age=SESSION_MAX_AGE, httponly=True, samesite="lax")
+    resp.set_cookie(SESSION_COOKIE, token, max_age=SESSION_MAX_AGE, httponly=True, samesite="lax", secure=True)
     return resp
 
 
@@ -109,7 +109,7 @@ def get_trial(response: Response):
     }
     token = create_session_token(trial_user)
     resp = RedirectResponse(url="/", status_code=303)
-    resp.set_cookie(SESSION_COOKIE, token, max_age=86400, httponly=True, samesite="lax")
+    resp.set_cookie(SESSION_COOKIE, token, max_age=86400, httponly=True, samesite="lax", secure=True)
     return resp
 
 

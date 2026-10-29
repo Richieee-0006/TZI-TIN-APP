@@ -452,7 +452,7 @@ def update_username(user_id: int, new_username: str) -> Tuple[bool, Optional[str
 def update_password(user_id: int, current_password: str, new_password: str) -> Tuple[bool, Optional[str]]:
     if not verify_user_password(user_id, current_password):
         return False, "Současné heslo není správné."
-    if not new_password or len(new_password) < 6:
+    if not new_password or len(new_password) < 8:
         return False, "Nové heslo musí mít alespoň 6 znaků."
     new_hash = hash_password(new_password)
     conn = get_db()

@@ -103,7 +103,7 @@ async def api_account_username(request: Request, user: Dict[str, Any] = Depends(
         raise HTTPException(status_code=400, detail=err or "Změna jména selhala.")
     token = create_session_token(updated_user)
     resp = JSONResponse({"ok": True, "username": updated_user["username"]})
-    resp.set_cookie(SESSION_COOKIE, token, max_age=86400 * 30, httponly=True, samesite="lax")
+    resp.set_cookie(SESSION_COOKIE, token, max_age=86400 * 30, httponly=True, samesite="lax", secure=True)
     return resp
 
 
