@@ -1136,6 +1136,17 @@ async def api_account_revalidate_delete(request: Request, user: Dict[str, Any] =
             raise HTTPException(status_code=403, detail="Pro potvrzení v Trial režimu napište SMAZAT.")
         return {"ok": True, "scope": scope, "source": source}
 
+    if not db.verify_user_password(user["user_id"], password):
+        raise HTTPException(status_code=403, detail="Neplatné heslo. Mazání dat bylo zamítnuto.")
+
+    if scope == "all":
+        db.clear_user_progress_db(user["user_id"], "_all")
+    else:
+        db.clear_user_progress_db(user["user_id"], source or "_default")
+
+    return {"ok": True, "scope": scope, "source": source}
+
+
 @app.post("/api/account/delete-profile")
 async def api_account_delete_profile(request: Request, user: Dict[str, Any] = Depends(require_user)):
     if user.get("role") == "trial" or user["user_id"] == 0:
@@ -1166,17 +1177,6 @@ async def api_account_delete_profile(request: Request, user: Dict[str, Any] = De
     resp = JSONResponse({"ok": True, "redirect": "/login"})
     resp.delete_cookie(SESSION_COOKIE, path="/")
     return resp
-
-
-    if not db.verify_user_password(user["user_id"], password):
-        raise HTTPException(status_code=403, detail="Neplatné heslo. Mazání dat bylo zamítnuto.")
-
-    if scope == "all":
-        db.clear_user_progress_db(user["user_id"], "_all")
-    else:
-        db.clear_user_progress_db(user["user_id"], source or "_default")
-
-    return {"ok": True, "scope": scope, "source": source}
 
 
 # --- King of the Hill (FFA / 1v1) Endpoints ---
