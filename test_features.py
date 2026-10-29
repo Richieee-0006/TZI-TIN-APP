@@ -391,3 +391,25 @@ def test_r8_profile_recap_leaderboard_and_revalidation(temp_env):
     # Změna přezdívky
     u_res = client.post("/api/account/username", json={"username": "StudentMaster"})
     assert u_res.status_code == 200 and u_res.json()["username"] == "StudentMaster"
+
+
+def test_r9_delete_profile_removes_account(temp_env):
+    """R9: Smazání profilu (delete-profile) odstraní uživatele i jeho odpovědi; špatné heslo vrátí 403."""
+    client = temp_env
+    r = client.post("/register", data={"username": "test123", "password": "heslo1234", "password_confirm": "heslo1234"}, follow_redirects=False)
+    assert r.status_code == 303
+    client.cookies.set(server.SESSION_COOKIE, r.cookies.get(server.SESSION_COOKIE))
+    uid = db.authenticate_user("test123", "heslo1234")["id"]
+    scoring.record_question_answer(uid, "1-1", True)
+
+    payload = {"step1_ack": True, "confirm_username": "test123", "confirm_phrase": "DELETE", "password": "spatne"}
+    assert client.post("/api/account/delete-profile", json=payload).status_code == 403
+
+    payload["password"] = "heslo1234"
+    res = client.post("/api/account/delete-profile", json=payload)
+    assert res.status_code == 200 and res.json()["ok"] is True
+
+    conn = db.get_db()
+    assert conn.execute("SELECT COUNT(*) FROM users WHERE id = ?", (uid,)).fetchone()[0] == 0
+    assert conn.execute("SELECT COUNT(*) FROM user_answers WHERE user_id = ?", (uid,)).fetchone()[0] == 0
+    assert db.authenticate_user("test123", "heslo1234") is None

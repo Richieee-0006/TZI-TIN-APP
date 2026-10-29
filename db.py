@@ -489,7 +489,7 @@ def delete_user_account(user_id: int) -> None:
     conn = get_db()
     with conn:
         conn.execute("DELETE FROM user_progress WHERE user_id = ?", (user_id,))
-        conn.execute("DELETE FROM question_attempts WHERE user_id = ?", (user_id,))
+        conn.execute("DELETE FROM user_answers WHERE user_id = ?", (user_id,))
         conn.execute("DELETE FROM daily_progress WHERE user_id = ?", (user_id,))
         conn.execute("DELETE FROM user_scores WHERE user_id = ?", (user_id,))
         conn.execute("DELETE FROM comp_room_players WHERE user_id = ?", (user_id,))
