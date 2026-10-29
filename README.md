@@ -6,6 +6,8 @@
 
 Kvíz na opakování přednášek z Teoretické informatiky (KI/TIN), stylem podobný [MTCNA-app](https://github.com/zdenax/MTCNA-app). Běží v prohlížeči, spouští se jedním `.py` souborem bez závislostí.
 
+> Kompletní technický popis rozdělení kódu do modulů najdete v **[ARCHITECTURE.md](ARCHITECTURE.md)**.
+
 ## Spuštění
 
 ```

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TZI Trenér - Admin Panel</title>
+    <style>
+        :root {
+            --bg: #1e1e2e;
+            --card: #181825;
+            --border: #313244;
+            --text: #cdd6f4;
+            --text-dim: #a6adc8;
+            --mauve: #cba6f7;
+            --green: #a6e3a1;
+            --yellow: #f9e2af;
+            --red: #f38ba8;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            padding: 2rem 1rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        h1 { font-size: 1.8rem; color: var(--mauve); }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+            background: var(--mauve);
+            color: #11111b;
+            padding: 0.6rem 1.2rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.9; }
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .card h2 { font-size: 1.3rem; margin-bottom: 1rem; color: var(--text); }
+        .code-box {
+            background: #11111b;
+            border: 2px dashed var(--mauve);
+            padding: 1rem;
+            border-radius: 0.6rem;
+            font-family: monospace;
+            font-size: 1.4rem;
+            color: var(--green);
+            text-align: center;
+            letter-spacing: 2px;
+            margin: 1rem 0;
+            user-select: all;
+            overflow-wrap: anywhere;
+        }
+        .table-wrap {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-top: 1rem;
+            border-radius: 0.5rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 580px;
+        }
+        th, td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+        }
+        th { color: var(--text-dim); font-size: 0.85rem; text-transform: uppercase; }
+        tr:hover { background: rgba(255, 255, 255, 0.02); }
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 1rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .badge-admin { background: rgba(203, 166, 247, 0.2); color: var(--mauve); }
+        .badge-student { background: rgba(166, 227, 161, 0.2); color: var(--green); }
+        @media (max-width: 600px) {
+            body { padding: 1.25rem 0.75rem; }
+            h1 { font-size: 1.4rem; }
+            header { flex-direction: column; align-items: flex-start; gap: 0.8rem; }
+            .header-actions { width: 100%; }
+            .header-actions .btn { flex: 1; text-align: center; }
+            .card { padding: 1rem; }
+            .code-box { font-size: 1.1rem; padding: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div>
+            <h1>🛡️ TZI Admin Panel</h1>
+            <p style="color:var(--text-dim); font-size:0.9rem;">Správa kódů a přehled studentů</p>
+        </div>
+        <div class="header-actions">
+            <a href="/" class="btn" style="background:var(--border); color:var(--text);">Zpět do trenéra</a>
+            <a href="/logout" class="btn" style="background:var(--red); color:#11111b;">Odhlásit</a>
+        </div>
+    </header>
+
+    <!--GENERATED_CODE_SECTION-->
+
+    <div class="card">
+        <h2>🎫 Generátor jednorázových kódů</h2>
+        <p style="color:var(--text-dim); font-size:0.95rem;">Každý vygenerovaný kód může použít právě jeden spolužák k registraci. Kód se v databázi uloží jako bezpečný hash.</p>
+        <form method="POST" action="/admin/invite" style="margin-top:1rem;">
+            <button type="submit" class="btn">✨ Vygenerovat nový kód pozvánky</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>👥 Registrovaní studenti & Žebříček</h2>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Pořadí</th>
+                        <th>Přezdívka</th>
+                        <th>Téma</th>
+                        <th>Body</th>
+                        <th>Aktuální Streak</th>
+                        <th>Nejlepší Streak</th>
+                        <th>Role</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!--USERS_ROWS-->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

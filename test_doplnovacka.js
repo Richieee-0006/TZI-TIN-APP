@@ -4,7 +4,13 @@
 const fs = require('fs'), path = require('path'), vm = require('vm'), assert = require('assert');
 
 const html = fs.readFileSync(path.join(__dirname, 'ui/novy.html'), 'utf8');
-const js = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]).join('\n');
+const scriptSrcs = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]).filter(s => s.startsWith('/static/js/'));
+let js = '';
+if (scriptSrcs.length > 0) {
+  js = scriptSrcs.map(src => fs.readFileSync(path.join(__dirname, 'ui', src.replace('/static/', '')), 'utf8')).join('\n');
+} else {
+  js = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]).join('\n');
+}
 new vm.Script(js, {filename: 'ui/novy.html'}); // jen kompilace = kontrola syntaxe
 
 // matcher se vezme přímo z UI (blok od značky po další sekci)
