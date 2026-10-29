@@ -32,9 +32,12 @@ def test_r1_latex_katex_rendering():
     assert "katex.min.js" in novy_html
 
     node_check = r"""
-    const fs = require('fs'), vm = require('vm'), assert = require('assert');
+    const fs = require('fs'), path = require('path'), vm = require('vm'), assert = require('assert');
     const html = fs.readFileSync('ui/novy.html', 'utf8');
-    const js = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]).join('\n');
+    const scriptSrcs = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]).filter(s => s.startsWith('/static/js/'));
+    const js = scriptSrcs.length > 0
+      ? scriptSrcs.map(src => fs.readFileSync(path.join('ui', src.replace('/static/', '')), 'utf8')).join('\n')
+      : [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]).join('\n');
     const ctx = vm.createContext({
       document: { getElementById: () => ({ style: {}, classList: { add(){}, remove(){} }, addEventListener(){} }), addEventListener(){}, querySelectorAll: () => [] },
       localStorage: { getItem: () => null, setItem(){} },
@@ -364,8 +367,9 @@ def test_r8_profile_recap_leaderboard_and_revalidation(temp_env):
     assert 'id="profile-view"' in novy_html
     assert 'id="leaderboard-view"' in novy_html
     assert 'id="revalidate-modal"' in novy_html
-    assert "WASM_CORE.exp.calcAchievementMask" in novy_html
-    assert "WASM_CORE.exp.calcRecapAccuracy" in novy_html
+    full_ui_bundle = novy_html + "".join(f.read_text(encoding="utf-8") for f in sorted((BASE / "ui" / "js").glob("*.js")))
+    assert "WASM_CORE.exp.calcAchievementMask" in full_ui_bundle
+    assert "WASM_CORE.exp.calcRecapAccuracy" in full_ui_bundle
 
     r = client.post("/register", data={"username": "StudentRecap", "password": "secret123", "password_confirm": "secret123"}, follow_redirects=False)
     assert r.status_code == 303

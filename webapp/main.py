@@ -1,3 +1,5 @@
+from fastapi.staticfiles import StaticFiles
+import tzi_trener
 """Skládá FastAPI aplikaci: inicializace DB, cache otázek, auto-sync bank a připojení routerů."""
 import threading
 
@@ -22,6 +24,9 @@ threading.Thread(target=sync_worker, daemon=True).start()
 
 # --- FastAPI Application ---
 app = FastAPI(title="TZI Trenér", docs_url=None, redoc_url=None)
+
+# Statické soubory pro modularizované UI (CSS, JS)
+app.mount("/static", StaticFiles(directory=tzi_trener.UI_DIR), name="static")
 
 for _router in (auth.router, admin.router, study.router, account.router, competitive.router, pwa.router):
     app.include_router(_router)

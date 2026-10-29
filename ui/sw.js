@@ -1,7 +1,22 @@
-const CACHE_NAME = 'tzi-pwa-v8';
+const CACHE_NAME = 'tzi-pwa-v9';
 const STATIC_ASSETS = [
   '/manifest.webmanifest',
-  '/icon.svg'
+  '/icon.svg',
+  '/static/css/style.css',
+  '/static/js/core.js',
+  '/static/js/format.js',
+  '/static/js/shell.js',
+  '/static/js/arena.js',
+  '/static/js/account.js',
+  '/static/js/offline.js',
+  '/static/js/gamification.js',
+  '/static/js/rooms.js',
+  '/static/js/menu.js',
+  '/static/js/chunks.js',
+  '/static/js/modes.js',
+  '/static/js/comp_modes.js',
+  '/static/js/recall.js',
+  '/static/js/quiz.js'
 ];
 
 self.addEventListener('install', event => {
@@ -23,6 +38,18 @@ self.addEventListener('fetch', event => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (['/login', '/register', '/logout', '/trial', '/admin', '/quiz.wasm'].some(p => url.pathname.startsWith(p))) return;
+
+    if (url.pathname.startsWith('/static/')) {
+    event.respondWith(
+      caches.open(CACHE_NAME).then(async cache => {
+        return fetch(req).then(networkRes => {
+          if (networkRes.ok) cache.put(req, networkRes.clone());
+          return networkRes;
+        }).catch(() => cache.match(req));
+      })
+    );
+    return;
+  }
 
   if (req.mode === 'navigate') {
     event.respondWith(

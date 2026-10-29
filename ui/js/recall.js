@@ -1,0 +1,77 @@
+// ── doplňovačka ──
+// "2" → "2 slova", "1-2" → "1 až 2 slova"
+function wordsLabel(w) {
+  const [a, b = a] = String(w).split('-').map(Number);
+  return (a === b ? a : `${a} až ${b}`) + ' ' + plural(b, 'slovo', 'slova', 'slov');
+}
+
+// ── doplňovačka: porovnání odpovědi ──
+// WebAssembly (AssemblyScript) jádro pro normalizaci, Levenshteinovu vzdálenost <= 1, vyhodnocení a míchání
+const WASM_BASE64 = 'AGFzbQEAAAABKgZgAn9/AX9gAX8Bf2ADf39/AX9gBH9/f38Bf2ACf38AYAZ/f39/f38BfwMPDgIDBAIBAAAAAAEBAAEFBQMBAAEGHwV/AEGABAt/AEGACAt/AEGAGAt/AEGAKAt/AEGAOAsHvgIUC1NIVUZGTEVfUFRSAwAJU0xPVDBfUFRSAwEJU0xPVDFfUFRSAwIJU0xPVDJfUFRSAwMJU0xPVDNfUFRSAwQOc2h1ZmZsZUluZGljZXMAAglub3JtSW5wdXQAAA1yZWNhbGxOb3JtQnVmAAMHbGV2MUJ1ZgABFW1hdGNoTm9ybWFsaXplZFJlY2FsbAAFEmV2YWx1YXRlQ2hvaWNlTWFzawAHFGV2YWx1YXRlSW5wdXRCdWZmZXJzAAYOcGx1cmFsQ2F0ZWdvcnkABA5jYWxjUGVyY2VudGFnZQALDmNhbGNFeGFtTmVlZGVkAAwNY2FsY1JhbmtMZXZlbAAKC2NhbGNSYW5rUGN0AAkTY2FsY0FjaGlldmVtZW50TWFzawANEWNhbGNSZWNhcEFjY3VyYWN5AAgGbWVtb3J5AgAKiRcOxQMBBX8DQCABIAVKBEAgACAFQQF0ai8BACIEQaABRiAEQSBNciAEQd8ARnJFBEAgAiADQQF0agJ/IARBIGsgBEH6AE0gBEHhAE9xDQAaAkACQAJAAkACQAJAAkACQAJAAkACQAJAAkACQAJAIARB4QFHBEAgBEGNAkYNASAEQY8CRg0CIARB6QFGDQMgBEGbAkYNBCAEQe0BRg0FIARByAJGDQYgBEHzAUYNByAEQdkCRg0IIARB4QJGDQkgBEHlAkYNCiAEQfoBRg0LIARB7wJGDQwgBEH9AUYNDSAEQf4CRg0ODA8LQcEBDA8LQYwCDA4LQY4CDA0LQckBDAwLQZoCDAsLQc0BDAoLQccCDAkLQdMBDAgLQdgCDAcLQeACDAYLQeQCDAULQdoBDAQLQe4CDAMLQd0BDAILQf0CDAELIAQLOwEAIANBAWohAwsgBUEBaiEFDAELCwNAIAcgA0EBa0gEfyACIAdBAXRqLwEAQTBGBUEACwRAIAdBAWohBwwBCwsgB0EASgRAIAMgB2shAANAIAAgBkoEQCACIAZBAXRqIAIgBiAHakEBdGovAQA7AQAgBkEBaiEGDAELCyAADwsgAwudAgEDfyABIANrIAMgAWsgASADShtBAUoEQEEADwsgASADIAEgA0gbIQUDQCAEIAVIBH8gBEEBdCIGIABqLwEAIAIgBmovAQBGBUEACwRAIARBAWohBAwBCwsgAyAERiABIARGcQRAQQEPCyABIANGBEAgBEEBaiEDA0AgASADSgRAIANBAXQiBCAAai8BACACIARqLwEARwRAQQAPCyADQQFqIQMMAQsLBSABIANKBEADQCADIARKBEAgACAEQQFqQQF0ai8BACACIARBAXRqLwEARwRAQQAPCyAEQQFqIQQMAQsLBQNAIAEgBEoEQCAAIARBAXRqLwEAIAIgBEEBakEBdGovAQBHBEBBAA8LIARBAWohBAwBCwsLC0EBC7QBAQJ/A0AgACACSgRAIAJBAnQgAjYCgAQgAkEBaiECDAELCyABQbnz3fF5IAEbIQIgAEEBayEBA0AgAUEASgRAIAFBAnQiAEGABGooAgAhAyAAIAFBAWqsIAJB9fOt6QZqIgJBAXIgAiACQQ92c2wiACAAQT1yIAAgAEEHdnNsIABqcyIAQQ52IABzrX5CIIinQQJ0IgBBgARqKAIANgKABCAAIAM2AoAEIAFBAWshAQwBCwsLhAYBBH9BASEFA0AgASAGSgRAIAAgBkEBdGovAQAiBEHvBk0gBEGABk9xRQRAAn9BASAEQaABRiAEQSBNcg0AGgJAAkAgBEEuRg0AIARBLEYNACAEQTtGDQAgBEE6Rg0AIARBIUYNACAEQT9GDQAgBEEnRg0AIARBIkYNACAEQShGDQAgBEEpRg0AIARB2wBGDQAgBEHdAEYNACAEQfsARg0AIARB/QBGDQAgBEHfAEYNACAEQS9GDQAgBEEtRg0AIARBnsAARg0AIARBnMAARg0AIARBncAARg0AIARBmsAARg0AIARBmMAARg0AIARBmcAARg0AIARBpsAARg0AIARBk8AARg0AIARBlMAARg0AIARBksQARg0ADAELQQEMAQtBAAsEfyAFBH8gAwUgAiADQQF0akEgOwEAQQEhBSADQQFqCwUgAiADQQF0agJ/IARBIGogBEHaAE0gBEHBAE9xDQAaIAQgBEH6AE0gBEHhAE9xBH9BAQUgBEE5TSAEQTBPcQsNABoCQAJAAkACQAJAAkACQAJAAkACQAJAAkACQAJAAkAgBEHAAWsOvwEAAAAOAA4OAQMDAwMEBAQEDgYHBwcOBw4OCwsLCwwODgAAAA4ADg4BAwMDAwQEBAQOBgcHBw4HDg4LCwsLDA4MDg4ODg4ODg4ODg4OAQECAg4ODg4ODg4ODg4DAw4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4OBQUODgUFDg4ODg4ODg4GBg4ODg4ODg4ODg4OCAgODggIDg4ODg4OCQkODgoKDg4ODg4ODg4LCw4ODg4ODg4ODA4ODg4NDQ4LQeEADA4LQeMADA0LQeQADAwLQeUADAsLQekADAoLQewADAkLQe4ADAgLQe8ADAcLQfIADAYLQfMADAULQfQADAQLQfUADAMLQfkADAILQfoADAELIAQLOwEAQQAhBSADQQFqCyEDCyAGQQFqIQYMAQsLIANBAWsiACADIANBAEoEfyACIABBAXRqLwEAQSBGBUEACxsLLQBBACAAayAAIABBAEgbIgBBAUYEQEEADwsgAEEETCAAQQJOcQRAQQEPC0ECC7EDAQh/AkAgAUEATCAAQQBMcg0AAn9BACAAIAFHDQAaA0AgACADSgRAQQAgA0EBdCIFQYAoai8BACAFQYA4ai8BAEcNAhogA0EBaiEDDAELC0EBCwRAQQEPCwNAIAEgAkogACAESnEEQCAEIQUDQCAAIAVKBH8gBUEBdEGAKGovAQBBIEcFQQALBEAgBUEBaiEFDAELCyACIQMDQCABIANKBH8gA0EBdEGAOGovAQBBIEcFQQALBEAgA0EBaiEDDAELCyAEQQF0QYAoaiEHIAJBAXRBgDhqIQYCf0EAIAUgBGsiBCADIAJrIghHDQAaQQAhAgNAIAIgBEgEQEEAIAJBAXQiCSAHai8BACAGIAlqLwEARw0CGiACQQFqIQIMAQsLQQELRQRAIARBAEwgCEEFTHINA0EAIQICfwNAIAIgCEgEQEEAIAYgAkEBdGovAQAiCUHhAEkgCUH6AEtyDQIaIAJBAWohAgwBCwtBAQtFDQMgBi8BACAHLwEARw0DIAYgCCAHIAQQAUUNAwsgBUEBaiEEIANBAWohAgwBCwsgASACSiAAIARKcg0AQQIPC0EAC1wBAX9BgAggAEGAKBAAIQACf0EAQYAYIAFBgDgQACAARw0AGkEAIQEDQCAAIAFKBEBBACABQQF0IgJBgChqLwEAIAJBgDhqLwEARw0CGiABQQFqIQEMAQsLQQELCw8AIAAgAUZBACABG0EARwtIACAAQQBMIAAgAWoiAUEATHIEQEEADwsgAEEATAR/QQAFQeQAIABB5ABsQQEgASABQQFMGyIAQQF1aiAAbSIAIABB5ABKGwsLqgEBAn8gAEGwCU4Ef0GwCSEBQdAPBSAAQaAGTgR/QaAGIQFBsAkFIABB9ANOBH9B9AMhAUGgBgUgAEGsAk4Ef0GsAiEBQfQDBSAAQZYBTgR/QZYBIQFBrAIFIABBMk4Ef0EyIQFBlgEFQTILCwsLCwsgAWshAiAAIAFrIgBBAEwEf0EABUHkACAAQeQAbEEBIAIgAkEBTBsiAEEBdWogAG0iACAAQeQAShsLC0sAIABBsAlOBEBBBw8LIABBoAZOBEBBBg8LIABB9ANOBEBBBQ8LIABBrAJOBEBBBA8LIABBlgFOBEBBAw8LIABBMk4EQEECDwtBAQsyACAAQQBMBEBBAA8LQeQAIABB5ABsQQEgASABQQFMGyIAQQF1aiAAbSIAIABB5ABKGwsYACAAQQBMBEBBAA8LIABBA2xBBGpBBW0LiQIBAX8gBEEASiAAQQBKciIGQQJyIAYgAEEPTiAEQQVOchsiBkEEciAGIAFBBU4bIgZBCHIgBiABQQ9OGyIGQRByIAYgAEGWAU4gBEEyTnIbIgZBIHIgBiAAQdgETiAEQcgBTnIbIgZBwAByIAYgBEHkAE4bIgZBgAFyIAYgBEEDTkEAIAUbGyIEQYACciAEIABB5ABOGyIEQYAEciAEIAJBA04bIgRBgAhyIAQgAkEHThsiBEGAEHIgBCABQQNOGyIBQYAgciABIABBHk4bIgFBgMAAciABIAMbIgFBgIABciABIAJBAk4bIgFBgIACciABIABB9ANOGyIBQYCABHIgASAAQbAJThsL';
+
+const WASM_CORE = (() => {
+  const b64 = WASM_BASE64;
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+  const lookup = new Uint8Array(128);
+  for (let i = 0; i < chars.length; i++) lookup[chars.charCodeAt(i)] = i;
+  const pad = b64.endsWith('==') ? 2 : b64.endsWith('=') ? 1 : 0;
+  const bytes = new Uint8Array((b64.length * 3 / 4) - pad);
+  let p = 0;
+  for (let i = 0; i < b64.length; i += 4) {
+    const a = lookup[b64.charCodeAt(i)], b = lookup[b64.charCodeAt(i + 1)];
+    const c = lookup[b64.charCodeAt(i + 2)], d = lookup[b64.charCodeAt(i + 3)];
+    const n = (a << 18) | (b << 12) | (c << 6) | d;
+    bytes[p++] = (n >> 16) & 255;
+    if (p < bytes.length) bytes[p++] = (n >> 8) & 255;
+    if (p < bytes.length) bytes[p++] = n & 255;
+  }
+  const inst = new WebAssembly.Instance(new WebAssembly.Module(bytes));
+  let exp = inst.exports;
+  if (exp.memory && exp.memory.buffer.byteLength < 65536) exp.memory.grow(1);
+  const writeStr = (ptr, s) => {
+    s = String(s || '');
+    const len = Math.min(s.length, 1000);
+    const view = new Uint16Array(exp.memory.buffer, ptr, len);
+    for (let i = 0; i < len; i++) view[i] = s.charCodeAt(i);
+    return len;
+  };
+  const readStr = (ptr, len) => {
+    const view = new Uint16Array(exp.memory.buffer, ptr, len);
+    let out = '';
+    for (let i = 0; i < len; i++) out += String.fromCharCode(view[i]);
+    return out;
+  };
+  return { get exp() { return exp; }, writeStr, readStr };
+})();
+
+// malá písmena, bez diakritiky, interpunkce a pomlčky na mezery, jedna mezera mezi slovy (WASM)
+const recallNorm = s => {
+  const len = WASM_CORE.writeStr(1024, String(s ?? '').normalize('NFC'));
+  const outLen = WASM_CORE.exp.recallNormBuf(1024, len, 5120);
+  return WASM_CORE.readStr(5120, outLen);
+};
+// Levenshtein ≤ 1: jedna záměna, vložení nebo vypuštění znaku (WASM)
+function lev1(a, b) {
+  const lA = WASM_CORE.writeStr(1024, a);
+  const lB = WASM_CORE.writeStr(3072, b);
+  return WASM_CORE.exp.lev1Buf(1024, lA, 3072, lB) === 1;
+}
+// {variant, typo} nebo null (WASM). Překlep jen u slov delších než 5 písmen (bez číslic) a se stejným
+// prvním písmenem, ať neprojde symetrická × asymetrická nebo reflexivní × ireflexivní.
+function matchRecall(answer, accept) {
+  const lA = WASM_CORE.writeStr(1024, String(answer ?? '').normalize('NFC'));
+  const nA = WASM_CORE.exp.recallNormBuf(1024, lA, 5120);
+  if (nA <= 0) return null;
+  for (const v of accept) {
+    const lV = WASM_CORE.writeStr(3072, String(v ?? '').normalize('NFC'));
+    const nV = WASM_CORE.exp.recallNormBuf(3072, lV, 7168);
+    if (WASM_CORE.exp.matchNormalizedRecall(nA, nV) === 1) return {variant: v, typo: false};
+  }
+  for (const v of accept) {
+    const lV = WASM_CORE.writeStr(3072, String(v ?? '').normalize('NFC'));
+    const nV = WASM_CORE.exp.recallNormBuf(3072, lV, 7168);
+    if (WASM_CORE.exp.matchNormalizedRecall(nA, nV) === 2) return {variant: v, typo: true};
+  }
+  return null;
+}
+

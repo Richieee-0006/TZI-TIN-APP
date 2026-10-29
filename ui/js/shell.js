@@ -1,0 +1,85 @@
+let currentUserData = null;
+
+function showToast(html) {
+  const t = document.getElementById('score-toast');
+  if (!t) return;
+  t.innerHTML = html;
+  t.classList.add('visible');
+  setTimeout(() => t.classList.remove('visible'), 2800);
+}
+
+function applyUserTheme(th) {
+  localStorage.setItem('tzi_theme', th);
+  if (typeof document !== 'undefined' && document.documentElement) {
+    if (th === 'auto') {
+      document.documentElement.removeAttribute('data-theme');
+    } else {
+      document.documentElement.setAttribute('data-theme', th);
+    }
+  }
+}
+
+// PWA Service Worker Registration
+if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator && typeof window !== 'undefined') {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(e => console.warn('[TZI] SW reg failed:', e));
+  });
+}
+
+const OFFLINE_QUEUE_KEY = 'tzi_offline_sync_queue';
+
+function getOfflineQueue() {
+  try { return JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY) || '[]'); }
+  catch(e) { return []; }
+}
+
+function saveOfflineQueue(q) {
+  try { localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(q)); }
+  catch(e) {}
+  updateNetStatus();
+}
+
+let forceOffline = localStorage.getItem('tzi_force_offline') === '1';
+let serverUnreachable = false;
+const isOnline = () => !forceOffline && (typeof navigator === 'undefined' || navigator.onLine !== false);
+
+function toggleOfflineMode() {
+  if (!forceOffline && serverUnreachable) {
+    forceOffline = false;
+    serverUnreachable = false;
+  } else {
+    forceOffline = !forceOffline;
+    if (!forceOffline) serverUnreachable = false;
+  }
+  localStorage.setItem('tzi_force_offline', forceOffline ? '1' : '0');
+  updateNetStatus();
+  if (!forceOffline && isOnline()) {
+    showToast('Switched to <b>Online mode</b>. Syncing...');
+    syncOfflineQueue();
+    refreshUserStats();
+  } else {
+    showToast('Switched to <b>Offline mode</b>. Progress is saved locally.');
+  }
+}
+
+function updateNetStatus() {
+  const netEl = document.getElementById('u-net');
+  if (!netEl) return;
+  const q = getOfflineQueue();
+  netEl.style.display = 'inline-flex';
+  if (!isOnline() || serverUnreachable) {
+    netEl.className = 'badge-net badge-net-offline';
+    netEl.textContent = `Offline${forceOffline ? ' (manual)' : ''}${q.length ? ` · ${q.length}` : ''}`;
+    netEl.title = 'Offline režim: postup se ukládá v prohlížeči a odešle se po připojení (klikni pro přepnutí)';
+  } else if (isSyncing || q.length > 0) {
+    netEl.className = 'badge-net badge-net-sync';
+    netEl.textContent = `Syncing (${q.length})...`;
+    netEl.title = 'Probíhá synchronizace offline odpovědí se serverem';
+  } else {
+    netEl.className = 'badge-net badge-net-online';
+    netEl.textContent = 'Online';
+    netEl.title = 'Online režim: spojení se serverem je aktivní (kliknutím lze přepnout do Offline režimu)';
+  }
+  updateCompArenaMenuState();
+}
+
