@@ -20,7 +20,12 @@ def load_env():
 
 load_env()
 
-APP_SECRET = os.environ.get("APP_SECRET", "tzi-tin-super-secret-key-39281")
+APP_SECRET = os.environ.get("APP_SECRET")
+if not APP_SECRET:
+    raise RuntimeError(
+        "APP_SECRET environment variable is required. "
+        "Generate one with: python -c 'import secrets; print(secrets.token_hex(32))'"
+    )
 HASHED_PASSWORD = os.environ.get("HASHED_PASSWORD", "").strip()
 WEBHOOK_SECRET = os.environ.get("WEBHOOK_SECRET", "").strip()
 SESSION_COOKIE = "tzi_session"
