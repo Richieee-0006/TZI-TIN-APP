@@ -413,3 +413,29 @@ def test_r9_delete_profile_removes_account(temp_env):
     assert conn.execute("SELECT COUNT(*) FROM users WHERE id = ?", (uid,)).fetchone()[0] == 0
     assert conn.execute("SELECT COUNT(*) FROM user_answers WHERE user_id = ?", (uid,)).fetchone()[0] == 0
     assert db.authenticate_user("test123", "heslo1234") is None
+
+
+def test_r10_html_templates_escape_user_input(temp_env):
+    """R10: login/register/admin šablony escapují text z URL i uživatelská jména (ochrana proti XSS)."""
+    client = temp_env
+    payload = "<script>alert(1)</script>"
+
+    for url in (f"/login?error={payload}", f"/login?success={payload}", f"/register?error={payload}"):
+        page = client.get(url).text
+        assert payload not in page, url
+        assert "&lt;script&gt;alert(1)&lt;/script&gt;" in page, url
+
+    ok, err, user = db.register_user(theme="games", password="heslo1234")
+    assert ok and user is not None
+    evil_name = "<img src=x onerror=alert(2)>"
+    conn = db.get_db()
+    with conn:
+        conn.execute("UPDATE users SET username = ? WHERE id = ?", (evil_name, user["id"]))
+    scoring.record_question_answer(user["id"], "1-1", True)
+
+    admin_token = server.create_session_token({"id": 1, "username": "Admin", "role": "admin", "theme": "games"})
+    client.cookies.set(server.SESSION_COOKIE, admin_token)
+    admin_page = client.get(f"/admin?new_code={payload}").text
+    assert evil_name not in admin_page
+    assert payload not in admin_page
+    assert "&lt;img src=x onerror=alert(2)&gt;" in admin_page

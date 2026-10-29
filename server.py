@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Optional, Dict, Any
 
 import unicodedata
+from html import escape
 from fastapi import FastAPI, Request, Response, Form, HTTPException, Depends, status
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, PlainTextResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -544,9 +545,9 @@ ADMIN_HTML = """<!DOCTYPE html>
 def get_login(error: Optional[str] = None, success: Optional[str] = None):
     msg = ""
     if error:
-        msg = f'<div class="error-msg">{error}</div>'
+        msg = f'<div class="error-msg">{escape(error)}</div>'
     elif success:
-        msg = f'<div class="success-msg">{success}</div>'
+        msg = f'<div class="success-msg">{escape(success)}</div>'
 
     html = LOGIN_REGISTER_HTML.replace("<!--MESSAGE-->", msg)
     html = html.replace("<!--LOGIN_ACTIVE-->", "active")
@@ -583,7 +584,7 @@ def post_login(response: Response, username: str = Form(...), password: str = Fo
 
 @app.get("/register", response_class=HTMLResponse)
 def get_register(error: Optional[str] = None):
-    msg = f'<div class="error-msg">{error}</div>' if error else ""
+    msg = f'<div class="error-msg">{escape(error)}</div>' if error else ""
     html = LOGIN_REGISTER_HTML.replace("<!--MESSAGE-->", msg)
     html = html.replace("<!--LOGIN_ACTIVE-->", "")
     html = html.replace("<!--REG_ACTIVE-->", "active")
@@ -657,7 +658,7 @@ def get_admin(request: Request, user: Dict[str, Any] = Depends(require_admin), n
         <div class="card" style="border-color:var(--green);">
             <h2 style="color:var(--green);">🎉 Nový kód vygenerován!</h2>
             <p>Zkopíruj tento kód a předej ho spolužákovi k jednorázové registraci:</p>
-            <div class="code-box">{new_code}</div>
+            <div class="code-box">{escape(new_code)}</div>
             <p style="font-size:0.85rem; color:var(--text-dim);">Kód je v databázi bezpečně zahashován a po použití automaticky zanikne.</p>
         </div>
         """
@@ -665,12 +666,12 @@ def get_admin(request: Request, user: Dict[str, Any] = Depends(require_admin), n
     students = scoring.get_admin_leaderboard()
     rows = ""
     for idx, s in enumerate(students, 1):
-        role_badge = f'<span class="badge badge-{s["role"]}">{s["role"]}</span>'
+        role_badge = f'<span class="badge badge-{escape(str(s["role"]))}">{escape(str(s["role"]))}</span>'
         rows += f"""
         <tr>
             <td><b>#{idx}</b></td>
-            <td><b>{s['username']}</b></td>
-            <td>{s.get('theme', 'games')}</td>
+            <td><b>{escape(str(s['username']))}</b></td>
+            <td>{escape(str(s.get('theme', 'games')))}</td>
             <td><b style="color:var(--mauve);">{s.get('total_points') or 0} b.</b></td>
             <td>🔥 {s.get('current_streak') or 0}</td>
             <td>⭐ {s.get('best_streak') or 0}</td>
