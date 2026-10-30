@@ -98,14 +98,6 @@ def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
 
-        CREATE TABLE IF NOT EXISTS invites (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            code_hash TEXT UNIQUE NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            used_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
-            used_at TIMESTAMP
-        );
-
         CREATE TABLE IF NOT EXISTS user_progress (
             user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
             source TEXT NOT NULL,
@@ -300,56 +292,12 @@ def generate_unique_nickname(theme: str) -> str:
     return f"Student {secrets.token_hex(3).upper()}"
 
 
-def create_invite_code() -> str:
-    conn = get_db()
-    # Format: TZI-XXXX-XXXX
-    charset = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
-    part1 = "".join(secrets.choice(charset) for _ in range(4))
-    part2 = "".join(secrets.choice(charset) for _ in range(4))
-    raw_code = f"TZI-{part1}-{part2}"
-    code_hash = hash_password(raw_code)
-
-    with conn:
-        conn.execute("INSERT INTO invites (code_hash) VALUES (?)", (code_hash,))
-    return raw_code
-
-
-def verify_and_use_invite(raw_code: str, user_id: int) -> bool:
-    conn = get_db()
-    raw_code_clean = raw_code.strip().upper()
-    rows = conn.execute("SELECT id, code_hash FROM invites WHERE used_by IS NULL").fetchall()
-    matched_id = None
-    for r in rows:
-        if check_password(raw_code_clean, r["code_hash"]):
-            matched_id = r["id"]
-            break
-
-    if matched_id is None:
-        return False
-
-    with conn:
-        conn.execute(
-            "UPDATE invites SET used_by = ?, used_at = CURRENT_TIMESTAMP WHERE id = ?",
-            (user_id, matched_id)
-        )
-    return True
-
-
 def register_user(
     theme: str = "games",
     password: str = "",
-    invite_code: Optional[str] = None,
     username: Optional[str] = None
 ) -> Tuple[bool, Optional[str], Optional[Dict[str, Any]]]:
     conn = get_db()
-    matched_invite_id = None
-    if invite_code and invite_code.strip():
-        raw_code_clean = invite_code.strip().upper()
-        rows = conn.execute("SELECT id, code_hash FROM invites WHERE used_by IS NULL").fetchall()
-        for r in rows:
-            if check_password(raw_code_clean, r["code_hash"]):
-                matched_invite_id = r["id"]
-                break
 
     if username and username.strip():
         nickname = username.strip()
@@ -371,11 +319,6 @@ def register_user(
                 (nickname, pw_hash, theme)
             )
             user_id = cursor.lastrowid
-            if matched_invite_id is not None:
-                conn.execute(
-                    "UPDATE invites SET used_by = ?, used_at = CURRENT_TIMESTAMP WHERE id = ?",
-                    (user_id, matched_invite_id)
-                )
             conn.execute(
                 "INSERT INTO user_scores (user_id, total_points, current_streak, best_streak, daily_streak, best_daily_streak) VALUES (?, 0, 0, 0, 0, 0)",
                 (user_id,)
