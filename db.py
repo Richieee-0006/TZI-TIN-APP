@@ -439,5 +439,4 @@ def delete_user_account(user_id: int) -> None:
         conn.execute("DELETE FROM comp_rooms WHERE host_id = ?", (user_id,))
         conn.execute("DELETE FROM ffa_runs WHERE user_id = ?", (user_id,))
         conn.execute("DELETE FROM duel_matches WHERE creator_id = ? OR opponent_id = ?", (user_id, user_id))
-        conn.execute("UPDATE invites SET used_by = NULL WHERE used_by = ?", (user_id,))
         conn.execute("DELETE FROM users WHERE id = ?", (user_id,))

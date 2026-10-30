@@ -70,10 +70,8 @@ def post_register(
     username: Optional[str] = Form(None),
     password: str = Form(...),
     password_confirm: Optional[str] = Form(None),
-    invite_code: Optional[str] = Form(None),
     theme: str = Form("games")
 ):
-    inv = invite_code.strip() if invite_code else None
     pwd = password.strip()
     uname = username.strip() if username else None
 
@@ -86,7 +84,7 @@ def post_register(
     if uname is not None and len(uname) < 2:
         return RedirectResponse(url="/register?error=Uživatelské+jméno+musí+mít+alespoň+2+znaky", status_code=303)
 
-    ok, err, user = db.register_user(theme=theme, password=pwd, invite_code=inv, username=uname)
+    ok, err, user = db.register_user(theme=theme, password=pwd, username=uname)
     if not ok or not user:
         err_msg = err or "Registrace se nezdařila."
         return RedirectResponse(url=f"/register?error={err_msg}", status_code=303)
