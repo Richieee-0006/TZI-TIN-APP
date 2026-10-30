@@ -1,12 +1,14 @@
 """Účet: žebříček, recap, změna jména/hesla, mazání dat a profilu."""
 from typing import Dict, Any
 from fastapi import APIRouter, Request, HTTPException, Depends
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 import db
 import scoring
 import tzi_trener
 from ..config import SESSION_COOKIE
 from ..sessions import create_session_token, require_user
+from ..cookie_utils import set_secure_cookie
+from ..csrf import validate_csrf
 
 router = APIRouter()
 
@@ -90,7 +92,8 @@ def api_account_recap(user: Dict[str, Any] = Depends(require_user)):
 
 
 @router.post("/api/account/username")
-async def api_account_username(request: Request, user: Dict[str, Any] = Depends(require_user)):
+async def api_account_username(request: Request, response: Response, user: Dict[str, Any] = Depends(require_user)):
+    validate_csrf(request, response)
     if user.get("role") == "trial" or user["user_id"] == 0:
         raise HTTPException(status_code=403, detail="V Trial režimu nelze měnit jméno účtu.")
     try:
@@ -101,14 +104,15 @@ async def api_account_username(request: Request, user: Dict[str, Any] = Depends(
     ok, err, updated_user = db.update_username(user["user_id"], new_username)
     if not ok or not updated_user:
         raise HTTPException(status_code=400, detail=err or "Změna jména selhala.")
-    token = create_session_token(updated_user)
+    token = create_session_token(updated_user, request)
     resp = JSONResponse({"ok": True, "username": updated_user["username"]})
-    resp.set_cookie(SESSION_COOKIE, token, max_age=86400 * 30, httponly=True, samesite="lax", secure=True)
+    set_secure_cookie(resp, SESSION_COOKIE, token, request, max_age=86400 * 30)
     return resp
 
 
 @router.post("/api/account/password")
-async def api_account_password(request: Request, user: Dict[str, Any] = Depends(require_user)):
+async def api_account_password(request: Request, response: Response, user: Dict[str, Any] = Depends(require_user)):
+    validate_csrf(request, response)
     if user.get("role") == "trial" or user["user_id"] == 0:
         raise HTTPException(status_code=403, detail="V Trial režimu nelze měnit heslo.")
     try:
@@ -127,7 +131,8 @@ async def api_account_password(request: Request, user: Dict[str, Any] = Depends(
 
 
 @router.post("/api/account/revalidate-delete")
-async def api_account_revalidate_delete(request: Request, user: Dict[str, Any] = Depends(require_user)):
+async def api_account_revalidate_delete(request: Request, response: Response, user: Dict[str, Any] = Depends(require_user)):
+    validate_csrf(request, response)
     try:
         body = await request.json()
     except Exception:
@@ -153,7 +158,8 @@ async def api_account_revalidate_delete(request: Request, user: Dict[str, Any] =
 
 
 @router.post("/api/account/delete-profile")
-async def api_account_delete_profile(request: Request, user: Dict[str, Any] = Depends(require_user)):
+async def api_account_delete_profile(request: Request, response: Response, user: Dict[str, Any] = Depends(require_user)):
+    validate_csrf(request, response)
     if user.get("role") == "trial" or user["user_id"] == 0:
         raise HTTPException(status_code=403, detail="Trial profile cannot be deleted.")
     try:

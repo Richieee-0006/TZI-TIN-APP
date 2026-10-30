@@ -1,19 +1,45 @@
 """Přihlášení, registrace, trial režim a odhlášení."""
+import time
+from collections import defaultdict
 from html import escape
-from typing import Optional
-from fastapi import APIRouter, Response, Form
+from typing import Optional, List, Tuple
+from fastapi import APIRouter, Response, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 import db
 from ..config import HASHED_PASSWORD, SESSION_COOKIE, SESSION_MAX_AGE
 from ..pages import LOGIN_REGISTER_HTML
 from ..sessions import create_session_token
+from ..csrf import validate_csrf, clear_csrf_cookie
+from ..cookie_utils import set_secure_cookie
 
 router = APIRouter()
 
+# --- Rate limiting: sliding window per IP ---
+# (IP -> list of timestamps)
+_rate_limit_store: dict[str, List[float]] = defaultdict(list)
+RATE_LIMIT_MAX_ATTEMPTS = 10  # max pokusů
+RATE_LIMIT_WINDOW = 600      # okno v sekundách (10 minut)
 
-# --- Authentication & Registration Endpoints ---
+
+def _check_rate_limit(ip: str) -> bool:
+    """Vrací True pokud je IP překročila limit."""
+    now = time.time()
+    window_start = now - RATE_LIMIT_WINDOW
+    # Odstraníme staré záznamy
+    timestamps = _rate_limit_store[ip]
+    _rate_limit_store[ip] = [t for t in timestamps if t > window_start]
+    if len(_rate_limit_store[ip]) >= RATE_LIMIT_MAX_ATTEMPTS:
+        return True
+    return False
+
+
+def _record_attempt(ip: str) -> None:
+    """Zaznamená pokus do rate limitu."""
+    _rate_limit_store[ip].append(time.time())
+
+
 @router.get("/login", response_class=HTMLResponse)
-def get_login(error: Optional[str] = None, success: Optional[str] = None):
+def get_login(request: Request, error: Optional[str] = None, success: Optional[str] = None):
     msg = ""
     if error:
         msg = f'<div class="error-msg">{escape(error)}</div>'
@@ -29,7 +55,20 @@ def get_login(error: Optional[str] = None, success: Optional[str] = None):
 
 
 @router.post("/login")
-def post_login(response: Response, username: str = Form(...), password: str = Form(...)):
+async def post_login(
+    request: Request,
+    response: Response,
+    username: str = Form(...),
+    password: str = Form(...),
+):
+    # CSRF validace
+    validate_csrf(request, response)
+
+    # Rate limiting
+    ip = request.client.host if request.client else "unknown"
+    if _check_rate_limit(ip):
+        return RedirectResponse(url="/login?error=Příliš+mnoho+pokusů.+Počkejte+10+minut", status_code=303)
+
     u = username.strip()
     p = password.strip()
 
@@ -37,24 +76,25 @@ def post_login(response: Response, username: str = Form(...), password: str = Fo
     if u.lower() == "admin" and HASHED_PASSWORD:
         if db.check_password(p, HASHED_PASSWORD):
             admin_user = {"id": 1, "username": "Admin", "role": "admin", "theme": "games"}
-            token = create_session_token(admin_user)
+            token = create_session_token(admin_user, request)
             resp = RedirectResponse(url="/", status_code=303)
-            resp.set_cookie(SESSION_COOKIE, token, max_age=SESSION_MAX_AGE, httponly=True, samesite="lax", secure=True)
+            set_secure_cookie(resp, SESSION_COOKIE, token, request, max_age=SESSION_MAX_AGE)
             return resp
 
     # 2. Student login check via database
     user = db.authenticate_user(u, p)
     if user:
-        token = create_session_token(user)
+        token = create_session_token(user, request)
         resp = RedirectResponse(url="/", status_code=303)
-        resp.set_cookie(SESSION_COOKIE, token, max_age=SESSION_MAX_AGE, httponly=True, samesite="lax", secure=True)
+        set_secure_cookie(resp, SESSION_COOKIE, token, request, max_age=SESSION_MAX_AGE)
         return resp
 
+    _record_attempt(ip)
     return RedirectResponse(url="/login?error=Špatné+přihlašovací+jméno+nebo+heslo", status_code=303)
 
 
 @router.get("/register", response_class=HTMLResponse)
-def get_register(error: Optional[str] = None):
+def get_register(request: Request, error: Optional[str] = None):
     msg = f'<div class="error-msg">{escape(error)}</div>' if error else ""
     html = LOGIN_REGISTER_HTML.replace("<!--MESSAGE-->", msg)
     html = html.replace("<!--LOGIN_ACTIVE-->", "")
@@ -65,23 +105,35 @@ def get_register(error: Optional[str] = None):
 
 
 @router.post("/register")
-def post_register(
+async def post_register(
+    request: Request,
     response: Response,
     username: Optional[str] = Form(None),
     password: str = Form(...),
     password_confirm: Optional[str] = Form(None),
     theme: str = Form("games")
 ):
+    # CSRF validace
+    validate_csrf(request, response)
+
+    # Rate limiting
+    ip = request.client.host if request.client else "unknown"
+    if _check_rate_limit(ip):
+        return RedirectResponse(url="/register?error=Příliš+mnoho+pokusů.+Počkejte+10+minut", status_code=303)
+
     pwd = password.strip()
     uname = username.strip() if username else None
 
     if len(pwd) < 8:
+        _record_attempt(ip)
         return RedirectResponse(url="/register?error=Heslo+musí+mít+alespoň+8+znaků", status_code=303)
 
     if password_confirm is not None and password_confirm.strip() != pwd:
+        _record_attempt(ip)
         return RedirectResponse(url="/register?error=Zadaná+hesla+se+neshodují", status_code=303)
 
     if uname is not None and len(uname) < 2:
+        _record_attempt(ip)
         return RedirectResponse(url="/register?error=Uživatelské+jméno+musí+mít+alespoň+2+znaky", status_code=303)
 
     ok, err, user = db.register_user(theme=theme, password=pwd, username=uname)
@@ -90,29 +142,30 @@ def post_register(
         return RedirectResponse(url=f"/register?error={err_msg}", status_code=303)
 
     # Automatické přihlášení
-    token = create_session_token(user)
+    token = create_session_token(user, request)
     assigned_nick = user["username"]
     resp = RedirectResponse(url=f"/?welcome_nick={assigned_nick}", status_code=303)
-    resp.set_cookie(SESSION_COOKIE, token, max_age=SESSION_MAX_AGE, httponly=True, samesite="lax", secure=True)
+    set_secure_cookie(resp, SESSION_COOKIE, token, request, max_age=SESSION_MAX_AGE)
     return resp
 
 
 @router.get("/trial")
-def get_trial(response: Response):
+def get_trial(request: Request, response: Response):
     trial_user = {
         "id": 0,
         "username": "Host (Trial)",
         "role": "trial",
         "theme": "catppuccin"
     }
-    token = create_session_token(trial_user)
+    token = create_session_token(trial_user, request)
     resp = RedirectResponse(url="/", status_code=303)
-    resp.set_cookie(SESSION_COOKIE, token, max_age=86400, httponly=True, samesite="lax", secure=True)
+    set_secure_cookie(resp, SESSION_COOKIE, token, request, max_age=86400)
     return resp
 
 
 @router.get("/logout")
-def get_logout(response: Response):
+def get_logout(request: Request, response: Response):
     resp = RedirectResponse(url="/login", status_code=303)
     resp.delete_cookie(SESSION_COOKIE, path="/")
+    clear_csrf_cookie(resp)
     return resp
