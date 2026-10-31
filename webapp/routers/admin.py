@@ -37,8 +37,16 @@ def get_admin(request: Request, limit: int = 100, user: Dict[str, Any] = Depends
     for err in error_logs:
         lvl = str(err.get("level") or "UNKNOWN")
         levels_set.add(lvl)
-        lvl_color = "var(--red)" if lvl in ("ERROR", "UI_ERROR") else ("var(--yellow)" if lvl == "WARNING" else "var(--peach)")
-        lvl_badge = f'<span class="badge" style="background:rgba(243,139,168,0.2);color:{lvl_color}">{escape(lvl)}</span>'
+        if lvl in ("ERROR", "UI_ERROR"):
+            lvl_color = "var(--red)"
+            bg_color = "rgba(243,139,168,0.2)"
+        elif lvl == "WARNING":
+            lvl_color = "var(--yellow)"
+            bg_color = "rgba(249,226,175,0.2)"
+        else:
+            lvl_color = "var(--green)"
+            bg_color = "rgba(166,227,161,0.2)"
+        lvl_badge = f'<span class="badge" style="background:{bg_color};color:{lvl_color}">{escape(lvl)}</span>'
         ts = escape(str(err.get("created_at") or "")[:19].replace("T", " "))
         ep = str(err.get("endpoint") or "-")
         if ep and ep != "-":

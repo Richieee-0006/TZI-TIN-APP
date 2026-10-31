@@ -459,15 +459,19 @@ def delete_user_account(user_id: int) -> None:
 
 
 def log_error(level: str, message: str, endpoint: Optional[str] = None, user_id: Optional[int] = None, stack_trace: Optional[str] = None) -> None:
-    conn = get_db()
-    with conn:
-        conn.execute(
-            """
-            INSERT INTO error_logs (level, endpoint, user_id, message, stack_trace)
-            VALUES (?, ?, ?, ?, ?)
-            """,
-            (level, endpoint, user_id, message, stack_trace)
-        )
+    try:
+        conn = get_db()
+        with conn:
+            conn.execute(
+                """
+                INSERT INTO error_logs (level, endpoint, user_id, message, stack_trace)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (level, endpoint, user_id, message, stack_trace)
+            )
+    except Exception:
+        # Nikdy nezhodit request, pokud tabulka v testovacím DB ještě nebyla inicializována
+        pass
 
 
 def get_recent_errors(limit: int = 50) -> List[Dict[str, Any]]:
