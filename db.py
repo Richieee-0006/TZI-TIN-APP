@@ -162,6 +162,16 @@ def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
 
+        CREATE TABLE IF NOT EXISTS error_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            level TEXT NOT NULL,
+            endpoint TEXT,
+            user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+            message TEXT NOT NULL,
+            stack_trace TEXT
+        );
+
         CREATE TABLE IF NOT EXISTS ffa_runs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -498,3 +508,30 @@ def delete_user_account(user_id: int) -> None:
         conn.execute("DELETE FROM duel_matches WHERE creator_id = ? OR opponent_id = ?", (user_id, user_id))
         conn.execute("UPDATE invites SET used_by = NULL WHERE used_by = ?", (user_id,))
         conn.execute("DELETE FROM users WHERE id = ?", (user_id,))
+
+
+def log_error(level: str, message: str, endpoint: Optional[str] = None, user_id: Optional[int] = None, stack_trace: Optional[str] = None) -> None:
+    conn = get_db()
+    with conn:
+        conn.execute(
+            """
+            INSERT INTO error_logs (level, endpoint, user_id, message, stack_trace)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (level, endpoint, user_id, message, stack_trace)
+        )
+
+
+def get_recent_errors(limit: int = 50) -> List[Dict[str, Any]]:
+    conn = get_db()
+    rows = conn.execute(
+        """
+        SELECT id, created_at, level, endpoint, user_id, message, stack_trace
+        FROM error_logs
+        ORDER BY id DESC
+        LIMIT ?
+        """,
+        (limit,)
+    ).fetchall()
+    return [dict(r) for r in rows]
+

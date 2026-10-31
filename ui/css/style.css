@@ -1,3 +1,4 @@
+@import url('https://cdn.jsdelivr.net/npm/@catppuccin/palette/css/catppuccin.css');
 * { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
   --paper: #EEF2F6;

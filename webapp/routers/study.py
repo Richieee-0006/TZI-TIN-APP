@@ -245,3 +245,16 @@ async def api_sync(request: Request, user: Dict[str, Any] = Depends(require_user
         "points_awarded": total_points_gained,
         "leaderboard": pos
     }
+
+
+@router.post("/api/client-error")
+async def api_client_error(request: Request):
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    msg = str(body.get("message", "Unknown error"))[:500]
+    ep = str(body.get("file", ""))[:200]
+    stack = str(body.get("stack", ""))[:2000]
+    db.log_error("UI_ERROR", msg, endpoint=ep, stack_trace=stack)
+    return {"ok": True}

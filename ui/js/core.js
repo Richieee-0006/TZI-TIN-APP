@@ -45,3 +45,31 @@ const shuffle = a => {
 const LETTERS = 'ABCDEFGH';
 const letters = (q, keys) => keys.map(k => LETTERS[optOrder[q.id].indexOf(k)]).sort().join(', ');
 
+// Global client error logging
+(() => {
+  let errCount = 0;
+  let lastErrTime = 0;
+  const sendErr = (msg, file, stack) => {
+    const now = Date.now();
+    if (errCount >= 10 || (now - lastErrTime < 1000)) return;
+    errCount++;
+    lastErrTime = now;
+    try {
+      fetch('/api/client-error', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: String(msg || ''), file: String(file || ''), stack: String(stack || '') })
+      }).catch(() => {});
+    } catch (_) {}
+  };
+  if (typeof window !== 'undefined' && window.addEventListener) {
+    window.addEventListener('error', e => {
+      sendErr(e.message, e.filename ? `${e.filename}:${e.lineno}:${e.colno}` : '', e.error ? e.error.stack : '');
+    });
+    window.addEventListener('unhandledrejection', e => {
+      const r = e.reason || {};
+      sendErr(r.message || String(r), '', r.stack || '');
+    });
+  }
+})();
+
