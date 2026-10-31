@@ -5,6 +5,7 @@ async function startCompetitiveMode(mode = 'koth', duelId = null) {
   }
   let qs = [];
   let matchedDuel = null;
+  let matchToken = null;
   const endpoint = mode === 'ffa' ? '/api/ffa/start' : mode === 'duel' ? '/api/duel/start' : '/api/koth/start';
   try {
     const payload = { count: 10, source: currentSource };
@@ -18,6 +19,7 @@ async function startCompetitiveMode(mode = 'koth', duelId = null) {
       const data = await res.json();
       if (Array.isArray(data.questions) && data.questions.length) qs = data.questions;
       if (data.duel) matchedDuel = data.duel;
+      if (data.match_token) matchToken = data.match_token;
     }
   } catch (e) {}
   if (!qs.length) {
@@ -27,6 +29,7 @@ async function startCompetitiveMode(mode = 'koth', duelId = null) {
   queue = qs; idx = 0; history = []; optOrder = {};
   suddenDeath = false; studyMode = false; examMode = false;
   kothMode = true; compMode = mode; activeDuelId = matchedDuel ? matchedDuel.id : duelId;
+  activeMatchToken = matchToken;
   kothStartTime = Date.now(); kothLastResult = null;
   if (mode === 'ffa') {
     $('sudden-banner').innerHTML = '🏟️ Free For All Aréna<span>Získej co nejvyšší skóre v žebříčku všech hráčů (10 otázek na čas)!</span>';
@@ -57,6 +60,7 @@ async function submitKothResults() {
       time_ms: elapsed,
       total_questions: queue.length
     };
+    if (activeMatchToken) payload.match_token = activeMatchToken;
     if (mode === 'duel' && activeDuelId !== null) payload.duel_id = activeDuelId;
     const res = await fetch(endpoint, {
       method: 'POST',

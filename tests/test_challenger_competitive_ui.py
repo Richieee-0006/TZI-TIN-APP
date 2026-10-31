@@ -356,3 +356,66 @@ def test_adversarial_r1_ui_single_choice_radio_switch():
     res = subprocess.run(["node", "-e", script], cwd=str(BASE / "tests"), capture_output=True, text=True)
     assert res.returncode == 0, f"Node test failed:\nSTDOUT: {res.stdout}\nSTDERR: {res.stderr}"
     assert "UI radio button test PASSED" in res.stdout
+
+
+def test_adversarial_match_session_token_and_replay_defense():
+    """
+    Match session authorization & replay defense:
+    - Starting a competitive match returns a cryptographically signed match_token.
+    - Token replay is rejected with HTTP 400.
+    - Submitting questions not in token question list is rejected with HTTP 400.
+    - Tampered token signature is rejected with HTTP 400.
+    """
+    client, user, test_db = _create_authenticated_client("test_adv_match_token.db")
+    try:
+        # Start KotH
+        res = client.post("/api/koth/start")
+        assert res.status_code == 200
+        data = res.json()
+        assert "match_token" in data
+        token = data["match_token"]
+        qs = data["questions"]
+        assert len(qs) > 0
+        q = qs[0]
+        u_ans = list(q.get("correct", [])) if q.get("type", "choice") == "choice" else q.get("answer", "ok")
+
+        # 1. Valid submit with token
+        sub_res = client.post("/api/koth/submit", json={
+            "match_token": token,
+            "answers": [{"id": q["id"], "userKeys": u_ans}],
+            "time_ms": 10000
+        })
+        assert sub_res.status_code == 200
+
+        # 2. Replay with same token rejected
+        replay_res = client.post("/api/koth/submit", json={
+            "match_token": token,
+            "answers": [{"id": q["id"], "userKeys": u_ans}],
+            "time_ms": 10000
+        })
+        assert replay_res.status_code == 400
+        assert "opakované použití" in replay_res.json()["detail"]
+
+        # 3. Mismatched question in token rejected
+        res2 = client.post("/api/koth/start")
+        token2 = res2.json()["match_token"]
+        bad_q_res = client.post("/api/koth/submit", json={
+            "match_token": token2,
+            "answers": [{"id": "fake_q_9999", "userKeys": "A"}],
+            "time_ms": 10000
+        })
+        assert bad_q_res.status_code == 400
+        assert "nebyla pro tento zápas vygenerována" in bad_q_res.json()["detail"]
+
+        # 4. Tampered token rejected
+        tampered_token = token2[:-4] + "xxxx"
+        tampered_res = client.post("/api/koth/submit", json={
+            "match_token": tampered_token,
+            "answers": [{"id": q["id"], "userKeys": u_ans}],
+            "time_ms": 10000
+        })
+        assert tampered_res.status_code == 400
+        assert "Neplatný podpis" in tampered_res.json()["detail"]
+    finally:
+        db.close_db()
+        _cleanup_db(test_db)

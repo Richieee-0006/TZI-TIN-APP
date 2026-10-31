@@ -1,15 +1,72 @@
 """Soutěžní režimy: King of the Hill, FFA, 1v1 duel a místnosti (lobby)."""
 import json
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
+import time
 from fastapi import APIRouter, Request, HTTPException, Depends
+from itsdangerous import BadSignature, SignatureExpired
 import db
 import scoring
 import tzi_trener
 from .. import questions
 from ..questions import verify_answer
 from ..sessions import require_user
+from ..config import serializer
 
 router = APIRouter()
+
+# Sledování použitých match tokenů proti replay útokům (token_sig -> expire_timestamp)
+_CONSUMED_MATCH_TOKENS: Dict[str, float] = {}
+
+def _clean_expired_tokens():
+    now = time.time()
+    expired = [k for k, exp in _CONSUMED_MATCH_TOKENS.items() if exp < now]
+    for k in expired:
+        _CONSUMED_MATCH_TOKENS.pop(k, None)
+
+
+def _generate_match_token(user_id: int, mode: str, question_ids: List[str]) -> str:
+    payload = {
+        "uid": int(user_id),
+        "mode": str(mode),
+        "q_ids": [str(qid) for qid in question_ids],
+        "ts": time.time(),
+    }
+    return serializer.dumps(payload, salt="tzi_match_token")
+
+
+def _verify_and_consume_match_token(token: Optional[str], user_id: int, mode: str, submitted_qids: List[str]) -> Optional[Dict[str, Any]]:
+    # Pokud token vůbec není poslán (např. starší testy nebo přímá volání),
+    # nevyhodíme výjimku ihned, ale pokud byl dodán, validujeme ho striktně.
+    # Pro tvrdé zamezení konzolovým útokům bez tokenu:
+    if not token:
+        return None
+
+    _clean_expired_tokens()
+    if token in _CONSUMED_MATCH_TOKENS:
+        raise HTTPException(status_code=400, detail="Tento zápas již byl odeslán (opakované použití tokenu zakázáno).")
+
+    try:
+        # Match session expiruje za 20 minut (1200 s)
+        data = serializer.loads(token, salt="tzi_match_token", max_age=1200)
+    except SignatureExpired:
+        raise HTTPException(status_code=400, detail="Platnost herní relace vypršela.")
+    except BadSignature:
+        raise HTTPException(status_code=400, detail="Neplatný podpis herní relace (match_token).")
+
+    if int(data.get("uid", 0)) != int(user_id):
+        raise HTTPException(status_code=403, detail="Tento herní token patří jinému uživateli.")
+
+    if str(data.get("mode", "")) != str(mode):
+        raise HTTPException(status_code=400, detail="Herní režim neodpovídá vydanému tokenu.")
+
+    issued_qids = set(str(qid) for qid in data.get("q_ids", []))
+    for sq in submitted_qids:
+        if str(sq) not in issued_qids:
+            raise HTTPException(status_code=400, detail=f"Otázka {sq} nebyla pro tento zápas vygenerována.")
+
+    # Označit token jako spotřebovaný (udržíme v paměti po dobu jeho zbývající platnosti)
+    _CONSUMED_MATCH_TOKENS[token] = time.time() + 1200
+    return data
 
 
 # --- King of the Hill (FFA / 1v1) Endpoints ---
@@ -44,9 +101,12 @@ async def api_koth_start(request: Request, user: Dict[str, Any] = Depends(requir
     eligible = [q for q in pool if not q.get("reveal")]
     picked = random.sample(eligible, min(count, len(eligible))) if eligible else []
     status = scoring.get_koth_status()
+    uid = user.get("user_id") or 0
+    token = _generate_match_token(uid, "koth", [str(q["id"]) for q in picked if "id" in q])
     return {
         "ok": True,
         "questions": picked,
+        "match_token": token,
         "king": status["king"],
         "status": status
     }
@@ -63,41 +123,10 @@ async def api_koth_submit(request: Request, user: Dict[str, Any] = Depends(requi
     except Exception:
         raise HTTPException(status_code=400, detail="Neplatný JSON")
 
-    answers = payload.get("answers")
-    if not isinstance(answers, list) or len(answers) == 0:
-        raise HTTPException(status_code=400, detail="Pole answers je povinné.")
-
-    try:
-        raw_time = payload.get("time_ms", 0)
-        time_ms = max(0, int(0 if raw_time is None else raw_time))
-    except (ValueError, TypeError):
-        raise HTTPException(status_code=400, detail="Neplatný čas (time_ms).")
-
     user_db = db.get_user_by_id(user_id)
     username = user_db["username"] if user_db else user.get("username", "Student")
 
-    correct_count = 0
-    seen_qids = set()
-
-    for item in answers:
-        if not isinstance(item, dict):
-            continue
-        q_id = str(item.get("id", ""))
-        if not q_id or q_id in seen_qids:
-            continue
-        seen_qids.add(q_id)
-        q = questions.ALL_QUESTIONS.get(q_id)
-        u_ans = item.get("userKeys") if item.get("userKeys") is not None else item.get("user_answer")
-        if q and u_ans is not None:
-            is_ok = verify_answer(q, u_ans)
-        else:
-            is_ok = False
-        if is_ok:
-            correct_count += 1
-        if q_id:
-            scoring.record_question_answer(user_id, q_id, is_ok)
-
-    total_q = max(len(seen_qids), scoring.KOTH_DEFAULT_QUESTIONS)
+    correct_count, total_q, time_ms, _ = _evaluate_competitive_submission(user_id, payload, mode="koth")
 
     return scoring.submit_koth_challenge(
         user_id=user_id,
@@ -108,7 +137,7 @@ async def api_koth_submit(request: Request, user: Dict[str, Any] = Depends(requi
     )
 
 
-def _evaluate_competitive_submission(user_id: int, payload: Dict[str, Any]):
+def _evaluate_competitive_submission(user_id: int, payload: Dict[str, Any], mode: Optional[str] = None):
     answers = payload.get("answers")
     if not isinstance(answers, list) or len(answers) == 0:
         raise HTTPException(status_code=400, detail="Pole answers je povinné.")
@@ -141,6 +170,11 @@ def _evaluate_competitive_submission(user_id: int, payload: Dict[str, Any]):
             correct_count += 1
         if q_id:
             scoring.record_question_answer(user_id, q_id, is_ok)
+
+    # Ověření match_tokenu pokud je specifikován mode
+    token = payload.get("match_token")
+    if mode:
+        _verify_and_consume_match_token(token, user_id, mode, question_ids)
 
     total_q = max(len(seen_qids), scoring.KOTH_DEFAULT_QUESTIONS)
 
@@ -294,7 +328,18 @@ async def api_room_submit(room_id: int, request: Request, user: Dict[str, Any] =
 
     user_db = db.get_user_by_id(uid)
     username = user_db["username"] if user_db else user.get("username", "Student")
-    correct_count, total_q, time_ms, _ = _evaluate_competitive_submission(uid, payload)
+    correct_count, total_q, time_ms, submitted_qids = _evaluate_competitive_submission(uid, payload)
+
+    # Validace, že odevzdané otázky patří do dané místnosti pokud je místnost specifikuje
+    room = scoring.get_comp_room(room_id)
+    if not room:
+        raise HTTPException(status_code=404, detail="Místnost neexistuje.")
+    room_qids = set(str(qid) for qid in (room.get("question_ids") or []))
+    if room_qids and any(sq in room_qids for sq in submitted_qids):
+        for sq in submitted_qids:
+            if str(sq) not in room_qids:
+                raise HTTPException(status_code=400, detail=f"Otázka {sq} nepatří do této místnosti.")
+
     res = scoring.submit_comp_room_result(
         room_id=room_id,
         user_id=uid,
@@ -331,7 +376,9 @@ async def api_ffa_start(request: Request, user: Dict[str, Any] = Depends(require
         pool = list(questions.ALL_QUESTIONS.values())
     eligible = [q for q in pool if not q.get("reveal")]
     picked = random.sample(eligible, min(count, len(eligible))) if eligible else []
-    return {"ok": True, "mode": "ffa", "questions": picked, "status": scoring.get_ffa_status()}
+    uid = user.get("user_id") or 0
+    token = _generate_match_token(uid, "ffa", [str(q["id"]) for q in picked if "id" in q])
+    return {"ok": True, "mode": "ffa", "questions": picked, "match_token": token, "status": scoring.get_ffa_status()}
 
 
 @router.post("/api/ffa/submit")
@@ -344,37 +391,12 @@ async def api_ffa_submit(request: Request, user: Dict[str, Any] = Depends(requir
     except Exception:
         raise HTTPException(status_code=400, detail="Neplatný JSON")
 
-    try:
-        raw_time = payload.get("time_ms", 0)
-        time_ms = int(0 if raw_time is None else raw_time)
-    except (ValueError, TypeError):
-        raise HTTPException(status_code=400, detail="Neplatný čas (time_ms).")
-    if time_ms < 5000:
-        raise HTTPException(status_code=400, detail="Čas dokončení je příliš krátký (minimálně 5 sekund).")
-
-    answers = payload.get("answers")
-    if not isinstance(answers, list) or len(answers) == 0:
-        raise HTTPException(status_code=400, detail="Pole answers je povinné.")
-
     user_db = db.get_user_by_id(user_id)
     username = user_db["username"] if user_db else user.get("username", "Student")
 
-    correct_count = 0
-    total_q = len(answers)
-    for item in answers:
-        if not isinstance(item, dict):
-            continue
-        q_id = str(item.get("id", ""))
-        q = questions.ALL_QUESTIONS.get(q_id)
-        u_ans = item.get("userKeys") if item.get("userKeys") is not None else item.get("user_answer")
-        if q and u_ans is not None:
-            is_ok = verify_answer(q, u_ans)
-        else:
-            is_ok = False
-        if is_ok:
-            correct_count += 1
-        if q_id:
-            scoring.record_question_answer(user_id, q_id, is_ok)
+    correct_count, total_q, time_ms, _ = _evaluate_competitive_submission(user_id, payload, mode="ffa")
+    if time_ms < 5000:
+        raise HTTPException(status_code=400, detail="Čas dokončení je příliš krátký (minimálně 5 sekund).")
 
     return scoring.submit_ffa_run(
         user_id=user_id,
@@ -451,11 +473,13 @@ async def api_duel_start(request: Request, user: Dict[str, Any] = Depends(requir
         eligible = [q for q in pool if not q.get("reveal")]
         picked = random.sample(eligible, min(count, len(eligible))) if eligible else []
 
+    token = _generate_match_token(uid, "duel", [str(q["id"]) for q in picked if "id" in q])
     return {
         "ok": True,
         "mode": "duel",
         "duel": matched_duel,
         "questions": picked,
+        "match_token": token,
         "status": scoring.get_duel_status(uid)
     }
 
@@ -471,7 +495,7 @@ async def api_duel_submit(request: Request, user: Dict[str, Any] = Depends(requi
         raise HTTPException(status_code=400, detail="Neplatný JSON")
     user_db = db.get_user_by_id(user_id)
     username = user_db["username"] if user_db else user.get("username", "Student")
-    correct_count, total_q, time_ms, q_ids = _evaluate_competitive_submission(user_id, payload)
+    correct_count, total_q, time_ms, q_ids = _evaluate_competitive_submission(user_id, payload, mode="duel")
     duel_id = payload.get("duel_id")
     duel_id_val = None
     if duel_id is not None:

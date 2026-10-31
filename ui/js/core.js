@@ -11,7 +11,7 @@ let typeFilter = 'all';
 let queue = [], idx = 0, history = [], checked = false, suddenDeath = false;
 let selected = new Set(), modalMode = 'random', studyMode = false, studyPicks = [];
 let examMode = false, examTimer = null, examEndTime = 0;
-let kothMode = false, compMode = null, activeDuelId = null, activeRoomId = null, activeRoomData = null, roomPollTimer = null, kothStartTime = 0, kothLastResult = null;
+let kothMode = false, compMode = null, activeDuelId = null, activeMatchToken = null, activeRoomId = null, activeRoomData = null, roomPollTimer = null, kothStartTime = 0, kothLastResult = null;
 let optOrder = {};    // q.id → zamíchané původní klíče možností, stálé po celou sadu (i po „Předchozí“)
 
 const $ = id => document.getElementById(id);
