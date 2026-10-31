@@ -188,10 +188,38 @@ async def api_post_progress(request: Request, source: str = "", user: Dict[str, 
     return {"ok": True, "score": score_result}
 
 
+# --- Rate limiting pro /api/sync (max 10 požadavků za 60 s na uživatele / IP) ---
+_sync_rate_limits: dict[str, List[float]] = defaultdict(list)
+SYNC_MAX_REQUESTS = 10
+SYNC_WINDOW = 60  # sekund
+
+
+def _check_sync_rate_limit(key: str) -> bool:
+    """Vrací True pokud je sync povolen, False pokud je překročen limit."""
+    now = time.time()
+    window_start = now - SYNC_WINDOW
+    timestamps = [t for t in _sync_rate_limits[key] if t > window_start]
+    if len(timestamps) >= SYNC_MAX_REQUESTS:
+        _sync_rate_limits[key] = timestamps
+        return False
+    timestamps.append(now)
+    _sync_rate_limits[key] = timestamps
+    return True
+
+
+def reset_sync_rate_limits():
+    """Pomocná funkce pro testy k resetování stavu sync rate limiteru."""
+    _sync_rate_limits.clear()
+
+
 @router.post("/api/sync")
 async def api_sync(request: Request, user: Dict[str, Any] = Depends(require_user)):
     """Offline synchronizace: dávkové bezpečné zpracování odpovědí vyřešených offline s anti-spoofing kontrolou."""
     user_id = user["user_id"]
+    ip = request.client.host if request.client else "unknown"
+    rate_key = f"u:{user_id}_ip:{ip}"
+    if not _check_sync_rate_limit(rate_key):
+        raise HTTPException(status_code=429, detail="Příliš mnoho synchronizačních požadavků. Počkejte chvíli.")
     try:
         payload = await request.json()
     except Exception:

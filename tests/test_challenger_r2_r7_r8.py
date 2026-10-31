@@ -316,6 +316,17 @@ def test_adversarial_r2_sync_batch_spoofing():
         r_huge = client.post("/api/sync", json={"source": src, "seen": {}, "answers": huge_batch})
         assert r_huge.status_code == 200
 
+        # 3. Rate limiting test: spamming /api/sync gets HTTP 429
+        rate_limited = False
+        for _ in range(15):
+            res_spam = client.post("/api/sync", json={"source": src, "seen": {}, "answers": []})
+            if res_spam.status_code == 429:
+                rate_limited = True
+                assert "Rate limit" in res_spam.json()["detail"] or "synchronizačních požadavků" in res_spam.json()["detail"]
+                break
+        assert rate_limited is True, "Spamming /api/sync must trigger rate limit 429"
+        study.reset_sync_rate_limits()
+
     finally:
         _cleanup_db(test_db)
 
