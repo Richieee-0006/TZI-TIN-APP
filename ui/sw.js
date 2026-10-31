@@ -1,8 +1,8 @@
-const CACHE_NAME = 'tzi-pwa-v10';
+const CACHE_NAME = 'tzi-pwa-v11';
 const STATIC_ASSETS = [
   '/manifest.webmanifest',
   '/icon.svg',
-  '/static/css/style.css',
+  '/static/css/style.css?v=11',
   '/static/js/core.js',
   '/static/js/format.js',
   '/static/js/shell.js',
