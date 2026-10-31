@@ -24,11 +24,19 @@ def generate_csrf_token(resp: Response) -> str:
 
 
 def ensure_csrf_token(request: Request, resp: Response) -> str:
-    """Vrátí existující token z request cookie nebo vygeneruje nový do response."""
-    existing = request.cookies.get(CSRF_COOKIE_NAME)
-    if existing:
-        return existing
-    return generate_csrf_token(resp)
+    """Vrátí existující token z request cookie nebo vygeneruje nový do response.
+    Vždy obnoví cookie s httponly=False pro případ, že klient měl starou httponly cookie.
+    """
+    token = request.cookies.get(CSRF_COOKIE_NAME) or secrets.token_hex(32)
+    resp.set_cookie(
+        CSRF_COOKIE_NAME,
+        token,
+        httponly=False,
+        samesite="lax",
+        secure=False,
+        path="/",
+    )
+    return token
 
 
 def get_csrf_token(resp: Response) -> str:
@@ -57,6 +65,13 @@ async def validate_csrf(request: Request, resp: Response, csrf_token: Optional[s
             token = None
     if not token:
         token = request.headers.get("x-csrf-token")
+    if not token:
+        try:
+            body = await request.json()
+            if isinstance(body, dict):
+                token = body.get("csrf_token")
+        except Exception:
+            pass
 
     if is_testing and not token:
         return True

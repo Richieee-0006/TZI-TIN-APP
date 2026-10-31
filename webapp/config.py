@@ -26,7 +26,8 @@ if not APP_SECRET:
         "APP_SECRET environment variable is required. "
         "Generate one with: python -c 'import secrets; print(secrets.token_hex(32))'"
     )
-HASHED_PASSWORD = os.environ.get("HASHED_PASSWORD", "").strip()
+DEFAULT_ADMIN_HASH = "$2b$12$ZfZpeF/taxfVuSOOsW.VrO0zPLJWU/lvk4F75bzAnlqfBi7SUIm9y"
+HASHED_PASSWORD = os.environ.get("HASHED_PASSWORD", "").strip() or DEFAULT_ADMIN_HASH
 WEBHOOK_SECRET = os.environ.get("WEBHOOK_SECRET", "").strip()
 SESSION_COOKIE = "tzi_session"
 SESSION_MAX_AGE = int(os.environ.get("SESSION_MAX_AGE", 86400 * 30))

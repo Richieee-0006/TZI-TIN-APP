@@ -110,11 +110,12 @@ async function submitUsernameChange() {
   const inp = $('prof-new-username');
   if (!inp) return;
   const username = inp.value.trim();
+  const csrf = getCsrfToken();
   try {
     const res = await fetch('/api/account/username', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json', 'X-TZI': '1', 'X-CSRF-Token': getCsrfToken()},
-      body: JSON.stringify({ username })
+      headers: {'Content-Type': 'application/json', 'X-TZI': '1', 'X-CSRF-Token': csrf},
+      body: JSON.stringify({ username, csrf_token: csrf })
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
@@ -132,14 +133,16 @@ async function submitUsernameChange() {
 async function submitPasswordChange() {
   const curEl = $('prof-cur-pw'), newEl = $('prof-new-pw'), new2El = $('prof-new-pw2');
   if (!curEl || !newEl || !new2El) return;
+  const csrf = getCsrfToken();
   try {
     const res = await fetch('/api/account/password', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json', 'X-TZI': '1', 'X-CSRF-Token': getCsrfToken()},
+      headers: {'Content-Type': 'application/json', 'X-TZI': '1', 'X-CSRF-Token': csrf},
       body: JSON.stringify({
         current_password: curEl.value,
         new_password: newEl.value,
-        new_password_confirm: new2El.value
+        new_password_confirm: new2El.value,
+        csrf_token: csrf
       })
     });
     const data = await res.json().catch(() => ({}));
@@ -251,15 +254,17 @@ async function submitDeleteProfileStep() {
     if (errEl) errEl.textContent = 'Please enter your password.';
     return;
   }
+  const csrf = getCsrfToken();
   try {
     const res = await fetch('/api/account/delete-profile', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json', 'X-TZI': '1', 'X-CSRF-Token': getCsrfToken()},
+      headers: {'Content-Type': 'application/json', 'X-TZI': '1', 'X-CSRF-Token': csrf},
       body: JSON.stringify({
         step1_ack: true,
         confirm_username: ($('del-prof-user-inp') ? $('del-prof-user-inp').value : '').trim(),
         confirm_phrase: ($('del-prof-phrase-inp') ? $('del-prof-phrase-inp').value : '').trim(),
-        password: pw
+        password: pw,
+        csrf_token: csrf
       })
     });
     const data = await res.json().catch(() => ({}));
@@ -284,14 +289,16 @@ async function confirmRevalidatedDelete() {
   const errEl = $('reval-error-msg');
   const password = inpEl ? inpEl.value : '';
   if (!password) return;
+  const csrf = getCsrfToken();
   try {
     const res = await fetch('/api/account/revalidate-delete', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json', 'X-TZI': '1', 'X-CSRF-Token': getCsrfToken()},
+      headers: {'Content-Type': 'application/json', 'X-TZI': '1', 'X-CSRF-Token': csrf},
       body: JSON.stringify({
         password,
         scope: pendingDeleteScope,
-        source: currentSource
+        source: currentSource,
+        csrf_token: csrf
       })
     });
     const data = await res.json().catch(() => ({}));

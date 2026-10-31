@@ -6,7 +6,7 @@ import tzi_trener
 from ..config import WEBHOOK_SECRET
 from ..git_sync import git_pull
 from ..sessions import get_current_user
-from ..csrf import CSRF_COOKIE_NAME, generate_csrf_token
+from ..csrf import CSRF_COOKIE_NAME, generate_csrf_token, ensure_csrf_token
 
 router = APIRouter()
 
@@ -59,6 +59,5 @@ def index_page(request: Request):
         return PlainTextResponse("Chybí soubor šablony UI.", status_code=500)
 
     resp = HTMLResponse(content)
-    if not request.cookies.get(CSRF_COOKIE_NAME):
-        generate_csrf_token(resp)
+    ensure_csrf_token(request, resp)
     return resp

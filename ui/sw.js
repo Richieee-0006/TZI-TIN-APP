@@ -1,22 +1,22 @@
-const CACHE_NAME = 'tzi-pwa-v12';
+const CACHE_NAME = 'tzi-pwa-v14';
 const STATIC_ASSETS = [
   '/manifest.webmanifest',
   '/icon.svg',
-  '/static/css/style.css?v=12',
-  '/static/js/core.js',
-  '/static/js/format.js',
-  '/static/js/shell.js',
-  '/static/js/arena.js',
-  '/static/js/account.js',
-  '/static/js/offline.js',
-  '/static/js/gamification.js',
-  '/static/js/rooms.js',
-  '/static/js/menu.js',
-  '/static/js/chunks.js',
-  '/static/js/modes.js',
-  '/static/js/comp_modes.js',
-  '/static/js/recall.js',
-  '/static/js/quiz.js'
+  '/static/css/style.css?v=14',
+  '/static/js/core.js?v=14',
+  '/static/js/format.js?v=14',
+  '/static/js/shell.js?v=14',
+  '/static/js/arena.js?v=14',
+  '/static/js/account.js?v=14',
+  '/static/js/offline.js?v=14',
+  '/static/js/gamification.js?v=14',
+  '/static/js/rooms.js?v=14',
+  '/static/js/menu.js?v=14',
+  '/static/js/chunks.js?v=14',
+  '/static/js/modes.js?v=14',
+  '/static/js/comp_modes.js?v=14',
+  '/static/js/recall.js?v=14',
+  '/static/js/quiz.js?v=14'
 ];
 
 self.addEventListener('install', event => {

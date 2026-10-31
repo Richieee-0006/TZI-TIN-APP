@@ -8,7 +8,7 @@ const html = fs.readFileSync(path.join(ROOT, 'ui/novy.html'), 'utf8');
 const scriptSrcs = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]).filter(s => s.startsWith('/static/js/'));
 let js = '';
 if (scriptSrcs.length > 0) {
-  js = scriptSrcs.map(src => fs.readFileSync(path.join(ROOT, 'ui', src.replace('/static/', '')), 'utf8')).join('\n');
+  js = scriptSrcs.map(src => fs.readFileSync(path.join(ROOT, 'ui', src.replace('/static/', '').split('?')[0]), 'utf8')).join('\n');
 } else {
   js = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]).join('\n');
 }

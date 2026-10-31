@@ -38,7 +38,7 @@ def test_r1_latex_katex_rendering():
     const html = fs.readFileSync('ui/novy.html', 'utf8');
     const scriptSrcs = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]).filter(s => s.startsWith('/static/js/'));
     const js = scriptSrcs.length > 0
-      ? scriptSrcs.map(src => fs.readFileSync(path.join('ui', src.replace('/static/', '')), 'utf8')).join('\n')
+      ? scriptSrcs.map(src => fs.readFileSync(path.join('ui', src.replace('/static/', '').split('?')[0]), 'utf8')).join('\n')
       : [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]).join('\n');
     const ctx = vm.createContext({
       document: { getElementById: () => ({ style: {}, classList: { add(){}, remove(){} }, addEventListener(){} }), addEventListener(){}, querySelectorAll: () => [] },
@@ -725,23 +725,23 @@ def test_r6_ffa_time_and_answer_validation(temp_env):
 
 
 def test_admin_auth_security_no_bypass(temp_env):
-    """Admin účet nelze obejít libovolným heslem."""
+    """Admin účet nelze obejít libovolným heslem a funguje zadané heslo."""
     client = temp_env
     r = client.post("/login", data={"username": "admin", "password": "cokoliv123"}, follow_redirects=False)
     assert r.status_code == 303
     assert "error=" in r.headers["location"]
     assert server.SESSION_COOKIE not in r.cookies
 
-    import bcrypt
-    pw_hash = bcrypt.hashpw(b"super_admin_pass", bcrypt.gensalt()).decode("utf-8")
-    db.ensure_admin_exists(pw_hash)
+    # Inicializovat admina s výchozím / novým hashem
+    from webapp.config import HASHED_PASSWORD
+    db.ensure_admin_exists(HASHED_PASSWORD)
 
     r_bad = client.post("/login", data={"username": "admin", "password": "wrong_password"}, follow_redirects=False)
     assert r_bad.status_code == 303
     assert "error=" in r_bad.headers["location"]
     assert server.SESSION_COOKIE not in r_bad.cookies
 
-    r_ok = client.post("/login", data={"username": "admin", "password": "super_admin_pass"}, follow_redirects=False)
+    r_ok = client.post("/login", data={"username": "admin", "password": "3f%x#T0hl8uqv$lyKI9p%55%"}, follow_redirects=False)
     assert r_ok.status_code == 303
     assert r_ok.headers["location"] == "/"
     assert server.SESSION_COOKIE in r_ok.cookies

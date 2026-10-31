@@ -363,11 +363,11 @@ def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
 
 
 def ensure_admin_exists(admin_password_hash: str):
-    """Vytvoří výchozího admin účet 'admin' pokud neexistuje."""
+    """Vytvoří výchozí admin účet 'Admin' pokud neexistuje, nebo aktualizuje jeho heslo."""
     conn = get_db()
     row = conn.execute("SELECT id FROM users WHERE role = 'admin'").fetchone()
-    if not row:
-        with conn:
+    with conn:
+        if not row:
             cursor = conn.execute(
                 "INSERT INTO users (username, password_hash, role, theme) VALUES ('Admin', ?, 'admin', 'games')",
                 (admin_password_hash,)
@@ -376,6 +376,11 @@ def ensure_admin_exists(admin_password_hash: str):
             conn.execute(
                 "INSERT INTO user_scores (user_id, total_points, current_streak, best_streak) VALUES (?, 0, 0, 0)",
                 (user_id,)
+            )
+        else:
+            conn.execute(
+                "UPDATE users SET password_hash = ? WHERE id = ?",
+                (admin_password_hash, row["id"])
             )
 
 
