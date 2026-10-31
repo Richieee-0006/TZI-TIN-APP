@@ -6,7 +6,7 @@ from .points import (
     record_question_answer,
 )
 from .daily import get_daily_progress
-from .leaderboard import get_admin_leaderboard, get_user_leaderboard_position
+from .leaderboard import get_admin_leaderboard, get_public_leaderboard, get_user_leaderboard_position
 from .koth import get_koth_status, submit_koth_challenge
 from .ffa import get_ffa_status, submit_ffa_run
 from .duel import get_duel_status, submit_duel_match
@@ -29,6 +29,7 @@ __all__ = [
     "record_question_answer",
     "get_daily_progress",
     "get_admin_leaderboard",
+    "get_public_leaderboard",
     "get_user_leaderboard_position",
     "get_koth_status",
     "submit_koth_challenge",

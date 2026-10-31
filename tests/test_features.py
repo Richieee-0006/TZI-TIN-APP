@@ -831,3 +831,58 @@ def test_room_security_enforcement(temp_env):
     assert res_alien.status_code == 400
     assert "nepatří do této místnosti" in res_alien.json()["detail"]
 
+
+def test_admin_leaderboard_management_and_removal(temp_env):
+    """Admin může odebrat studenta ze žebříčku, vrátit ho a resetovat mu body."""
+    client = temp_env
+    # 1. Zaregistrovat studenta a nahrát mu body
+    r = client.post("/register", data={"username": "CheaterX", "password": "password123", "password_confirm": "password123"}, follow_redirects=False)
+    cookie_user = r.cookies.get(server.SESSION_COOKIE)
+    client.cookies.set(server.SESSION_COOKIE, cookie_user)
+    me = client.get("/api/me").json()
+    uid = me["user_id"]
+    scoring.record_question_answer(uid, "1-1", True)
+
+    # Uživatel je v žebříčku
+    lb_before = client.get("/api/leaderboard").json()
+    assert any(u["username"] == "CheaterX" for u in lb_before["leaderboard"])
+
+    # 2. Přihlásit se jako admin
+    admin_token = server.create_session_token({"id": 1, "username": "Admin", "role": "admin", "theme": "games"})
+    client.cookies.set(server.SESSION_COOKIE, admin_token)
+
+    # Admin vidí studenta v tabulce s tlačítkem 'Odebrat z žebříčku'
+    admin_page = client.get("/admin").text
+    assert "CheaterX" in admin_page
+    assert "Odebrat z žebříčku" in admin_page
+    csrf_token = client.cookies.get("csrf_token")
+
+    # 3. Admin odebere studenta ze žebříčku
+    res_toggle = client.post("/admin/leaderboard/toggle", data={"user_id": uid, "csrf_token": csrf_token}, follow_redirects=False)
+    assert res_toggle.status_code == 303
+
+    # V admin panelu je nyní označen jako 'Skryt' a tlačítko se změní na 'Vrátit do žebříčku'
+    admin_page2 = client.get("/admin").text
+    assert "Skryt" in admin_page2
+    assert "Vrátit do žebříčku" in admin_page2
+
+    # 4. Veřejný žebříček studenta již neobsahuje
+    client.cookies.set(server.SESSION_COOKIE, cookie_user)
+    lb_after = client.get("/api/leaderboard").json()
+    assert not any(u["username"] == "CheaterX" for u in lb_after["leaderboard"])
+    assert lb_after["rank"] == "-"
+
+    # 5. Admin vynuluje body
+    client.cookies.set(server.SESSION_COOKIE, admin_token)
+    csrf_token2 = client.cookies.get("csrf_token")
+    res_reset = client.post("/admin/leaderboard/reset", data={"user_id": uid, "csrf_token": csrf_token2}, follow_redirects=False)
+    assert res_reset.status_code == 303
+
+    # 6. Admin vrátí studenta do žebříčku (má 0 bodů)
+    client.post("/admin/leaderboard/toggle", data={"user_id": uid, "csrf_token": csrf_token2}, follow_redirects=False)
+    client.cookies.set(server.SESSION_COOKIE, cookie_user)
+    lb_restored = client.get("/api/leaderboard").json()
+    ch_user = next((u for u in lb_restored["leaderboard"] if u["username"] == "CheaterX"), None)
+    assert ch_user is not None
+    assert ch_user["points"] == 0
+

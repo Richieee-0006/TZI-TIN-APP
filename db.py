@@ -254,6 +254,7 @@ def init_db():
             "ALTER TABLE user_scores ADD COLUMN daily_streak INTEGER NOT NULL DEFAULT 0",
             "ALTER TABLE user_scores ADD COLUMN best_daily_streak INTEGER NOT NULL DEFAULT 0",
             "ALTER TABLE user_scores ADD COLUMN last_goal_date TEXT DEFAULT NULL",
+            "ALTER TABLE users ADD COLUMN hide_leaderboard INTEGER NOT NULL DEFAULT 0",
         ):
             try:
                 conn.execute(col_sql)
@@ -491,4 +492,31 @@ def get_recent_errors(limit: int = 50) -> List[Dict[str, Any]]:
         (limit,)
     ).fetchall()
     return [dict(r) for r in rows]
+
+
+def toggle_user_leaderboard_visibility(user_id: int) -> bool:
+    """Přepne zobrazení uživatele ve veřejném žebříčku."""
+    conn = get_db()
+    row = conn.execute("SELECT hide_leaderboard FROM users WHERE id = ?", (int(user_id),)).fetchone()
+    if not row:
+        return False
+    new_val = 0 if row["hide_leaderboard"] else 1
+    with conn:
+        conn.execute("UPDATE users SET hide_leaderboard = ? WHERE id = ?", (new_val, int(user_id)))
+    return True
+
+
+def reset_user_score(user_id: int) -> bool:
+    """Vynuluje body a streak uživatele."""
+    conn = get_db()
+    with conn:
+        conn.execute(
+            """
+            UPDATE user_scores
+            SET total_points = 0, current_streak = 0, best_streak = 0
+            WHERE user_id = ?
+            """,
+            (int(user_id),)
+        )
+    return True
 

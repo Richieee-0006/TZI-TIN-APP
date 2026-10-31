@@ -15,7 +15,7 @@ router = APIRouter()
 
 @router.get("/api/leaderboard")
 def api_leaderboard(user: Dict[str, Any] = Depends(require_user)):
-    rows = scoring.get_admin_leaderboard()
+    rows = scoring.get_public_leaderboard()
     top_list = [
         {
             "username": r["username"],
