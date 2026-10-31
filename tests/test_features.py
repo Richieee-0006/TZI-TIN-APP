@@ -124,10 +124,13 @@ def test_r3_king_of_the_hill_1v1(temp_env):
     assert start_resp.status_code == 200
     assert len(start_resp.json()["questions"]) > 0
 
-    q_list = list(questions.ALL_QUESTIONS.values())[:10]
-    def make_koth_answers(correct_n):
+    start1 = start_resp.json()
+    token1 = start1["match_token"]
+    qs1 = start1["questions"]
+
+    def make_koth_answers(qs, correct_n):
         res = []
-        for i, q in enumerate(q_list):
+        for i, q in enumerate(qs):
             if i < correct_n:
                 u_ans = list(q.get("correct", [])) if q.get("type", "choice") == "choice" else q.get("answer", "ok")
             else:
@@ -136,7 +139,8 @@ def test_r3_king_of_the_hill_1v1(temp_env):
         return res
 
     sub1 = client.post("/api/koth/submit", json={
-        "answers": make_koth_answers(6),
+        "match_token": token1,
+        "answers": make_koth_answers(qs1, 6),
         "time_ms": 30000
     })
     assert sub1.status_code == 200
@@ -148,8 +152,13 @@ def test_r3_king_of_the_hill_1v1(temp_env):
     # Hráč 2 zkusí vyzvat krále, ale získá nižší skóre -> Král 1 ubrání kopec
     client.cookies.set(server.SESSION_COOKIE, cookie2)
     me2 = client.get("/api/me").json()
+    start2 = client.post("/api/koth/start").json()
+    token2 = start2["match_token"]
+    qs2 = start2["questions"]
+
     sub2_fail = client.post("/api/koth/submit", json={
-        "answers": make_koth_answers(3),
+        "match_token": token2,
+        "answers": make_koth_answers(qs2, 3),
         "time_ms": 45000
     })
     assert sub2_fail.status_code == 200
@@ -159,8 +168,13 @@ def test_r3_king_of_the_hill_1v1(temp_env):
     assert d2_fail["king"]["defenses_count"] == 1
 
     # Hráč 2 dá lepší výsledek (9/10 rychle) -> sesadí Hráče 1 a stane se novým Králem kopce!
+    start3 = client.post("/api/koth/start").json()
+    token3 = start3["match_token"]
+    qs3 = start3["questions"]
+
     sub2_win = client.post("/api/koth/submit", json={
-        "answers": make_koth_answers(9),
+        "match_token": token3,
+        "answers": make_koth_answers(qs3, 9),
         "time_ms": 15000
     })
     assert sub2_win.status_code == 200
@@ -266,10 +280,9 @@ def test_r6_all_competitive_modes_and_classic_registration(temp_env):
     ffa_start = client.post("/api/ffa/start", json={"count": 5})
     assert ffa_start.status_code == 200
     assert ffa_start.json()["mode"] == "ffa"
-    q_list = list(questions.ALL_QUESTIONS.values())[:10]
-    def make_ffa_answers(correct_n):
+    def make_ffa_answers(qs, correct_n):
         res = []
-        for i, q in enumerate(q_list):
+        for i, q in enumerate(qs):
             if i < correct_n:
                 u_ans = list(q.get("correct", [])) if q.get("type", "choice") == "choice" else q.get("answer", "ok")
             else:
@@ -277,11 +290,21 @@ def test_r6_all_competitive_modes_and_classic_registration(temp_env):
             res.append({"id": q["id"], "userKeys": u_ans})
         return res
 
-    ffa_sub1 = client.post("/api/ffa/submit", json={"answers": make_ffa_answers(7), "time_ms": 20000}).json()
+    start_ffa1 = client.post("/api/ffa/start").json()
+    ffa_sub1 = client.post("/api/ffa/submit", json={
+        "match_token": start_ffa1["match_token"],
+        "answers": make_ffa_answers(start_ffa1["questions"], 7),
+        "time_ms": 20000
+    }).json()
     assert ffa_sub1["rank"] == 1 and ffa_sub1["is_leader"] is True
 
     client.cookies.set(server.SESSION_COOKIE, c2)
-    ffa_sub2 = client.post("/api/ffa/submit", json={"answers": make_ffa_answers(9), "time_ms": 18000}).json()
+    start_ffa2 = client.post("/api/ffa/start").json()
+    ffa_sub2 = client.post("/api/ffa/submit", json={
+        "match_token": start_ffa2["match_token"],
+        "answers": make_ffa_answers(start_ffa2["questions"], 9),
+        "time_ms": 18000
+    }).json()
     assert ffa_sub2["rank"] == 1 and ffa_sub2["is_leader"] is True
 
     # 4. 1v1 Duel (Hráč 1 založí výzvu, Hráč 2 ji přijme a vyhraje)
@@ -298,6 +321,7 @@ def test_r6_all_competitive_modes_and_classic_registration(temp_env):
         return res
 
     duel_sub1 = client.post("/api/duel/submit", json={
+        "match_token": duel_start1["match_token"],
         "answers": make_duel_answers(duel_start1["questions"], 3),
         "time_ms": 40000,
     }).json()
@@ -308,6 +332,7 @@ def test_r6_all_competitive_modes_and_classic_registration(temp_env):
     duel_start2 = client.post("/api/duel/start", json={"duel_id": duel_id}).json()
     assert duel_start2["duel"]["id"] == duel_id
     duel_sub2 = client.post("/api/duel/submit", json={
+        "match_token": duel_start2["match_token"],
         "duel_id": duel_id,
         "answers": make_duel_answers(duel_start2["questions"], 5),
         "time_ms": 15000,
@@ -508,18 +533,26 @@ def test_r3_koth_exploit_prevention(temp_env):
     assert "Pole answers je povinné." in res_empty_ans.json()["detail"]
 
     # 3. Pokus o podvrh isCorrect bez uživatelské odpovědi -> vyhodnoceno jako 0 bodů
-    q = list(questions.ALL_QUESTIONS.values())[0]
+    q_start = client.post("/api/koth/start").json()
+    token = q_start["match_token"]
+    q = q_start["questions"][0]
+
     res_spoof = client.post("/api/koth/submit", json={
+        "match_token": token,
         "answers": [{"id": q["id"], "isCorrect": True}],
         "time_ms": 10000
     })
     assert res_spoof.status_code == 200
     assert res_spoof.json()["challenger_score"] == 0
 
-    # 4. Skutečně správná odpověď -> server-side ověřeno a uděleno skóre
-    u_ans = list(q.get("correct", [])) if q.get("type", "choice") == "choice" else q.get("answer", "ok")
+    # 4. Skutečně správná odpověď s novým platným match_tokenem -> server-side ověřeno a uděleno skóre
+    q_start2 = client.post("/api/koth/start").json()
+    token2 = q_start2["match_token"]
+    q2 = q_start2["questions"][0]
+    u_ans = list(q2.get("correct", [])) if q2.get("type", "choice") == "choice" else q2.get("answer", "ok")
     res_valid = client.post("/api/koth/submit", json={
-        "answers": [{"id": q["id"], "userKeys": u_ans}],
+        "match_token": token2,
+        "answers": [{"id": q2["id"], "userKeys": u_ans}],
         "time_ms": 10000
     })
     assert res_valid.status_code == 200
@@ -586,17 +619,19 @@ def test_r5_self_duel_prevention(temp_env):
     assert "Neplatné duel_id." in res_non_int_duel.json()["detail"]
 
     # 2. Založení otevřeného duelu
-    client.post("/api/duel/start", json={"count": 5})
-    q = list(questions.ALL_QUESTIONS.values())[0]
+    d_start = client.post("/api/duel/start", json={"count": 5}).json()
+    token = d_start["match_token"]
+    q = d_start["questions"][0]
     u_ans = list(q.get("correct", [])) if q.get("type", "choice") == "choice" else q.get("answer", "ok")
 
     # Rejection of missing answers / spoofed correct_count in /api/duel/submit -> HTTP 400
-    res_spoof_duel = client.post("/api/duel/submit", json={"correct_count": 5, "time_ms": 10000})
+    res_spoof_duel = client.post("/api/duel/submit", json={"match_token": token, "correct_count": 5, "time_ms": 10000})
     assert res_spoof_duel.status_code == 400
     assert "Pole answers je povinné." in res_spoof_duel.json()["detail"]
 
     # Non-integer duel_id in /api/duel/submit -> HTTP 400
     res_sub_bad_duel = client.post("/api/duel/submit", json={
+        "match_token": token,
         "duel_id": "invalid_duel",
         "answers": [{"id": q["id"], "userKeys": u_ans}],
         "time_ms": 10000
@@ -606,6 +641,7 @@ def test_r5_self_duel_prevention(temp_env):
 
     # Non-integer time_ms in /api/duel/submit -> HTTP 400
     res_sub_bad_time = client.post("/api/duel/submit", json={
+        "match_token": token,
         "answers": [{"id": q["id"], "userKeys": u_ans}],
         "time_ms": "not_a_time"
     })
@@ -613,6 +649,7 @@ def test_r5_self_duel_prevention(temp_env):
     assert "Neplatný čas (time_ms)." in res_sub_bad_time.json()["detail"]
 
     sub_res = client.post("/api/duel/submit", json={
+        "match_token": token,
         "answers": [{"id": q["id"], "userKeys": u_ans}],
         "time_ms": 10000
     }).json()
@@ -631,44 +668,58 @@ def test_r6_ffa_time_and_answer_validation(temp_env):
     cookie = r.cookies.get(server.SESSION_COOKIE)
     client.cookies.set(server.SESSION_COOKIE, cookie)
 
-    q = list(questions.ALL_QUESTIONS.values())[0]
+    start_ffa = client.post("/api/ffa/start").json()
+    token = start_ffa["match_token"]
+    q = start_ffa["questions"][0]
     u_ans = list(q.get("correct", [])) if q.get("type", "choice") == "choice" else q.get("answer", "ok")
     valid_answers = [{"id": q["id"], "userKeys": u_ans}]
 
     # 1. Chybějící pole answers (pouze correct_count) -> HTTP 400
-    res_no_ans = client.post("/api/ffa/submit", json={"correct_count": 5, "time_ms": 10000})
+    res_no_ans = client.post("/api/ffa/submit", json={"match_token": token, "correct_count": 5, "time_ms": 10000})
     assert res_no_ans.status_code == 400
     assert "Pole answers je povinné." in res_no_ans.json()["detail"]
 
     # 2. Prázdné pole answers -> HTTP 400
-    res_empty_ans = client.post("/api/ffa/submit", json={"answers": [], "time_ms": 10000})
+    res_empty_ans = client.post("/api/ffa/submit", json={"match_token": token, "answers": [], "time_ms": 10000})
     assert res_empty_ans.status_code == 400
     assert "Pole answers je povinné." in res_empty_ans.json()["detail"]
 
     # 3. Nerealistický čas (< 5000 ms) -> HTTP 400
-    res_speedhack = client.post("/api/ffa/submit", json={"answers": valid_answers, "time_ms": 4999})
+    res_speedhack = client.post("/api/ffa/submit", json={"match_token": token, "answers": valid_answers, "time_ms": 4999})
     assert res_speedhack.status_code == 400
     assert "Čas dokončení je příliš krátký (minimálně 5 sekund)." in res_speedhack.json()["detail"]
 
     # 4. Nulový čas -> HTTP 400
-    res_zero = client.post("/api/ffa/submit", json={"answers": valid_answers, "time_ms": 0})
+    res_zero = client.post("/api/ffa/submit", json={"match_token": token, "answers": valid_answers, "time_ms": 0})
     assert res_zero.status_code == 400
 
-    # 5. Hraniční platný čas (5000 ms) -> HTTP 200
-    res_boundary = client.post("/api/ffa/submit", json={"answers": valid_answers, "time_ms": 5000})
+    # 5. Hraniční platný čas (5000 ms) -> HTTP 200 (s novým tokenem a otázkami pro odevzdání)
+    st5 = client.post("/api/ffa/start").json()
+    t5 = st5["match_token"]
+    q5 = st5["questions"][0]
+    u_ans5 = list(q5.get("correct", [])) if q5.get("type", "choice") == "choice" else q5.get("answer", "ok")
+    res_boundary = client.post("/api/ffa/submit", json={"match_token": t5, "answers": [{"id": q5["id"], "userKeys": u_ans5}], "time_ms": 5000})
     assert res_boundary.status_code == 200
     assert res_boundary.json()["score"] > 0
 
     # 6. Podvrh isCorrect bez uživatelské odpovědi -> 0 bodů
+    st6 = client.post("/api/ffa/start").json()
+    t6 = st6["match_token"]
+    q6 = st6["questions"][0]
     res_spoof = client.post("/api/ffa/submit", json={
-        "answers": [{"id": q["id"], "isCorrect": True}],
+        "match_token": t6,
+        "answers": [{"id": q6["id"], "isCorrect": True}],
         "time_ms": 6000
     })
     assert res_spoof.status_code == 200
     assert res_spoof.json()["score"] == 0
 
     # 7. Neplatný čas (nečíselný) -> HTTP 400
-    res_bad_time = client.post("/api/ffa/submit", json={"answers": valid_answers, "time_ms": "invalid"})
+    st7 = client.post("/api/ffa/start").json()
+    t7 = st7["match_token"]
+    q7 = st7["questions"][0]
+    u_ans7 = list(q7.get("correct", [])) if q7.get("type", "choice") == "choice" else q7.get("answer", "ok")
+    res_bad_time = client.post("/api/ffa/submit", json={"match_token": t7, "answers": [{"id": q7["id"], "userKeys": u_ans7}], "time_ms": "invalid"})
     assert res_bad_time.status_code == 400
     assert "Neplatný čas (time_ms)." in res_bad_time.json()["detail"]
 

@@ -34,12 +34,11 @@ def _generate_match_token(user_id: int, mode: str, question_ids: List[str]) -> s
     return serializer.dumps(payload, salt="tzi_match_token")
 
 
-def _verify_and_consume_match_token(token: Optional[str], user_id: int, mode: str, submitted_qids: List[str]) -> Optional[Dict[str, Any]]:
-    # Pokud token vůbec není poslán (např. starší testy nebo přímá volání),
-    # nevyhodíme výjimku ihned, ale pokud byl dodán, validujeme ho striktně.
-    # Pro tvrdé zamezení konzolovým útokům bez tokenu:
-    if not token:
-        return None
+def _verify_and_consume_match_token(token: Optional[str], user_id: int, mode: str, submitted_qids: List[str]) -> Dict[str, Any]:
+    # Fail-closed: match_token je pro soutěžní režimy povinný.
+    # Bez něj nelze ověřit, že odpovídané otázky patří k vygenerovanému zápasu.
+    if not token or not isinstance(token, str):
+        raise HTTPException(status_code=400, detail="Chybí autorizační match_token pro herní relaci.")
 
     _clean_expired_tokens()
     if token in _CONSUMED_MATCH_TOKENS:
@@ -64,9 +63,12 @@ def _verify_and_consume_match_token(token: Optional[str], user_id: int, mode: st
         if str(sq) not in issued_qids:
             raise HTTPException(status_code=400, detail=f"Otázka {sq} nebyla pro tento zápas vygenerována.")
 
-    # Označit token jako spotřebovaný (udržíme v paměti po dobu jeho zbývající platnosti)
-    _CONSUMED_MATCH_TOKENS[token] = time.time() + 1200
     return data
+
+
+def _mark_match_token_consumed(token: Optional[str]) -> None:
+    if token:
+        _CONSUMED_MATCH_TOKENS[token] = time.time() + 1200
 
 
 # --- King of the Hill (FFA / 1v1) Endpoints ---
@@ -126,15 +128,17 @@ async def api_koth_submit(request: Request, user: Dict[str, Any] = Depends(requi
     user_db = db.get_user_by_id(user_id)
     username = user_db["username"] if user_db else user.get("username", "Student")
 
-    correct_count, total_q, time_ms, _ = _evaluate_competitive_submission(user_id, payload, mode="koth")
+    correct_count, total_q, time_ms, _, token_to_consume = _evaluate_competitive_submission(user_id, payload, mode="koth")
 
-    return scoring.submit_koth_challenge(
+    res = scoring.submit_koth_challenge(
         user_id=user_id,
         username=username,
         correct_count=correct_count,
         total_questions=total_q,
         time_ms=time_ms
     )
+    _mark_match_token_consumed(token_to_consume)
+    return res
 
 
 def _evaluate_competitive_submission(user_id: int, payload: Dict[str, Any], mode: Optional[str] = None):
@@ -173,12 +177,14 @@ def _evaluate_competitive_submission(user_id: int, payload: Dict[str, Any], mode
 
     # Ověření match_tokenu pokud je specifikován mode
     token = payload.get("match_token")
+    consumed_token = None
     if mode:
         _verify_and_consume_match_token(token, user_id, mode, question_ids)
+        consumed_token = token
 
     total_q = max(len(seen_qids), scoring.KOTH_DEFAULT_QUESTIONS)
 
-    return correct_count, total_q, time_ms, question_ids
+    return correct_count, total_q, time_ms, question_ids, consumed_token
 
 
 @router.get("/api/competitive/overview")
@@ -328,7 +334,7 @@ async def api_room_submit(room_id: int, request: Request, user: Dict[str, Any] =
 
     user_db = db.get_user_by_id(uid)
     username = user_db["username"] if user_db else user.get("username", "Student")
-    correct_count, total_q, time_ms, submitted_qids = _evaluate_competitive_submission(uid, payload)
+    correct_count, total_q, time_ms, submitted_qids, _ = _evaluate_competitive_submission(uid, payload)
 
     # Validace, že odevzdané otázky patří do dané místnosti pokud je místnost specifikuje
     room = scoring.get_comp_room(room_id)
@@ -394,17 +400,19 @@ async def api_ffa_submit(request: Request, user: Dict[str, Any] = Depends(requir
     user_db = db.get_user_by_id(user_id)
     username = user_db["username"] if user_db else user.get("username", "Student")
 
-    correct_count, total_q, time_ms, _ = _evaluate_competitive_submission(user_id, payload, mode="ffa")
+    correct_count, total_q, time_ms, _, token_to_consume = _evaluate_competitive_submission(user_id, payload, mode="ffa")
     if time_ms < 5000:
         raise HTTPException(status_code=400, detail="Čas dokončení je příliš krátký (minimálně 5 sekund).")
 
-    return scoring.submit_ffa_run(
+    res = scoring.submit_ffa_run(
         user_id=user_id,
         username=username,
         correct_count=correct_count,
         total_questions=total_q,
         time_ms=time_ms
     )
+    _mark_match_token_consumed(token_to_consume)
+    return res
 
 
 @router.get("/api/duel/status")
@@ -495,7 +503,7 @@ async def api_duel_submit(request: Request, user: Dict[str, Any] = Depends(requi
         raise HTTPException(status_code=400, detail="Neplatný JSON")
     user_db = db.get_user_by_id(user_id)
     username = user_db["username"] if user_db else user.get("username", "Student")
-    correct_count, total_q, time_ms, q_ids = _evaluate_competitive_submission(user_id, payload, mode="duel")
+    correct_count, total_q, time_ms, q_ids, token_to_consume = _evaluate_competitive_submission(user_id, payload, mode="duel")
     duel_id = payload.get("duel_id")
     duel_id_val = None
     if duel_id is not None:
@@ -503,7 +511,7 @@ async def api_duel_submit(request: Request, user: Dict[str, Any] = Depends(requi
             duel_id_val = int(duel_id)
         except (ValueError, TypeError):
             raise HTTPException(status_code=400, detail="Neplatné duel_id.")
-    return scoring.submit_duel_match(
+    res = scoring.submit_duel_match(
         user_id=user_id,
         username=username,
         correct_count=correct_count,
@@ -512,3 +520,5 @@ async def api_duel_submit(request: Request, user: Dict[str, Any] = Depends(requi
         question_ids=q_ids,
         duel_id=duel_id_val,
     )
+    _mark_match_token_consumed(token_to_consume)
+    return res

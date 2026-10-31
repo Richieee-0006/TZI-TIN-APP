@@ -95,8 +95,12 @@ def test_adversarial_r3_koth_exploit():
         assert "Pole answers je povinné." in r5.json()["detail"]
 
         # Attack 6: spoofed isCorrect=True without userKeys/user_answer
-        q = list(questions.ALL_QUESTIONS.values())[0]
+        st = client.post("/api/koth/start").json()
+        token = st["match_token"]
+        q = st["questions"][0]
+
         r6 = client.post("/api/koth/submit", json={
+            "match_token": token,
             "answers": [{"id": q["id"], "isCorrect": True}],
             "time_ms": 10000
         })
@@ -104,9 +108,13 @@ def test_adversarial_r3_koth_exploit():
         assert r6.json()["challenger_score"] == 0
 
         # Legitimate submission
-        u_ans = list(q.get("correct", [])) if q.get("type", "choice") == "choice" else q.get("answer", "ok")
+        st_legit = client.post("/api/koth/start").json()
+        token_legit = st_legit["match_token"]
+        q_legit = st_legit["questions"][0]
+        u_ans = list(q_legit.get("correct", [])) if q_legit.get("type", "choice") == "choice" else q_legit.get("answer", "ok")
         r_valid = client.post("/api/koth/submit", json={
-            "answers": [{"id": q["id"], "userKeys": u_ans}],
+            "match_token": token_legit,
+            "answers": [{"id": q_legit["id"], "userKeys": u_ans}],
             "time_ms": 10000
         })
         assert r_valid.status_code == 200
@@ -188,10 +196,12 @@ def test_adversarial_r5_self_duel():
         assert r_self_str.json()["detail"] == "Nelze vyzvat sám sebe."
 
         # 3. Create open duel, submit run, and attempt joining own duel
-        client.post("/api/duel/start", json={"count": 5})
-        q = list(questions.ALL_QUESTIONS.values())[0]
+        d_start = client.post("/api/duel/start", json={"count": 5}).json()
+        token = d_start["match_token"]
+        q = d_start["questions"][0]
         u_ans = list(q.get("correct", [])) if q.get("type", "choice") == "choice" else q.get("answer", "ok")
         sub_run = client.post("/api/duel/submit", json={
+            "match_token": token,
             "answers": [{"id": q["id"], "userKeys": u_ans}],
             "time_ms": 10000,
         })
@@ -219,37 +229,43 @@ def test_adversarial_r6_ffa_time_and_answers():
     """
     client, user, test_db = _create_authenticated_client("test_adv_ffa.db")
     try:
-        q = list(questions.ALL_QUESTIONS.values())[0]
+        ffa_st = client.post("/api/ffa/start").json()
+        token = ffa_st["match_token"]
+        q = ffa_st["questions"][0]
         u_ans = list(q.get("correct", [])) if q.get("type", "choice") == "choice" else q.get("answer", "ok")
         valid_answers = [{"id": q["id"], "userKeys": u_ans}]
 
         # 1. Missing answers
-        r_no_ans = client.post("/api/ffa/submit", json={"correct_count": 5, "time_ms": 10000})
+        r_no_ans = client.post("/api/ffa/submit", json={"match_token": token, "correct_count": 5, "time_ms": 10000})
         assert r_no_ans.status_code == 400
         assert "Pole answers je povinné." in r_no_ans.json()["detail"]
 
         # 2. Empty answers
-        r_empty = client.post("/api/ffa/submit", json={"answers": [], "time_ms": 10000})
+        r_empty = client.post("/api/ffa/submit", json={"match_token": token, "answers": [], "time_ms": 10000})
         assert r_empty.status_code == 400
         assert "Pole answers je povinné." in r_empty.json()["detail"]
 
         # 3. Speedhack time_ms = 4999
-        r_4999 = client.post("/api/ffa/submit", json={"answers": valid_answers, "time_ms": 4999})
+        r_4999 = client.post("/api/ffa/submit", json={"match_token": token, "answers": valid_answers, "time_ms": 4999})
         assert r_4999.status_code == 400
         assert "Čas dokončení je příliš krátký (minimálně 5 sekund)." in r_4999.json()["detail"]
 
         # 4. Zero time_ms = 0
-        r_zero = client.post("/api/ffa/submit", json={"answers": valid_answers, "time_ms": 0})
+        r_zero = client.post("/api/ffa/submit", json={"match_token": token, "answers": valid_answers, "time_ms": 0})
         assert r_zero.status_code == 400
         assert "Čas dokončení je příliš krátký (minimálně 5 sekund)." in r_zero.json()["detail"]
 
         # 5. Negative time_ms = -100
-        r_neg = client.post("/api/ffa/submit", json={"answers": valid_answers, "time_ms": -100})
+        r_neg = client.post("/api/ffa/submit", json={"match_token": token, "answers": valid_answers, "time_ms": -100})
         assert r_neg.status_code == 400
         assert "Čas dokončení je příliš krátký (minimálně 5 sekund)." in r_neg.json()["detail"]
 
-        # 6. Valid boundary time_ms = 5000
-        r_5000 = client.post("/api/ffa/submit", json={"answers": valid_answers, "time_ms": 5000})
+        # 6. Valid boundary time_ms = 5000 (with fresh token)
+        ffa_st2 = client.post("/api/ffa/start").json()
+        token2 = ffa_st2["match_token"]
+        q2 = ffa_st2["questions"][0]
+        u_ans2 = list(q2.get("correct", [])) if q2.get("type", "choice") == "choice" else q2.get("answer", "ok")
+        r_5000 = client.post("/api/ffa/submit", json={"match_token": token2, "answers": [{"id": q2["id"], "userKeys": u_ans2}], "time_ms": 5000})
         assert r_5000.status_code == 200
         assert r_5000.json()["score"] > 0
     finally:
