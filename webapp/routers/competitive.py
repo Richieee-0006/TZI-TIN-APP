@@ -336,12 +336,24 @@ async def api_room_submit(room_id: int, request: Request, user: Dict[str, Any] =
     username = user_db["username"] if user_db else user.get("username", "Student")
     correct_count, total_q, time_ms, submitted_qids, _ = _evaluate_competitive_submission(uid, payload)
 
-    # Validace, že odevzdané otázky patří do dané místnosti pokud je místnost specifikuje
+    # Validace místnosti a členství hráče
     room = scoring.get_comp_room(room_id)
     if not room:
         raise HTTPException(status_code=404, detail="Místnost neexistuje.")
+
+    if room.get("status") != "in_progress":
+        raise HTTPException(status_code=400, detail="Místnost není ve stavu in_progress (nebyla zahájena).")
+
+    players = room.get("players", [])
+    player_ids = [p["user_id"] for p in players] if players else []
+    if uid not in player_ids:
+        raise HTTPException(status_code=403, detail="Nejste hráčem této místnosti.")
+
+    # Validace, že odevzdané otázky patří do dané místnosti
     room_qids = set(str(qid) for qid in (room.get("question_ids") or []))
-    if room_qids and any(sq in room_qids for sq in submitted_qids):
+    if room_qids:
+        if not submitted_qids:
+            raise HTTPException(status_code=400, detail="Nebyly odeslány žádné odpovědi.")
         for sq in submitted_qids:
             if str(sq) not in room_qids:
                 raise HTTPException(status_code=400, detail=f"Otázka {sq} nepatří do této místnosti.")

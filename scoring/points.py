@@ -44,12 +44,26 @@ def record_question_answer(
     yesterday_str = (today_obj - timedelta(days=1)).isoformat()
 
     with conn:
-        # 1. Zjistit číslo pokusu studenta pro tuto otázku
+        # 1. Zjistit číslo pokusu studenta a historii pro tuto otázku
         prev_attempts = conn.execute(
             "SELECT COUNT(*) AS cnt FROM user_answers WHERE user_id = ? AND question_id = ?",
             (user_id, question_id)
         ).fetchone()["cnt"]
         attempt_number = prev_attempts + 1
+
+        prev_correct = conn.execute(
+            "SELECT COUNT(*) AS cnt FROM user_answers WHERE user_id = ? AND question_id = ? AND is_correct = 1",
+            (user_id, question_id)
+        ).fetchone()["cnt"]
+
+        last_ans = conn.execute(
+            "SELECT question_id, is_correct FROM user_answers WHERE user_id = ? ORDER BY id DESC LIMIT 1",
+            (user_id,)
+        ).fetchone()
+        is_repeat_spam = bool(
+            prev_correct > 0
+            or (last_ans and str(last_ans["question_id"]) == str(question_id) and last_ans["is_correct"] == 1)
+        )
 
         # 2. Načíst globální statistiku otázky pro dynamickou obtížnost
         q_row = conn.execute(
@@ -72,15 +86,15 @@ def record_question_answer(
             multiplier = 1.0
             difficulty_label = "standardní"
 
-        # 3. Základní body
+        # 3. Základní body (opakované pokusy nad limit nebo spam již zodpovězené otázky nenesou žádné body)
         recall = is_recall_question(question_id)
-        if is_correct:
+        if is_correct and not is_repeat_spam:
             if recall:
                 base_points = 5
             else:
                 if attempt_number == 1:
                     base_points = 3
-                elif attempt_number == 2:
+                elif attempt_number == 2 and prev_correct == 0:
                     base_points = 1
                 else:
                     base_points = 0
@@ -113,28 +127,31 @@ def record_question_answer(
 
         streak_bonus = 0
         if is_correct:
-            current_streak += 1
-            if current_streak > best_streak:
-                best_streak = current_streak
-            # Streak bonus od 5. správné v řadě
-            if current_streak >= 5:
-                streak_bonus = 2
-                awarded_points += streak_bonus
+            # Streak se zvyšuje pouze pokud otázka nebyla již dříve správně zodpovězena a není to spam
+            if not is_repeat_spam:
+                current_streak += 1
+                if current_streak > best_streak:
+                    best_streak = current_streak
+                # Streak bonus od 5. správné v řadě (pouze pokud otázka nese základní body > 0)
+                if current_streak >= 5 and base_points > 0:
+                    streak_bonus = 2
+                    awarded_points += streak_bonus
         else:
             current_streak = 0
 
-        # 5. Denní minimální postup (Daily Minimal Progress)
-        conn.execute(
-            """
-            INSERT INTO daily_progress (user_id, activity_date, questions_answered, questions_correct, goal_met, updated_at)
-            VALUES (?, ?, 1, ?, 0, CURRENT_TIMESTAMP)
-            ON CONFLICT(user_id, activity_date) DO UPDATE SET
-                questions_answered = questions_answered + 1,
-                questions_correct = questions_correct + excluded.questions_correct,
-                updated_at = CURRENT_TIMESTAMP
-            """,
-            (user_id, today_str, 1 if is_correct else 0)
-        )
+        # 5. Denní minimální postup (Daily Minimal Progress) - nepočítat spam
+        if not is_repeat_spam:
+            conn.execute(
+                """
+                INSERT INTO daily_progress (user_id, activity_date, questions_answered, questions_correct, goal_met, updated_at)
+                VALUES (?, ?, 1, ?, 0, CURRENT_TIMESTAMP)
+                ON CONFLICT(user_id, activity_date) DO UPDATE SET
+                    questions_answered = questions_answered + 1,
+                    questions_correct = questions_correct + excluded.questions_correct,
+                    updated_at = CURRENT_TIMESTAMP
+                """,
+                (user_id, today_str, 1 if is_correct else 0)
+            )
 
         dp_row = conn.execute(
             "SELECT questions_answered, questions_correct, goal_met FROM daily_progress WHERE user_id = ? AND activity_date = ?",

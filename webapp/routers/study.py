@@ -133,9 +133,37 @@ def api_get_progress(source: str = "", user: Dict[str, Any] = Depends(require_us
     return {"seen": all_seen, "session": active_session}
 
 
+# --- Rate limiting pro /api/progress (max 60 požadavků za 60 s na uživatele / IP) ---
+_progress_rate_limits: dict[str, List[float]] = defaultdict(list)
+PROGRESS_MAX_REQUESTS = 60
+PROGRESS_WINDOW = 60  # sekund
+
+
+def _check_progress_rate_limit(key: str) -> bool:
+    """Vrací True pokud je požadavek povolen, False pokud překročil limit."""
+    now = time.time()
+    window_start = now - PROGRESS_WINDOW
+    timestamps = [t for t in _progress_rate_limits[key] if t > window_start]
+    if len(timestamps) >= PROGRESS_MAX_REQUESTS:
+        _progress_rate_limits[key] = timestamps
+        return False
+    timestamps.append(now)
+    _progress_rate_limits[key] = timestamps
+    return True
+
+
+def reset_progress_rate_limits():
+    """Pomocná funkce pro testy k resetování stavu progress rate limiteru."""
+    _progress_rate_limits.clear()
+
+
 @router.post("/api/progress")
 async def api_post_progress(request: Request, source: str = "", user: Dict[str, Any] = Depends(require_user)):
     user_id = user["user_id"]
+    ip = request.client.host if request.client else "unknown"
+    rate_key = f"u_{user_id}" if user_id else f"ip_{ip}"
+    if not _check_progress_rate_limit(rate_key):
+        raise HTTPException(status_code=429, detail="Příliš mnoho požadavků na záznam postupu. Počkejte chvíli.")
     try:
         payload = await request.json()
     except Exception:

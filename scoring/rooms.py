@@ -242,6 +242,9 @@ def submit_comp_room_result(
     if not row:
         return {"ok": False, "error": "Místnost neexistuje."}
 
+    if row["status"] != "in_progress":
+        return {"ok": False, "error": "Místnost není ve stavu in_progress."}
+
     time_ms_clean = max(0, int(time_ms or 0))
     correct_clean = max(0, int(correct_count or 0))
     total_clean = max(1, int(total_questions or row["question_count"] or KOTH_DEFAULT_QUESTIONS))
@@ -255,23 +258,17 @@ def submit_comp_room_result(
             "SELECT * FROM comp_room_players WHERE room_id = ? AND user_id = ?",
             (int(room_id), user_id)
         ).fetchone()
-        if existing:
-            conn.execute(
-                """
-                UPDATE comp_room_players
-                SET status = 'finished', score = ?, correct_count = ?, total_questions = ?, time_ms = ?, finished_at = CURRENT_TIMESTAMP
-                WHERE room_id = ? AND user_id = ?
-                """,
-                (score, correct_clean, total_clean, time_ms_clean, int(room_id), user_id)
-            )
-        else:
-            conn.execute(
-                """
-                INSERT INTO comp_room_players (room_id, user_id, username, is_host, status, score, correct_count, total_questions, time_ms, finished_at)
-                VALUES (?, ?, ?, 0, 'finished', ?, ?, ?, ?, CURRENT_TIMESTAMP)
-                """,
-                (int(room_id), user_id, username, score, correct_clean, total_clean, time_ms_clean)
-            )
+        if not existing:
+            return {"ok": False, "error": "Hráč není připojen v této místnosti."}
+
+        conn.execute(
+            """
+            UPDATE comp_room_players
+            SET status = 'finished', score = ?, correct_count = ?, total_questions = ?, time_ms = ?, finished_at = CURRENT_TIMESTAMP
+            WHERE room_id = ? AND user_id = ?
+            """,
+            (score, correct_clean, total_clean, time_ms_clean, int(room_id), user_id)
+        )
 
         p_rows = conn.execute(
             """

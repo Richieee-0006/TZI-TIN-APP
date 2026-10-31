@@ -577,10 +577,10 @@ def test_r4_multiplayer_score_spoofing_prevention(temp_env):
     client.post(f"/api/rooms/{room_id}/start")
 
     # 3. Pokus o odeslání podvrženého explicitního skóre (score: 999999)
-    q = list(questions.ALL_QUESTIONS.values())[0]
+    q_id = room_data["question_ids"][0] if room_data.get("question_ids") else list(questions.ALL_QUESTIONS.keys())[0]
     res = client.post(f"/api/rooms/{room_id}/submit", json={
         "score": 999999,
-        "answers": [{"id": q["id"], "userKeys": ["__wrong_ans__"]}],
+        "answers": [{"id": q_id, "userKeys": ["__wrong_ans__"]}],
         "time_ms": 1000
     })
     assert res.status_code == 200
@@ -768,4 +768,66 @@ def test_csrf_double_submit_and_api_me(temp_env):
     good_res = client.post("/api/account/username", json={"username": "ValidNick"}, headers={"X-CSRF-Token": csrf_token})
     assert good_res.status_code == 200
     assert good_res.json()["username"] == "ValidNick"
+
+
+def test_repeated_question_streak_farm_prevention(temp_env):
+    """Zákaz farmení XP opakovaným posíláním téže otázky (streak bonus i body = 0)."""
+    client = temp_env
+    r = client.post("/register", data={"username": "FarmTester", "password": "password123", "password_confirm": "password123"}, follow_redirects=False)
+    client.cookies.set(server.SESSION_COOKIE, r.cookies.get(server.SESSION_COOKIE))
+    me = client.get("/api/me").json()
+    uid = me["user_id"]
+
+    # 1. První odpověď získá standardní body (3 body)
+    r1 = scoring.record_question_answer(uid, "1-1", True)
+    assert r1["points_awarded"] == 3
+    assert r1["streak"] == 1
+
+    # 2. Opakování téže otázky 20x nesmí přidělit žádné další body ani streak bonus
+    for _ in range(20):
+        r_repeat = scoring.record_question_answer(uid, "1-1", True)
+        assert r_repeat["points_awarded"] == 0
+        assert r_repeat["streak_bonus"] == 0
+        assert r_repeat["streak"] == 1
+
+    # Celkové body v profilu musí zůstat 3, ne 40+
+    me_after = client.get("/api/me").json()
+    assert me_after["points"] == 3
+    assert me_after["streak"] == 1
+
+
+def test_room_security_enforcement(temp_env):
+    """Místnost vyžaduje stav in_progress, členství hráče a odmítá cizí otázky."""
+    client = temp_env
+    r1 = client.post("/register", data={"username": "HostPlayer", "password": "password123", "password_confirm": "password123"}, follow_redirects=False)
+    cookie_host = r1.cookies.get(server.SESSION_COOKIE)
+
+    r2 = client.post("/register", data={"username": "OutsiderPlayer", "password": "password123", "password_confirm": "password123"}, follow_redirects=False)
+    cookie_outsider = r2.cookies.get(server.SESSION_COOKIE)
+
+    # Host vytvoří místnost
+    client.cookies.set(server.SESSION_COOKIE, cookie_host)
+    c_res = client.post("/api/rooms/create", json={"mode": "ffa", "name": "SecureRoom", "count": 5}).json()
+    room_id = c_res["room"]["id"]
+    room_qids = c_res["room"]["question_ids"]
+
+    # 1. Odeslání do místnosti před jejím zahájením (/start) -> 400
+    res_not_started = client.post(f"/api/rooms/{room_id}/submit", json={"answers": [{"id": room_qids[0], "userKeys": ["A"]}], "time_ms": 5000})
+    assert res_not_started.status_code == 400
+    assert "in_progress" in res_not_started.json()["detail"]
+
+    # 2. Host spustí místnost
+    client.post(f"/api/rooms/{room_id}/start")
+
+    # 3. Outsider (nepřipojený hráč) se pokusí odeslat výsledek -> 403
+    client.cookies.set(server.SESSION_COOKIE, cookie_outsider)
+    res_outsider = client.post(f"/api/rooms/{room_id}/submit", json={"answers": [{"id": room_qids[0], "userKeys": ["A"]}], "time_ms": 5000})
+    assert res_outsider.status_code == 403
+    assert "Nejste hráčem" in res_outsider.json()["detail"]
+
+    # 4. Host pošle cizí otázky, které nepatří do místnosti -> 400
+    client.cookies.set(server.SESSION_COOKIE, cookie_host)
+    res_alien = client.post(f"/api/rooms/{room_id}/submit", json={"answers": [{"id": "99-99-alien", "userKeys": ["A"]}], "time_ms": 5000})
+    assert res_alien.status_code == 400
+    assert "nepatří do této místnosti" in res_alien.json()["detail"]
 

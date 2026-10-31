@@ -145,8 +145,9 @@ def test_adversarial_r4_multiplayer_score_spoofing():
         r_start = client.post(f"/api/rooms/{room_id}/start")
         assert r_start.status_code == 200
 
-        # Select 1 valid question
-        q = list(questions.ALL_QUESTIONS.values())[0]
+        # Select 1 valid question belonging to the started room
+        started_qs = r_start.json().get("questions") or []
+        q = started_qs[0] if started_qs else list(questions.ALL_QUESTIONS.values())[0]
         u_ans = list(q.get("correct", [])) if q.get("type", "choice") == "choice" else q.get("answer", "ok")
 
         # Attempt submitting explicit_score: 99999 and score: 99999
