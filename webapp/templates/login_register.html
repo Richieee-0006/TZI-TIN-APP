@@ -24,6 +24,7 @@
             color: var(--text);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
@@ -202,11 +203,12 @@
             </a>
         </nav>
 
-        <footer style="margin-top: 1.2rem; font-size: 0.75rem; color: var(--text-dim); text-align: center; line-height: 1.5;">
-            <div>Made with AI · Poděkování <b>Zdenax</b> za vytvoření apky · <a href="https://github.com/zdenax/TZI-TIN-APP" target="_blank" rel="noopener noreferrer" style="color: var(--text-dim); text-decoration: underline;">GitHub: TZI-TIN-APP</a></div>
-            <div style="margin-top: 0.4rem; font-size: 0.7rem; opacity: 0.85;">Soukromí: Žádný tracking, e-maily ani analytika. V databázi je jen hash hesla, zvolená přezdívka a skóre pro synchronizaci mezi zařízeními a fungování arény. Kompletní smazání účtu i historie je dostupné v profilu.</div>
-        </footer>
     </main>
+
+    <footer style="margin-top: 1.5rem; font-size: 0.78rem; color: var(--text-dim); text-align: center; line-height: 1.6; max-width: 440px;">
+        <div>Made with AI · Poděkování <b>Zdenax</b> za vytvoření apky · <a href="https://github.com/zdenax/TZI-TIN-APP" target="_blank" rel="noopener noreferrer" style="color: var(--text-dim); text-decoration: underline;">GitHub: TZI-TIN-APP</a></div>
+        <div style="margin-top: 0.5rem; font-size: 0.72rem; opacity: 0.75;">Soukromí: Žádný tracking, e-maily ani analytika. V databázi je jen hash hesla, zvolená přezdívka a skóre pro synchronizaci mezi zařízeními a fungování arény. Kompletní smazání účtu i historie je dostupné v profilu.</div>
+    </footer>
 
     <script>
         function switchTab(t) {
