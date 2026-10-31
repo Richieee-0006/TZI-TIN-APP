@@ -8,11 +8,20 @@ from fastapi.testclient import TestClient
 import server
 import db
 
-def test_full_pipeline():
+def _cleanup_db(db_path: Path):
     db.close_db()
+    for ext in ("", "-shm", "-wal"):
+        f = Path(str(db_path) + ext)
+        try:
+            if f.exists():
+                f.unlink()
+        except Exception:
+            pass
+
+
+def test_full_pipeline():
     test_db = BASE / "test_temp_api.db"
-    if test_db.exists():
-        test_db.unlink()
+    _cleanup_db(test_db)
     db.DB_FILE = test_db
     db.init_db()
 
@@ -36,9 +45,11 @@ def test_full_pipeline():
     print("OK: Stránky pro přihlášení a registraci (bez pozvánky) fungují.")
 
     print("\n--- [3] Otevřená registrace nového studenta bez pozvánky ---")
+    csrf_token = r_reg.cookies.get("csrf_token")
     reg_resp = client.post("/register", data={
         "theme": "movies",
-        "password": "mypassword123"
+        "password": "mypassword123",
+        "csrf_token": csrf_token
     }, follow_redirects=False)
     assert reg_resp.status_code == 303, f"Status: {reg_resp.status_code}"
     cookie = reg_resp.cookies.get(server.SESSION_COOKIE)
@@ -67,11 +78,13 @@ def test_full_pipeline():
     print(f"Otázek v {first_src}: {len(questions)}")
 
     print("\n--- [6] Test odeslání odpovědi s výpočtem bodů (POST /api/progress) ---")
-    test_q_id = questions[0]["id"] if questions else "test_q"
+    test_q = questions[0] if questions else {"id": "test_q", "correct": ["A"]}
+    test_q_id = test_q["id"]
+    test_correct = test_q.get("correct") or test_q.get("answer") or ["A"]
     prog_resp = client.post("/api/progress?source=" + first_src, json={
         "seen": {test_q_id: "correct"},
         "session": None,
-        "latest": {"id": test_q_id, "isCorrect": True}
+        "latest": {"id": test_q_id, "userKeys": test_correct}
     })
     assert prog_resp.status_code == 200
     prog_data = prog_resp.json()
@@ -136,12 +149,210 @@ def test_full_pipeline():
     print("  FASTAPI PIPELINE KOMPLETNĚ OTESTOVÁNA A FUNKČNÍ! :3 ")
     print("=======================================================")
 
-    db.close_db()
+    _cleanup_db(test_db)
+
+
+def _setup_test_client_with_user():
+    test_db = BASE / "test_temp_api_r.db"
+    _cleanup_db(test_db)
+    db.DB_FILE = test_db
+    db.init_db()
+
+    client = TestClient(server.app)
+    r_reg = client.get("/register")
+    csrf_token = r_reg.cookies.get("csrf_token")
+    reg_resp = client.post("/register", data={
+        "theme": "games",
+        "password": "mypassword123",
+        "csrf_token": csrf_token
+    }, follow_redirects=False)
+    cookie = reg_resp.cookies.get(server.SESSION_COOKIE)
+    client.cookies.set(server.SESSION_COOKIE, cookie)
+    return client, test_db
+
+
+def test_r2_progress_anti_spoofing():
+    """R2: /api/progress strictly requires userKeys/user_answer and server-verifies against question bank."""
+    client, test_db = _setup_test_client_with_user()
     try:
-        if test_db.exists():
-            test_db.unlink()
-    except Exception:
-        pass
+        s_resp = client.get("/api/sources")
+        assert s_resp.status_code == 200
+        sources = s_resp.json()["sources"]
+        assert len(sources) > 0
+        src = sources[0]["id"]
+
+        q_resp = client.get(f"/api/questions?source={src}")
+        assert q_resp.status_code == 200
+        questions_list = q_resp.json()
+        assert len(questions_list) > 0
+        q = questions_list[0]
+        q_id = q["id"]
+        correct_ans = q.get("correct") or q.get("answer")
+
+        # 1. Reject missing userKeys and user_answer when latest is present
+        resp = client.post(f"/api/progress?source={src}", json={
+            "seen": {},
+            "session": None,
+            "latest": {"id": q_id, "isCorrect": True}
+        })
+        assert resp.status_code == 400
+        assert "userKeys" in resp.json().get("detail", "") or "user_answer" in resp.json().get("detail", "")
+
+        # 2. Reject missing id in latest
+        resp = client.post(f"/api/progress?source={src}", json={
+            "seen": {},
+            "session": None,
+            "latest": {"userKeys": ["A"]}
+        })
+        assert resp.status_code == 400
+
+        # 3. Reject nonexistent question id
+        resp = client.post(f"/api/progress?source={src}", json={
+            "seen": {},
+            "session": None,
+            "latest": {"id": "nonexistent_question_99999", "userKeys": ["A"]}
+        })
+        assert resp.status_code == 400
+        assert "Neznámá otázka" in resp.json().get("detail", "")
+
+        # 4. Anti-spoofing: spoofed isCorrect=True with incorrect answer is rejected by server
+        resp = client.post(f"/api/progress?source={src}", json={
+            "seen": {},
+            "session": None,
+            "latest": {"id": q_id, "userKeys": ["DEFINITELY_WRONG_OPTION_XYZ"], "isCorrect": True}
+        })
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["ok"] is True
+        assert data["score"] is not None
+        assert data["score"]["points_awarded"] == 0, "Spoofed answer must award 0 points"
+
+        # 5. Legitimate correct answer awards points
+        resp = client.post(f"/api/progress?source={src}", json={
+            "seen": {q_id: "correct"},
+            "session": None,
+            "latest": {"id": q_id, "userKeys": correct_ans}
+        })
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["ok"] is True
+        assert data["score"]["points_awarded"] > 0
+
+        # 6. user_answer field also accepted for legitimate answers
+        if len(questions_list) > 1:
+            q2 = questions_list[1]
+            q2_id = q2["id"]
+            q2_correct = q2.get("correct") or q2.get("answer")
+            resp = client.post(f"/api/progress?source={src}", json={
+                "seen": {q2_id: "correct"},
+                "session": None,
+                "latest": {"id": q2_id, "user_answer": q2_correct}
+            })
+            assert resp.status_code == 200
+            assert resp.json()["score"]["points_awarded"] > 0
+
+        # 7. Progress save without latest does not error and awards no score
+        resp = client.post(f"/api/progress?source={src}", json={
+            "seen": {"some_q": "wrong"},
+            "session": None,
+            "latest": None
+        })
+        assert resp.status_code == 200
+        assert resp.json()["score"] is None
+    finally:
+        _cleanup_db(test_db)
+
+
+def test_r7_client_error_rate_limiting():
+    """R7: /api/client-error enforces sliding window rate limiting (10 req/60s) returning HTTP 429 without DB writes."""
+    from webapp.routers.study import reset_client_error_rate_limits
+    reset_client_error_rate_limits()
+
+    test_db = BASE / "test_temp_api_r7.db"
+    _cleanup_db(test_db)
+    db.DB_FILE = test_db
+    db.init_db()
+
+    client = TestClient(server.app)
+    try:
+        # First 10 requests should succeed (HTTP 200)
+        for i in range(10):
+            r = client.post("/api/client-error", json={"message": f"error_{i}", "file": "app.js"})
+            assert r.status_code == 200, f"Request {i+1} should succeed"
+
+        # Verify exactly 10 error records in database
+        conn = db.get_db()
+        count = conn.execute("SELECT count(*) as c FROM error_logs WHERE level = 'UI_ERROR'").fetchone()["c"]
+        assert count == 10
+
+        # 11th request must return 429 Too Many Requests
+        r11 = client.post("/api/client-error", json={"message": "flood_attempt", "file": "app.js"})
+        assert r11.status_code == 429
+
+        # 12th request must also return 429
+        r12 = client.post("/api/client-error", json={"message": "flood_attempt_2", "file": "app.js"})
+        assert r12.status_code == 429
+
+        # Crucially: verify no additional rows were written to the database on 429
+        count_after = conn.execute("SELECT count(*) as c FROM error_logs WHERE level = 'UI_ERROR'").fetchone()["c"]
+        assert count_after == 10, "Rate-limited requests must not write to the error_logs table"
+
+        # Reset rate limiter -> request allowed again
+        reset_client_error_rate_limits()
+        r_after_reset = client.post("/api/client-error", json={"message": "after_reset", "file": "app.js"})
+        assert r_after_reset.status_code == 200
+        count_final = conn.execute("SELECT count(*) as c FROM error_logs WHERE level = 'UI_ERROR'").fetchone()["c"]
+        assert count_final == 11
+    finally:
+        reset_client_error_rate_limits()
+        _cleanup_db(test_db)
+
+
+def test_r8_webhook_timing_safe_secret(monkeypatch):
+    """R8: /webhook verifies secret using secrets.compare_digest in constant time."""
+    import secrets
+    from webapp.routers import pwa
+
+    client = TestClient(server.app)
+    test_secret = "secure_webhook_secret_xyz_789"
+    monkeypatch.setattr(pwa, "WEBHOOK_SECRET", test_secret)
+    monkeypatch.setattr(pwa, "git_pull", lambda: "pull_mock_success")
+
+    compare_digest_called = []
+    orig_compare_digest = secrets.compare_digest
+
+    def spy_compare_digest(a, b):
+        compare_digest_called.append((a, b))
+        return orig_compare_digest(a, b)
+
+    monkeypatch.setattr(secrets, "compare_digest", spy_compare_digest)
+
+    # 1. Missing secret -> 403 Forbidden
+    r_no_sec = client.post("/webhook")
+    assert r_no_sec.status_code == 403
+
+    # 2. Wrong secret -> 403 Forbidden
+    r_wrong = client.post("/webhook?secret=wrong_secret_value")
+    assert r_wrong.status_code == 403
+
+    # 3. Correct secret -> 200 OK
+    r_correct = client.post(f"/webhook?secret={test_secret}")
+    assert r_correct.status_code == 200
+    assert "pull_mock_success" in r_correct.text
+
+    # Verify secrets.compare_digest was called with the tested values
+    assert len(compare_digest_called) >= 2
+    assert any(call[0] == test_secret and call[1] == test_secret for call in compare_digest_called)
+
 
 if __name__ == "__main__":
+    import pytest
     test_full_pipeline()
+    test_r2_progress_anti_spoofing()
+    test_r7_client_error_rate_limiting()
+    mp = pytest.MonkeyPatch()
+    try:
+        test_r8_webhook_timing_safe_secret(mp)
+    finally:
+        mp.undo()
+

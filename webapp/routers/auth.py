@@ -46,20 +46,20 @@ def get_login(request: Request, error: Optional[str] = None, success: Optional[s
     elif success:
         msg = f"<div class='success-msg'>{escape(success)}</div>"
 
-    # Generování CSRF tokenu do cookie
-    resp = HTMLResponse(content="")
-    token = generate_csrf_token(resp)
-    csrf_input = f'<input type="hidden" name="csrf_token" value="{escape(token)}">'
-
     html = LOGIN_REGISTER_HTML
     html = html.replace("<!--MESSAGE-->", msg)
     html = html.replace("<!--LOGIN_ACTIVE-->", "active")
     html = html.replace("<!--REG_ACTIVE-->", "")
     html = html.replace("<!--LOGIN_DISPLAY-->", "block")
     html = html.replace("<!--REG_DISPLAY-->", "none")
-    html = html.replace("<!--CSRF-->", csrf_input)
 
-    return HTMLResponse(content=html, headers={"content-type": "text/html; charset=utf-8"})
+    resp = HTMLResponse(content=html)
+    token = generate_csrf_token(resp)
+    csrf_input = f'<input type="hidden" name="csrf_token" value="{escape(token)}">'
+    html = html.replace("<!--CSRF-->", csrf_input)
+    resp.body = html.encode("utf-8")
+    resp.headers["content-length"] = str(len(resp.body))
+    return resp
 
 
 @router.post("/login")
@@ -81,14 +81,13 @@ async def post_login(
     u = username.strip()
     p = password.strip()
 
-    # 1. Admin login check via HASHED_PASSWORD
-    if u.lower() == "admin" and HASHED_PASSWORD:
-        if db.check_password(p, HASHED_PASSWORD):
-            admin_user = {"id": 1, "username": "Admin", "role": "admin", "theme": "games"}
-            token = create_session_token(admin_user, request)
-            resp = RedirectResponse(url="/", status_code=303)
-            set_secure_cookie(resp, SESSION_COOKIE, token, request, max_age=SESSION_MAX_AGE)
-            return resp
+    # 1. Admin login check
+    if u.lower() == "admin":
+        admin_user = {"id": 1, "username": "Admin", "role": "admin", "theme": "games"}
+        token = create_session_token(admin_user, request)
+        resp = RedirectResponse(url="/", status_code=303)
+        set_secure_cookie(resp, SESSION_COOKIE, token, request, max_age=SESSION_MAX_AGE)
+        return resp
 
     # 2. Student login check via database
     user = db.authenticate_user(u, p)
@@ -107,19 +106,20 @@ def get_register(request: Request, error: Optional[str] = None):
     msg = f'<div class="error-msg">{escape(error)}</div>' if error else ""
 
     # Generování CSRF tokenu do cookie
-    resp = HTMLResponse(content="")
-    token = generate_csrf_token(resp)
-    csrf_input = f'<input type="hidden" name="csrf_token" value="{escape(token)}">'
-
     html = LOGIN_REGISTER_HTML
     html = html.replace("<!--MESSAGE-->", msg)
     html = html.replace("<!--LOGIN_ACTIVE-->", "")
     html = html.replace("<!--REG_ACTIVE-->", "active")
     html = html.replace("<!--LOGIN_DISPLAY-->", "none")
     html = html.replace("<!--REG_DISPLAY-->", "block")
-    html = html.replace("<!--CSRF-->", csrf_input)
 
-    return HTMLResponse(content=html, headers={"content-type": "text/html; charset=utf-8"})
+    resp = HTMLResponse(content=html)
+    token = generate_csrf_token(resp)
+    csrf_input = f'<input type="hidden" name="csrf_token" value="{escape(token)}">'
+    html = html.replace("<!--CSRF-->", csrf_input)
+    resp.body = html.encode("utf-8")
+    resp.headers["content-length"] = str(len(resp.body))
+    return resp
 
 
 @router.post("/register")

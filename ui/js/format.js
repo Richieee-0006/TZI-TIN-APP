@@ -63,7 +63,7 @@ function fmt(s) {
     s = s.replace(/([0-9A-Za-z()−\-+·…]+!)\s*\/\s*(\(\([0-9A-Za-z()−\-+·!\s]+\)\)|\([0-9A-Za-z−\-+·!\s]+\)!?|[0-9A-Za-z]+!)/g, (_, num, den) => {
       let d = den.trim();
       if (d.startsWith('((') && d.endsWith('))')) d = d.slice(1, -1);
-      return renderLatexExpr(`\\frac{${toLatexMathStr(num)}}{${toLatexMathStr(d)}}`, false);
+      return pushMath(`\\frac{${toLatexMathStr(num)}}{${toLatexMathStr(d)}}`, false);
     });
     // 5. Inline factorial equations & combinatorial expressions C(...), V(...), P(...)
     s = s.replace(/\([A-Za-z0-9+\-−]+\)!\s*=\s*[A-Za-z0-9()+\-−·…!\s]+/g, m => pushMath(toLatexMathStr(m), false));

@@ -1,6 +1,8 @@
 """Studijní API: profil, otázky, postup a synchronizace offline fronty."""
 import json
-from typing import Dict, Any
+import time
+from collections import defaultdict
+from typing import Dict, Any, List
 from fastapi import APIRouter, Request, HTTPException, Depends
 import db
 import scoring
@@ -145,15 +147,27 @@ async def api_post_progress(request: Request, source: str = "", user: Dict[str, 
 
     # Pokud klient poslal explicitní informaci o poslední zodpovězené otázce
     score_result = None
-    if latest_answer and isinstance(latest_answer, dict) and "id" in latest_answer:
+    if latest_answer is not None:
+        if not isinstance(latest_answer, dict) or "id" not in latest_answer:
+            raise HTTPException(status_code=400, detail="Neplatný formát odpovědi (chybí id)")
+
         q_id = str(latest_answer["id"])
+        if not questions.ALL_QUESTIONS:
+            questions.refresh_questions()
         q = questions.ALL_QUESTIONS.get(q_id)
-        u_ans = latest_answer.get("userKeys") or latest_answer.get("user_answer")
-        # Anti-spoofing: server verifikuje odpověď proti bankám
-        if q and u_ans is not None:
-            is_correct = verify_answer(q, u_ans)
+        if not q:
+            raise HTTPException(status_code=400, detail=f"Neznámá otázka: {q_id}")
+
+        # Anti-spoofing: striktně vyžadovat userKeys nebo user_answer, zakázat isCorrect fallback
+        u_ans = None
+        if "userKeys" in latest_answer and latest_answer["userKeys"] is not None:
+            u_ans = latest_answer["userKeys"]
+        elif "user_answer" in latest_answer and latest_answer["user_answer"] is not None:
+            u_ans = latest_answer["user_answer"]
         else:
-            is_correct = bool(latest_answer.get("isCorrect"))
+            raise HTTPException(status_code=400, detail="Chybí userKeys nebo user_answer")
+
+        is_correct = verify_answer(q, u_ans)
         score_result = scoring.record_question_answer(user_id, q_id, is_correct)
 
     # Uložit stav do user_progress
@@ -247,8 +261,35 @@ async def api_sync(request: Request, user: Dict[str, Any] = Depends(require_user
     }
 
 
+# --- Rate limiting pro /api/client-error (10 požadavků za 60 s na IP) ---
+_client_error_rate_limits: dict[str, List[float]] = defaultdict(list)
+CLIENT_ERROR_MAX_REQUESTS = 10
+CLIENT_ERROR_WINDOW = 60  # sekund
+
+
+def _check_client_error_rate_limit(ip: str) -> bool:
+    """Vrací True pokud je požadavek povolen, False pokud IP překročila limit."""
+    now = time.time()
+    window_start = now - CLIENT_ERROR_WINDOW
+    timestamps = [t for t in _client_error_rate_limits[ip] if t > window_start]
+    if len(timestamps) >= CLIENT_ERROR_MAX_REQUESTS:
+        _client_error_rate_limits[ip] = timestamps
+        return False
+    timestamps.append(now)
+    _client_error_rate_limits[ip] = timestamps
+    return True
+
+
+def reset_client_error_rate_limits():
+    """Pomocná funkce pro testy k resetování stavu rate limiteru."""
+    _client_error_rate_limits.clear()
+
+
 @router.post("/api/client-error")
 async def api_client_error(request: Request):
+    ip = request.client.host if request.client else "unknown"
+    if not _check_client_error_rate_limit(ip):
+        raise HTTPException(status_code=429, detail="Příliš mnoho chybových hlášení. Rate limit překročen.")
     try:
         body = await request.json()
     except Exception:
@@ -258,3 +299,4 @@ async def api_client_error(request: Request):
     stack = str(body.get("stack", ""))[:2000]
     db.log_error("UI_ERROR", msg, endpoint=ep, stack_trace=stack)
     return {"ok": True}
+

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tzi-pwa-v9';
+const CACHE_NAME = 'tzi-pwa-v10';
 const STATIC_ASSETS = [
   '/manifest.webmanifest',
   '/icon.svg',
@@ -37,6 +37,7 @@ self.addEventListener('fetch', event => {
   const req = event.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
+  if (url.origin !== location.origin) return;
   if (['/login', '/register', '/logout', '/trial', '/admin', '/quiz.wasm'].some(p => url.pathname.startsWith(p))) return;
 
     if (url.pathname.startsWith('/static/')) {
@@ -82,6 +83,10 @@ self.addEventListener('fetch', event => {
   }
 
   event.respondWith(
-    fetch(req).catch(() => caches.match(req))
+    fetch(req).catch(async () => {
+      const match = await caches.match(req);
+      if (match) return match;
+      return new Response('', { status: 408, statusText: 'Offline' });
+    })
   );
 });

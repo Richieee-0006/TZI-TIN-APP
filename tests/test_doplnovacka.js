@@ -115,5 +115,49 @@ for (let t = 0; t < N; t++) {
 }
 pos.forEach((n, i) => { if (n < N * 0.15 || n > N * 0.35) { fail++; console.log(`FAIL pozice ${'ABCD'[i]}: ${n}× z ${N}`); } });
 console.log(`míchání: ${N} sad, správná odpověď na pozici A/B/C/D: ${pos.join('/')}, různých pořadí: ${orders.size}/24`);
+
+// ── R1: přepínání možností u jednovolbových otázek (chování radio buttonu) ──
+run('beginSession([Q1], false)');
+const sRadio = shown();
+key(sRadio[0].letter);
+assert.strictEqual(run('selected.size'), 1, 'vybrána právě jedna možnost');
+assert(run(`selected.has("${sRadio[0].key}")`), 'vybrána první možnost');
+assert(els.opts.children.find(c => c.id === 'opt-' + sRadio[0].key).classList.contains('selected'), 'DOM třída selected na první možnosti');
+
+// Stisk druhé možnosti: musí automaticky odznačit první a označit druhou
+key(sRadio[1].letter);
+assert.strictEqual(run('selected.size'), 1, 'stále vybrána právě jedna možnost po přepnutí');
+assert(!run(`selected.has("${sRadio[0].key}")`), 'původní první možnost odznačena');
+assert(run(`selected.has("${sRadio[1].key}")`), 'nová druhá možnost označena');
+assert(!els.opts.children.find(c => c.id === 'opt-' + sRadio[0].key).classList.contains('selected'), 'DOM třída selected odebrána z první možnosti');
+assert(els.opts.children.find(c => c.id === 'opt-' + sRadio[1].key).classList.contains('selected'), 'DOM třída selected přidána na druhou možnost');
+
+// Opětovný klik na vybranou možnost ji odznačí
+key(sRadio[1].letter);
+assert.strictEqual(run('selected.size'), 0, 'možnost odznačena po opětovném kliku');
+assert(!els.opts.children.find(c => c.id === 'opt-' + sRadio[1].key).classList.contains('selected'), 'DOM třída selected odebrána');
+
+// Výběr třetí a následně čtvrté možnosti
+key(sRadio[2].letter);
+assert.strictEqual(run('selected.size'), 1);
+assert(run(`selected.has("${sRadio[2].key}")`));
+key(sRadio[3].letter);
+assert.strictEqual(run('selected.size'), 1);
+assert(run(`selected.has("${sRadio[3].key}")`));
+assert(!run(`selected.has("${sRadio[2].key}")`));
+
+// Ověření vícevolbových otázek (nesmí se chovat jako radio)
+run('beginSession([Q2], false)');
+const sMulti = shown();
+key(sMulti[0].letter);
+key(sMulti[1].letter);
+assert.strictEqual(run('selected.size'), 2, 'vícevolbová otázka umožňuje označit více možností');
+
+// ── R9: Ověření odstranění generátoru pozvánek z admin.html ──
+const adminTpl = fs.readFileSync(path.join(ROOT, 'webapp/templates/admin.html'), 'utf8');
+assert(!adminTpl.includes('/admin/invite'), 'admin.html nesmí obsahovat /admin/invite');
+assert(!adminTpl.includes('Generátor jednorázových kódů'), 'admin.html nesmí obsahovat Generátor jednorázových kódů');
+
+console.log('R1 a R9 automatické testy: OK');
 console.log(`chyb: ${fail}`);
 process.exit(fail ? 1 : 0);

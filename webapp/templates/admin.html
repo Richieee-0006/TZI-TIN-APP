@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TZI Trenér - Admin Panel</title>
+    <link rel="icon" type="image/svg+xml" href="/icon.svg">
     <style>
         :root {
             --bg: #1e1e2e;
@@ -123,23 +124,13 @@
     <header>
         <div>
             <h1>🛡️ TZI Admin Panel</h1>
-            <p style="color:var(--text-dim); font-size:0.9rem;">Správa kódů a přehled studentů</p>
+            <p style="color:var(--text-dim); font-size:0.9rem;">Přehled studentů a systémových chyb</p>
         </div>
         <div class="header-actions">
             <a href="/" class="btn" style="background:var(--border); color:var(--text);">Zpět do trenéra</a>
             <a href="/logout" class="btn" style="background:var(--red); color:#11111b;">Odhlásit</a>
         </div>
     </header>
-
-    <!--GENERATED_CODE_SECTION-->
-
-    <div class="card">
-        <h2>🎫 Generátor jednorázových kódů</h2>
-        <p style="color:var(--text-dim); font-size:0.95rem;">Každý vygenerovaný kód může použít právě jeden spolužák k registraci. Kód se v databázi uloží jako bezpečný hash.</p>
-        <form method="POST" action="/admin/invite" style="margin-top:1rem;">
-            <button type="submit" class="btn">✨ Vygenerovat nový kód pozvánky</button>
-        </form>
-    </div>
 
     <div class="card">
         <h2>👥 Registrovaní studenti & Žebříček</h2>
@@ -164,24 +155,157 @@
     </div>
 
     <div class="card" style="border-color: rgba(243, 139, 168, 0.4);">
-        <h2>⚠️ Poslední systémové chyby</h2>
-        <p style="color:var(--text-dim); font-size:0.95rem;">Záznamy chyb z klienta (UI) a backendu.</p>
-        <div class="table-wrap" style="margin-top:1rem;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
+            <div>
+                <h2>⚠️ Poslední systémové chyby</h2>
+                <p style="color:var(--text-dim); font-size:0.95rem;">Záznamy chyb z klienta (UI) a backendu.</p>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+                <label for="limit-select" style="font-size:0.85rem; color:var(--text-dim); margin:0;">Zobrazit záznamů:</label>
+                <select id="limit-select" onchange="window.location.href='/admin?limit=' + this.value" style="padding:0.35rem 0.6rem; border-radius:0.4rem; background:#11111b; color:var(--text); border:1px solid var(--border); font-size:0.85rem;">
+                    <option value="30">30</option>
+                    <option value="100">100</option>
+                    <option value="300">300</option>
+                    <option value="500">500</option>
+                    <option value="1000">1000</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Filtrační lišta -->
+        <div style="margin-top:1.2rem; padding:0.9rem; background:#11111b; border:1px solid var(--border); border-radius:0.6rem; display:flex; flex-wrap:wrap; gap:0.75rem; align-items:center;">
+            <div style="flex:2; min-width:200px;">
+                <input type="text" id="filter-search" placeholder="🔍 Hledat ve zprávě, stacktrace..." style="width:100%; padding:0.45rem 0.75rem; border-radius:0.4rem; background:#181825; color:var(--text); border:1px solid var(--border); font-size:0.85rem;" oninput="applyErrorFilters()">
+            </div>
+            <div style="flex:1; min-width:130px;">
+                <select id="filter-level" onchange="applyErrorFilters()" style="width:100%; padding:0.45rem 0.6rem; border-radius:0.4rem; background:#181825; color:var(--text); border:1px solid var(--border); font-size:0.85rem;">
+                    <option value="">Všechny úrovně</option>
+                    <option value="UI_ERROR">UI_ERROR</option>
+                    <option value="ERROR">ERROR</option>
+                    <option value="WARNING">WARNING</option>
+                    <option value="INFO">INFO</option>
+                </select>
+            </div>
+            <div style="flex:1; min-width:140px;">
+                <input type="text" id="filter-endpoint" placeholder="Endpoint / Soubor" style="width:100%; padding:0.45rem 0.75rem; border-radius:0.4rem; background:#181825; color:var(--text); border:1px solid var(--border); font-size:0.85rem;" oninput="applyErrorFilters()">
+            </div>
+            <div style="flex:1; min-width:100px;">
+                <input type="text" id="filter-uid" placeholder="User ID" style="width:100%; padding:0.45rem 0.75rem; border-radius:0.4rem; background:#181825; color:var(--text); border:1px solid var(--border); font-size:0.85rem;" oninput="applyErrorFilters()">
+            </div>
+            <div style="flex:1; min-width:120px;">
+                <select id="filter-sort" onchange="applyErrorFilters()" style="width:100%; padding:0.45rem 0.6rem; border-radius:0.4rem; background:#181825; color:var(--text); border:1px solid var(--border); font-size:0.85rem;">
+                    <option value="desc">Od nejnovějších</option>
+                    <option value="asc">Od nejstarších</option>
+                </select>
+            </div>
+            <div>
+                <button type="button" onclick="resetErrorFilters()" style="padding:0.45rem 0.75rem; border-radius:0.4rem; background:#313244; color:var(--text); border:none; cursor:pointer; font-size:0.85rem;">Reset</button>
+            </div>
+        </div>
+
+        <div style="margin-top:0.6rem; font-size:0.85rem; color:var(--text-dim); display:flex; justify-content:space-between; align-items:center;">
+            <span id="filter-stats">Zobrazeno záznamů: počítám...</span>
+            <button type="button" onclick="toggleAllStacks()" id="btn-toggle-stacks" style="background:none; border:none; color:var(--mauve); cursor:pointer; font-size:0.85rem; text-decoration:underline;">Rozbalit všechny stacktrace</button>
+        </div>
+
+        <div class="table-wrap" style="margin-top:0.8rem;">
             <table>
                 <thead>
                     <tr>
-                        <th>Čas</th>
+                        <th style="cursor:pointer;" onclick="toggleSort()">Čas ↕</th>
                         <th>Úroveň</th>
                         <th>Endpoint / Soubor</th>
                         <th>User ID</th>
                         <th>Zpráva</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="errors-tbody">
                     <!--ERRORS_ROWS-->
                 </tbody>
             </table>
         </div>
     </div>
+
+    <script>
+        const initialLimit = "<!--CURRENT_LIMIT-->";
+        const limitSelect = document.getElementById("limit-select");
+        if (limitSelect && initialLimit) {
+            limitSelect.value = initialLimit;
+        }
+
+        let allStacksExpanded = false;
+        function toggleAllStacks() {
+            allStacksExpanded = !allStacksExpanded;
+            document.querySelectorAll("#errors-tbody details").forEach(d => {
+                d.open = allStacksExpanded;
+            });
+            document.getElementById("btn-toggle-stacks").textContent = allStacksExpanded ? "Sbalit všechny stacktrace" : "Rozbalit všechny stacktrace";
+        }
+
+        function toggleSort() {
+            const sortEl = document.getElementById("filter-sort");
+            sortEl.value = sortEl.value === "desc" ? "asc" : "desc";
+            applyErrorFilters();
+        }
+
+        function resetErrorFilters() {
+            document.getElementById("filter-search").value = "";
+            document.getElementById("filter-level").value = "";
+            document.getElementById("filter-endpoint").value = "";
+            document.getElementById("filter-uid").value = "";
+            document.getElementById("filter-sort").value = "desc";
+            applyErrorFilters();
+        }
+
+        function applyErrorFilters() {
+            const query = (document.getElementById("filter-search").value || "").toLowerCase().trim();
+            const level = (document.getElementById("filter-level").value || "").trim().toUpperCase();
+            const endpoint = (document.getElementById("filter-endpoint").value || "").toLowerCase().trim();
+            const uid = (document.getElementById("filter-uid").value || "").toLowerCase().trim();
+            const sort = document.getElementById("filter-sort").value;
+
+            const tbody = document.getElementById("errors-tbody");
+            const rows = Array.from(tbody.querySelectorAll("tr.error-item"));
+
+            let visibleCount = 0;
+            rows.forEach(row => {
+                const rLevel = (row.getAttribute("data-level") || "").toUpperCase();
+                const rEndpoint = (row.getAttribute("data-endpoint") || "").toLowerCase();
+                const rUid = (row.getAttribute("data-uid") || "").toLowerCase();
+                const rText = row.textContent.toLowerCase();
+
+                let match = true;
+                if (level && rLevel !== level) match = false;
+                if (match && endpoint && !rEndpoint.includes(endpoint)) match = false;
+                if (match && uid && !rUid.includes(uid)) match = false;
+                if (match && query && !rText.includes(query)) match = false;
+
+                if (match) {
+                    row.style.display = "";
+                    visibleCount++;
+                } else {
+                    row.style.display = "none";
+                }
+            });
+
+            // Řazení podle data
+            const visibleRows = rows.filter(r => r.style.display !== "none");
+            visibleRows.sort((a, b) => {
+                const tsA = a.getAttribute("data-ts") || "";
+                const tsB = b.getAttribute("data-ts") || "";
+                return sort === "asc" ? tsA.localeCompare(tsB) : tsB.localeCompare(tsA);
+            });
+            visibleRows.forEach(r => tbody.appendChild(r));
+
+            const stats = document.getElementById("filter-stats");
+            if (stats) {
+                stats.textContent = `Zobrazeno ${visibleCount} z ${rows.length} záznamů`;
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", applyErrorFilters);
+        // Spustit i přímo pro případ již načteného DOMu
+        applyErrorFilters();
+    </script>
 </body>
 </html>

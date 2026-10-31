@@ -1,4 +1,5 @@
 """PWA a statika (WASM, manifest, service worker), webhook a hlavní stránka."""
+import secrets
 from fastapi import APIRouter, Request, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse, PlainTextResponse, FileResponse
 import tzi_trener
@@ -30,9 +31,15 @@ def get_icon():
     return FileResponse(tzi_trener.UI_DIR / "icon.svg", media_type="image/svg+xml")
 
 
+@router.get("/favicon.ico")
+def get_favicon():
+    return FileResponse(tzi_trener.UI_DIR / "icon.svg", media_type="image/svg+xml")
+
+
 @router.post("/webhook")
 def post_webhook(request: Request, secret: str = ""):
-    if WEBHOOK_SECRET and secret != WEBHOOK_SECRET:
+    header_secret = request.headers.get("X-Webhook-Secret") or secret
+    if not WEBHOOK_SECRET or not secrets.compare_digest(header_secret, WEBHOOK_SECRET):
         raise HTTPException(status_code=403, detail="Forbidden")
     out = git_pull()
     return PlainTextResponse(f"OK: {out}")

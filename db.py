@@ -311,6 +311,12 @@ def register_user(
 
     if username and username.strip():
         nickname = username.strip()
+        if len(nickname) < 3 or len(nickname) > 25:
+            return False, "Uživatelské jméno musí mít 3 až 25 znaků.", None
+        if not re.match(r"^[A-Za-z0-9_áčďéěíňóřšťúůýžÁČĎÉĚÍŇÓŘŠŤÚŮÝŽ\-]+$", nickname):
+            return False, "Jméno smí obsahovat pouze písmena, čísla, pomlčku a podtržítko.", None
+        if nickname.lower() == "admin":
+            return False, "Jméno 'admin' je vyhrazeno.", None
         existing = conn.execute(
             "SELECT id FROM users WHERE username = ? COLLATE NOCASE",
             (nickname,)

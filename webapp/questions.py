@@ -21,6 +21,14 @@ def strip_accents(s: str) -> str:
     return "".join(c for c in unicodedata.normalize("NFD", str(s)) if unicodedata.category(c) != "Mn")
 
 
+def norm_input_val(s: str) -> str:
+    cleaned = "".join(c.upper() for c in str(s) if ord(c) > 32 and ord(c) != 0xA0 and c != "_")
+    i = 0
+    while i < len(cleaned) - 1 and cleaned[i] == "0":
+        i += 1
+    return cleaned[i:]
+
+
 def norm_str(s: str) -> str:
     cleaned = strip_accents(str(s).lower())
     return " ".join("".join(c if c.isalnum() else " " for c in cleaned).split())
@@ -47,8 +55,13 @@ def verify_answer(q: Dict[str, Any], user_answer: Any) -> bool:
             u_set = {str(user_answer)}
         return len(correct) > 0 and u_set == correct
     elif q_type == "input":
-        expected = norm_str(q.get("answer", ""))
+        raw_exp = q.get("answer", "")
         val = user_answer[0] if isinstance(user_answer, list) and user_answer else user_answer
+        # Shoda buď přes norm_input_val (identická s WASM normInput včetně ořezu úvodních nul)
+        # nebo fallback přes norm_str
+        if norm_input_val(val) == norm_input_val(raw_exp):
+            return True
+        expected = norm_str(raw_exp)
         given = norm_str(val)
         return given == expected or given.replace(" ", "") == expected.replace(" ", "")
     elif q_type == "recall":

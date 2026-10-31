@@ -235,7 +235,6 @@ def submit_comp_room_result(
     correct_count: int,
     total_questions: int,
     time_ms: int = 0,
-    explicit_score: Optional[int] = None,
 ) -> Dict[str, Any]:
     """Zaznamená výsledek hráče v místnosti, aktualizuje pořadí v místnosti i globální statistiky daného režimu."""
     conn = get_db()
@@ -247,11 +246,8 @@ def submit_comp_room_result(
     correct_clean = max(0, int(correct_count or 0))
     total_clean = max(1, int(total_questions or row["question_count"] or KOTH_DEFAULT_QUESTIONS))
 
-    if explicit_score is not None:
-        score = max(0, int(explicit_score))
-    else:
-        speed_bonus = max(0, 120 - (time_ms_clean // 1000)) if correct_clean > 0 else 0
-        score = correct_clean * 100 + speed_bonus
+    speed_bonus = max(0, 120 - (time_ms_clean // 1000)) if correct_clean > 0 else 0
+    score = correct_clean * 100 + speed_bonus
 
     mode = row["mode"]
     with conn:
@@ -303,11 +299,11 @@ def submit_comp_room_result(
     # Propíšeme i do globální tabulky příslušného kompetitivního režimu
     mode_res = {}
     if mode == "koth":
-        mode_res = submit_koth_challenge(user_id, username, correct_clean, total_clean, time_ms_clean, explicit_score=score)
+        mode_res = submit_koth_challenge(user_id, username, correct_clean, total_clean, time_ms_clean)
     elif mode == "ffa":
-        mode_res = submit_ffa_run(user_id, username, correct_clean, total_clean, time_ms_clean, explicit_score=score)
+        mode_res = submit_ffa_run(user_id, username, correct_clean, total_clean, time_ms_clean)
     elif mode == "duel":
-        mode_res = submit_duel_match(user_id, username, correct_clean, total_clean, time_ms_clean, explicit_score=score)
+        mode_res = submit_duel_match(user_id, username, correct_clean, total_clean, time_ms_clean)
 
     room_after = get_comp_room(room_id)
     rank_in_room = 1

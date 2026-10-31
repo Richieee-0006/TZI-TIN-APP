@@ -146,7 +146,12 @@ function toggleOpt(letter) {
   if (isInput(q)) return;
   if (selected.has(letter)) { selected.delete(letter); $('opt-' + letter).classList.remove('selected'); }
   else {
-    if (selected.size >= q.correct.length) return;
+    if (q.correct && q.correct.length === 1) {
+      selected.forEach(l => $('opt-' + l)?.classList.remove('selected'));
+      selected.clear();
+    } else if (selected.size >= q.correct.length) {
+      return;
+    }
     selected.add(letter); $('opt-' + letter).classList.add('selected');
   }
   syncAction();
