@@ -113,7 +113,7 @@ async function submitUsernameChange() {
   try {
     const res = await fetch('/api/account/username', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json', 'X-TZI': '1'},
+      headers: {'Content-Type': 'application/json', 'X-TZI': '1', 'X-CSRF-Token': getCsrfToken()},
       body: JSON.stringify({ username })
     });
     const data = await res.json().catch(() => ({}));
@@ -135,7 +135,7 @@ async function submitPasswordChange() {
   try {
     const res = await fetch('/api/account/password', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json', 'X-TZI': '1'},
+      headers: {'Content-Type': 'application/json', 'X-TZI': '1', 'X-CSRF-Token': getCsrfToken()},
       body: JSON.stringify({
         current_password: curEl.value,
         new_password: newEl.value,
@@ -254,7 +254,7 @@ async function submitDeleteProfileStep() {
   try {
     const res = await fetch('/api/account/delete-profile', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json', 'X-TZI': '1'},
+      headers: {'Content-Type': 'application/json', 'X-TZI': '1', 'X-CSRF-Token': getCsrfToken()},
       body: JSON.stringify({
         step1_ack: true,
         confirm_username: ($('del-prof-user-inp') ? $('del-prof-user-inp').value : '').trim(),
@@ -287,7 +287,7 @@ async function confirmRevalidatedDelete() {
   try {
     const res = await fetch('/api/account/revalidate-delete', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json', 'X-TZI': '1'},
+      headers: {'Content-Type': 'application/json', 'X-TZI': '1', 'X-CSRF-Token': getCsrfToken()},
       body: JSON.stringify({
         password,
         scope: pendingDeleteScope,

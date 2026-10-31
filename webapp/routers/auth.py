@@ -81,20 +81,13 @@ async def post_login(
     u = username.strip()
     p = password.strip()
 
-    # 1. Admin login check
-    if u.lower() == "admin":
-        admin_user = {"id": 1, "username": "Admin", "role": "admin", "theme": "games"}
-        token = create_session_token(admin_user, request)
-        resp = RedirectResponse(url="/", status_code=303)
-        set_secure_cookie(resp, SESSION_COOKIE, token, request, max_age=SESSION_MAX_AGE)
-        return resp
-
-    # 2. Student login check via database
+    # Autentizace přes databázi (včetně admina s bcrypt hashem)
     user = db.authenticate_user(u, p)
     if user:
         token = create_session_token(user, request)
         resp = RedirectResponse(url="/", status_code=303)
         set_secure_cookie(resp, SESSION_COOKIE, token, request, max_age=SESSION_MAX_AGE)
+        generate_csrf_token(resp)
         return resp
 
     _record_attempt(ip)
@@ -165,6 +158,7 @@ async def post_register(
     assigned_nick = user["username"]
     resp = RedirectResponse(url=f"/?welcome_nick={assigned_nick}", status_code=303)
     set_secure_cookie(resp, SESSION_COOKIE, token, request, max_age=SESSION_MAX_AGE)
+    generate_csrf_token(resp)
     return resp
 
 
@@ -179,6 +173,7 @@ def get_trial(request: Request, response: Response):
     token = create_session_token(trial_user, request)
     resp = RedirectResponse(url="/", status_code=303)
     set_secure_cookie(resp, SESSION_COOKIE, token, request, max_age=86400)
+    generate_csrf_token(resp)
     return resp
 
 

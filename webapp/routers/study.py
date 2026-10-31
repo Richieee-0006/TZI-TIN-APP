@@ -3,26 +3,29 @@ import json
 import time
 from collections import defaultdict
 from typing import Dict, Any, List
-from fastapi import APIRouter, Request, HTTPException, Depends
+from fastapi import APIRouter, Request, Response, HTTPException, Depends
 import db
 import scoring
 import tzi_trener
 from .. import questions
 from ..questions import verify_answer
 from ..sessions import require_user
+from ..csrf import ensure_csrf_token
 
 router = APIRouter()
 
 
 # --- API Endpoints ---
 @router.get("/api/me")
-def api_me(user: Dict[str, Any] = Depends(require_user)):
+def api_me(request: Request, response: Response, user: Dict[str, Any] = Depends(require_user)):
+    csrf_tok = ensure_csrf_token(request, response)
     if user.get("role") == "trial" or user.get("user_id") == 0:
         return {
             "user_id": 0,
             "username": "Host (Trial)",
             "role": "trial",
             "theme": "catppuccin",
+            "csrf_token": csrf_tok,
             "points": 0,
             "streak": 0,
             "best_streak": 0,
@@ -41,6 +44,7 @@ def api_me(user: Dict[str, Any] = Depends(require_user)):
         "username": user_db["username"] if user_db else user["username"],
         "role": user.get("role", "student"),
         "theme": user_db.get("theme", "games") if user_db else "games",
+        "csrf_token": csrf_tok,
         "points": stats["points"],
         "streak": stats["current_streak"],
         "best_streak": stats["best_streak"],

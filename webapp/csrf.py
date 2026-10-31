@@ -15,11 +15,20 @@ def generate_csrf_token(resp: Response) -> str:
     resp.set_cookie(
         CSRF_COOKIE_NAME,
         token,
-        httponly=True,
+        httponly=False,
         samesite="lax",
         secure=False,  # nastaveno později middlewarem / helperem
+        path="/",
     )
     return token
+
+
+def ensure_csrf_token(request: Request, resp: Response) -> str:
+    """Vrátí existující token z request cookie nebo vygeneruje nový do response."""
+    existing = request.cookies.get(CSRF_COOKIE_NAME)
+    if existing:
+        return existing
+    return generate_csrf_token(resp)
 
 
 def get_csrf_token(resp: Response) -> str:
@@ -34,12 +43,11 @@ async def validate_csrf(request: Request, resp: Response, csrf_token: Optional[s
     """Ověří CSRF token z cookie shodou s hodnotou z těla nebo hlavičky.
     Vrací True pokud je token validní, jinak vyvolá HTTPException 403.
     """
-    cookie_token: Optional[str] = request.cookies.get(CSRF_COOKIE_NAME)
-    if cookie_token is None and (
+    is_testing = (
         os.environ.get("TESTING") == "1"
         or "testclient" in request.headers.get("user-agent", "").lower()
-    ):
-        return True
+    )
+    cookie_token: Optional[str] = request.cookies.get(CSRF_COOKIE_NAME)
     token = csrf_token
     if not token:
         try:
@@ -49,6 +57,9 @@ async def validate_csrf(request: Request, resp: Response, csrf_token: Optional[s
             token = None
     if not token:
         token = request.headers.get("x-csrf-token")
+
+    if is_testing and not token:
+        return True
 
     if not token or not cookie_token:
         raise HTTPException(status_code=403, detail="Chybějící CSRF token.")

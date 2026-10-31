@@ -723,3 +723,49 @@ def test_r6_ffa_time_and_answer_validation(temp_env):
     assert res_bad_time.status_code == 400
     assert "Neplatný čas (time_ms)." in res_bad_time.json()["detail"]
 
+
+def test_admin_auth_security_no_bypass(temp_env):
+    """Admin účet nelze obejít libovolným heslem."""
+    client = temp_env
+    r = client.post("/login", data={"username": "admin", "password": "cokoliv123"}, follow_redirects=False)
+    assert r.status_code == 303
+    assert "error=" in r.headers["location"]
+    assert server.SESSION_COOKIE not in r.cookies
+
+    import bcrypt
+    pw_hash = bcrypt.hashpw(b"super_admin_pass", bcrypt.gensalt()).decode("utf-8")
+    db.ensure_admin_exists(pw_hash)
+
+    r_bad = client.post("/login", data={"username": "admin", "password": "wrong_password"}, follow_redirects=False)
+    assert r_bad.status_code == 303
+    assert "error=" in r_bad.headers["location"]
+    assert server.SESSION_COOKIE not in r_bad.cookies
+
+    r_ok = client.post("/login", data={"username": "admin", "password": "super_admin_pass"}, follow_redirects=False)
+    assert r_ok.status_code == 303
+    assert r_ok.headers["location"] == "/"
+    assert server.SESSION_COOKIE in r_ok.cookies
+
+
+def test_csrf_double_submit_and_api_me(temp_env):
+    """CSRF token je v /api/me i v cookie, a /api/account/username ověřuje X-CSRF-Token."""
+    client = temp_env
+    r = client.post("/register", data={"username": "CsrfUser", "password": "secret_password123", "password_confirm": "secret_password123"}, follow_redirects=False)
+    client.cookies.set(server.SESSION_COOKIE, r.cookies.get(server.SESSION_COOKIE))
+
+    me_res = client.get("/api/me")
+    assert me_res.status_code == 200
+    data = me_res.json()
+    assert "csrf_token" in data and len(data["csrf_token"]) == 64
+    csrf_token = data["csrf_token"]
+
+    assert client.cookies.get("csrf_token") == csrf_token
+
+    bad_res = client.post("/api/account/username", json={"username": "HackedNick"}, headers={"X-CSRF-Token": "invalid_csrf_token_value"})
+    assert bad_res.status_code == 403
+    assert bad_res.json()["detail"] == "Neplatný CSRF token."
+
+    good_res = client.post("/api/account/username", json={"username": "ValidNick"}, headers={"X-CSRF-Token": csrf_token})
+    assert good_res.status_code == 200
+    assert good_res.json()["username"] == "ValidNick"
+

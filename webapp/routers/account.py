@@ -107,9 +107,8 @@ async def api_account_username(request: Request, response: Response, user: Dict[
     if not ok or not updated_user:
         raise HTTPException(status_code=400, detail=err or "Změna jména selhala.")
     token = create_session_token(updated_user, request)
-    resp = JSONResponse({"ok": True, "username": updated_user["username"]})
-    set_secure_cookie(resp, SESSION_COOKIE, token, request, max_age=86400 * 30)
-    return resp
+    set_secure_cookie(response, SESSION_COOKIE, token, request, max_age=86400 * 30)
+    return {"ok": True, "username": updated_user["username"]}
 
 
 @router.post("/api/account/password")

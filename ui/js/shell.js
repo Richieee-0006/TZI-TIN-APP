@@ -1,5 +1,16 @@
 let currentUserData = null;
 
+function getCsrfToken() {
+  if (typeof document !== 'undefined' && document.cookie) {
+    const m = document.cookie.match(/(?:^|;\s*)csrf_token=([^;]+)/);
+    if (m && m[1]) return decodeURIComponent(m[1]);
+  }
+  if (currentUserData && currentUserData.csrf_token) {
+    return currentUserData.csrf_token;
+  }
+  return '';
+}
+
 function showToast(html) {
   const t = document.getElementById('score-toast');
   if (!t) return;
