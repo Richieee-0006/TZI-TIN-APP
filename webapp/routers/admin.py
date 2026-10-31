@@ -3,6 +3,7 @@ from html import escape
 from typing import Dict, Any
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import HTMLResponse
+import db
 import scoring
 from ..pages import ADMIN_HTML
 from ..sessions import require_admin

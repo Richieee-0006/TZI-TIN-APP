@@ -93,7 +93,7 @@ def api_account_recap(user: Dict[str, Any] = Depends(require_user)):
 
 @router.post("/api/account/username")
 async def api_account_username(request: Request, response: Response, user: Dict[str, Any] = Depends(require_user)):
-    validate_csrf(request, response)
+    await validate_csrf(request, response)
     if user.get("role") == "trial" or user["user_id"] == 0:
         raise HTTPException(status_code=403, detail="V Trial režimu nelze měnit jméno účtu.")
     try:
@@ -112,7 +112,7 @@ async def api_account_username(request: Request, response: Response, user: Dict[
 
 @router.post("/api/account/password")
 async def api_account_password(request: Request, response: Response, user: Dict[str, Any] = Depends(require_user)):
-    validate_csrf(request, response)
+    await validate_csrf(request, response)
     if user.get("role") == "trial" or user["user_id"] == 0:
         raise HTTPException(status_code=403, detail="V Trial režimu nelze měnit heslo.")
     try:
@@ -132,7 +132,7 @@ async def api_account_password(request: Request, response: Response, user: Dict[
 
 @router.post("/api/account/revalidate-delete")
 async def api_account_revalidate_delete(request: Request, response: Response, user: Dict[str, Any] = Depends(require_user)):
-    validate_csrf(request, response)
+    await validate_csrf(request, response)
     try:
         body = await request.json()
     except Exception:
@@ -159,7 +159,7 @@ async def api_account_revalidate_delete(request: Request, response: Response, us
 
 @router.post("/api/account/delete-profile")
 async def api_account_delete_profile(request: Request, response: Response, user: Dict[str, Any] = Depends(require_user)):
-    validate_csrf(request, response)
+    await validate_csrf(request, response)
     if user.get("role") == "trial" or user["user_id"] == 0:
         raise HTTPException(status_code=403, detail="Trial profile cannot be deleted.")
     try:

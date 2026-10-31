@@ -1,5 +1,6 @@
 """Podepsané session tokeny s IP/UA bindigem a závislosti pro autorizaci (require_user, require_admin)."""
 import hashlib
+import secrets
 import time
 from typing import Optional, Dict, Any
 from fastapi import Request, HTTPException, status
@@ -40,7 +41,7 @@ def verify_session_token(
     # IP/UA binding — porovná fingerprint z tokenu s aktuálním klientem
     if request and data.get("fp"):
         current_fp = _client_fingerprint(request)
-        if not hashlib.compare_digest(data["fp"], current_fp):
+        if not secrets.compare_digest(data["fp"], current_fp):
             return None
     return data
 

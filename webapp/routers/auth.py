@@ -68,9 +68,10 @@ async def post_login(
     response: Response,
     username: str = Form(...),
     password: str = Form(...),
+    csrf_token: Optional[str] = Form(None),
 ):
     # CSRF validace
-    validate_csrf(request, response)
+    await validate_csrf(request, response, csrf_token=csrf_token)
 
     # Rate limiting
     ip = request.client.host if request.client else "unknown"
@@ -128,10 +129,11 @@ async def post_register(
     username: Optional[str] = Form(None),
     password: str = Form(...),
     password_confirm: Optional[str] = Form(None),
-    theme: str = Form("games")
+    theme: str = Form("games"),
+    csrf_token: Optional[str] = Form(None),
 ):
     # CSRF validace
-    validate_csrf(request, response)
+    await validate_csrf(request, response, csrf_token=csrf_token)
 
     # Rate limiting
     ip = request.client.host if request.client else "unknown"
