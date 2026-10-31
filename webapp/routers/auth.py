@@ -9,7 +9,7 @@ import db
 from ..config import HASHED_PASSWORD, SESSION_COOKIE, SESSION_MAX_AGE
 from ..pages import LOGIN_REGISTER_HTML
 from ..sessions import create_session_token
-from ..csrf import validate_csrf, clear_csrf_cookie
+from ..csrf import validate_csrf, clear_csrf_cookie, generate_csrf_token
 from ..cookie_utils import set_secure_cookie
 
 router = APIRouter()
@@ -44,14 +44,22 @@ def get_login(request: Request, error: Optional[str] = None, success: Optional[s
     if error:
         msg = f'<div class="error-msg">{escape(error)}</div>'
     elif success:
-        msg = f'<div class="success-msg">{escape(success)}</div>'
+        msg = f"<div class='success-msg'>{escape(success)}</div>"
 
-    html = LOGIN_REGISTER_HTML.replace("<!--MESSAGE-->", msg)
+    # Generování CSRF tokenu do cookie
+    resp = HTMLResponse(content="")
+    token = generate_csrf_token(resp)
+    csrf_input = f'<input type="hidden" name="csrf_token" value="{escape(token)}">'
+
+    html = LOGIN_REGISTER_HTML
+    html = html.replace("<!--MESSAGE-->", msg)
     html = html.replace("<!--LOGIN_ACTIVE-->", "active")
     html = html.replace("<!--REG_ACTIVE-->", "")
     html = html.replace("<!--LOGIN_DISPLAY-->", "block")
     html = html.replace("<!--REG_DISPLAY-->", "none")
-    return html
+    html = html.replace("<!--CSRF-->", csrf_input)
+
+    return HTMLResponse(content=html, headers={"content-type": "text/html; charset=utf-8"})
 
 
 @router.post("/login")
@@ -96,12 +104,21 @@ async def post_login(
 @router.get("/register", response_class=HTMLResponse)
 def get_register(request: Request, error: Optional[str] = None):
     msg = f'<div class="error-msg">{escape(error)}</div>' if error else ""
-    html = LOGIN_REGISTER_HTML.replace("<!--MESSAGE-->", msg)
+
+    # Generování CSRF tokenu do cookie
+    resp = HTMLResponse(content="")
+    token = generate_csrf_token(resp)
+    csrf_input = f'<input type="hidden" name="csrf_token" value="{escape(token)}">'
+
+    html = LOGIN_REGISTER_HTML
+    html = html.replace("<!--MESSAGE-->", msg)
     html = html.replace("<!--LOGIN_ACTIVE-->", "")
     html = html.replace("<!--REG_ACTIVE-->", "active")
     html = html.replace("<!--LOGIN_DISPLAY-->", "none")
     html = html.replace("<!--REG_DISPLAY-->", "block")
-    return html
+    html = html.replace("<!--CSRF-->", csrf_input)
+
+    return HTMLResponse(content=html, headers={"content-type": "text/html; charset=utf-8"})
 
 
 @router.post("/register")
