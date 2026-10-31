@@ -742,20 +742,8 @@ h2 { margin: 0 0 12px; font-size: 1.05rem; font-weight: 700; letter-spacing: 0; 
   .daily-day-dot { display: inline-block; font-family: var(--mono); font-size: .75rem; padding: 4px 9px; border: 1px solid var(--line); border-radius: 6px; margin-right: 6px; margin-top: 4px; color: var(--muted); background: var(--paper); }
   .daily-day-dot.met { border-color: var(--ok); color: var(--ok); font-weight: 700; }
 
-  .koth-matches { list-style: none; padding: 6px 0 4px; margin: 4px 0 0; font-size: .78rem; color: color-mix(in srgb, var(--exam-text) 75%, transparent); border-top: 1px dashed color-mix(in srgb, var(--exam-text) 22%, transparent); }
+  .koth-matches { list-style: none; padding: 6px 0 4px; margin: 4px 0 0; font-size: .78rem; color: var(--muted); border-top: 1px dashed var(--line); }
   .koth-matches li { display: flex; justify-content: space-between; gap: 8px; padding: 3px 0; }
-  .rooms-box { margin-top: 10px; padding-top: 10px; border-top: 1px solid color-mix(in srgb, var(--exam-text) 18%, transparent); }
-  .rooms-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; font-size: .82rem; font-weight: 700; color: var(--exam-text); }
-  .room-create-bar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
-  .room-create-bar select, .room-create-bar input { background: color-mix(in srgb, var(--exam-bg) 75%, #000); color: var(--exam-text); border: 1px solid color-mix(in srgb, var(--exam-text) 28%, transparent); padding: 6px 9px; font-size: .8rem; font-family: inherit; }
-  .room-create-bar input { flex: 1 1 140px; min-width: 120px; }
-  .room-create-btn { background: var(--exam-text); color: var(--exam-bg); border: none; padding: 6px 12px; font-size: .8rem; font-weight: 700; cursor: pointer; }
-  .room-create-btn:hover { opacity: .9; }
-  .rooms-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 5px; }
-  .room-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 7px 10px; background: color-mix(in srgb, var(--exam-text) 7%, transparent); border: 1px solid color-mix(in srgb, var(--exam-text) 18%, transparent); font-size: .82rem; color: var(--exam-text); }
-  .room-row-meta { font-size: .74rem; opacity: .8; }
-  .room-join-btn { background: transparent; color: var(--exam-text); border: 1px solid var(--exam-text); padding: 4px 10px; font-size: .76rem; font-weight: 700; cursor: pointer; white-space: nowrap; }
-  .room-join-btn:hover { background: var(--exam-text); color: var(--exam-bg); }
   #room-lobby { display: none; max-width: 620px; margin: 0 auto; }
   .rl-card { background: var(--paper-2); border: 1px solid var(--line); padding: 22px; }
   .rl-badge { display: inline-block; font-family: var(--mono); font-size: .75rem; padding: 3px 8px; border: 1px solid var(--line); margin-bottom: 8px; color: var(--muted); }

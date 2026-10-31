@@ -77,12 +77,15 @@ async def api_koth_submit(request: Request, user: Dict[str, Any] = Depends(requi
     username = user_db["username"] if user_db else user.get("username", "Student")
 
     correct_count = 0
-    total_q = len(answers)
+    seen_qids = set()
 
     for item in answers:
         if not isinstance(item, dict):
             continue
         q_id = str(item.get("id", ""))
+        if not q_id or q_id in seen_qids:
+            continue
+        seen_qids.add(q_id)
         q = questions.ALL_QUESTIONS.get(q_id)
         u_ans = item.get("userKeys") if item.get("userKeys") is not None else item.get("user_answer")
         if q and u_ans is not None:
@@ -93,6 +96,8 @@ async def api_koth_submit(request: Request, user: Dict[str, Any] = Depends(requi
             correct_count += 1
         if q_id:
             scoring.record_question_answer(user_id, q_id, is_ok)
+
+    total_q = max(len(seen_qids), scoring.KOTH_DEFAULT_QUESTIONS)
 
     return scoring.submit_koth_challenge(
         user_id=user_id,
@@ -115,15 +120,17 @@ def _evaluate_competitive_submission(user_id: int, payload: Dict[str, Any]):
         raise HTTPException(status_code=400, detail="Neplatný čas (time_ms).")
 
     correct_count = 0
-    total_q = len(answers)
     question_ids = []
+    seen_qids = set()
 
     for item in answers:
         if not isinstance(item, dict):
             continue
         q_id = str(item.get("id", ""))
-        if q_id:
-            question_ids.append(q_id)
+        if not q_id or q_id in seen_qids:
+            continue
+        seen_qids.add(q_id)
+        question_ids.append(q_id)
         q = questions.ALL_QUESTIONS.get(q_id)
         u_ans = item.get("userKeys") if item.get("userKeys") is not None else item.get("user_answer")
         if q and u_ans is not None:
@@ -134,6 +141,8 @@ def _evaluate_competitive_submission(user_id: int, payload: Dict[str, Any]):
             correct_count += 1
         if q_id:
             scoring.record_question_answer(user_id, q_id, is_ok)
+
+    total_q = max(len(seen_qids), scoring.KOTH_DEFAULT_QUESTIONS)
 
     return correct_count, total_q, time_ms, question_ids
 
