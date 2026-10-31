@@ -1,9 +1,33 @@
-progress.json
-__pycache__/
-
+# Environment and secrets
 .env
+.env.*
+*.env
+
+# SQLite databases and test DBs
+*.db
+*.db-shm
+*.db-wal
 tzi.db*
+test_*.db*
+
+# Python & testing
+__pycache__/
+*.py[cod]
+*$py.class
 .venv/
+env/
+venv/
+.pytest_cache/
+
+# User data & caches
+progress.json
 graphify-out/
+
+# IDE and tool metadata
+.idea/
+.vscode/
 .claude/
-test_temp*.db*
+*.swp
+*.swo
+*~
+.DS_Store
