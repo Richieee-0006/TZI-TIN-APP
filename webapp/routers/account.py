@@ -60,9 +60,11 @@ def api_account_recap(user: Dict[str, Any] = Depends(require_user)):
     total_w = 0
     for s in srcs:
         sid = s["id"]
+        if sid == tzi_trener.ALL:
+            continue
         try:
             bank = tzi_trener.load_questions(sid)
-            qs = [q for q in bank.get("questions", []) if not q.get("reveal")]
+            qs = [q for q in bank if not q.get("reveal")] if isinstance(bank, list) else [q for q in bank.get("questions", []) if not q.get("reveal")]
         except Exception:
             qs = []
         s_seen = prog_map.get(sid, {})
@@ -74,7 +76,7 @@ def api_account_recap(user: Dict[str, Any] = Depends(require_user)):
         total_w += w_cnt
         source_breakdown.append({
             "id": sid,
-            "title": s.get("title", sid),
+            "title": s.get("label", s.get("title", sid)),
             "total": q_cnt,
             "correct": c_cnt,
             "wrong": w_cnt,
