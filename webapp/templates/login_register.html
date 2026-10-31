@@ -163,6 +163,7 @@
 
         <section id="login-form" style="display: <!--LOGIN_DISPLAY-->;">
             <form method="POST" action="/login">
+                <!--CSRF-->
                 <div class="form-group">
                     <label>Uživatelské jméno</label>
                     <input type="text" name="username" placeholder="Zadejte své jméno..." required autofocus>
@@ -177,6 +178,7 @@
 
         <section id="reg-form" style="display: <!--REG_DISPLAY-->;">
             <form method="POST" action="/register">
+                <!--CSRF-->
                 <div class="form-group">
                     <label>Uživatelské jméno</label>
                     <input type="text" name="username" placeholder="Zvolte si přezdívku..." required minlength="2">

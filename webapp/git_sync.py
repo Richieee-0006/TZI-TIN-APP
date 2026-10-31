@@ -5,21 +5,21 @@ from .config import BASE
 from .questions import refresh_questions
 
 
-# --- Git Auto-sync Worker (pouze banky otázek z upstreamu) ---
+# --- Git Auto-sync Worker (pouze banky otázek z origin/main) ---
 def git_pull():
     try:
-        print("[Auto-sync] Kontroluji nové banky otázek z upstream/main...")
+        print("[Auto-sync] Kontroluji nové banky otázek z origin/main...")
         fetch_res = subprocess.run(
-            ["git", "fetch", "upstream", "main"],
+            ["git", "fetch", "origin", "main"],
             cwd=BASE, capture_output=True, text=True, timeout=30
         )
         if fetch_res.returncode != 0:
             err = (fetch_res.stdout + "\n" + fetch_res.stderr).strip()
-            print(f"[Auto-sync] Chyba při git fetch upstream: {err}")
+            print(f"[Auto-sync] Chyba při git fetch origin: {err}")
             return err
 
         checkout_res = subprocess.run(
-            ["git", "checkout", "upstream/main", "--", "banky"],
+            ["git", "checkout", "origin/main", "--", "banky"],
             cwd=BASE, capture_output=True, text=True, timeout=30
         )
         out = (checkout_res.stdout + "\n" + checkout_res.stderr).strip()
@@ -36,7 +36,7 @@ def git_pull():
         if status_res.stdout.strip():
             subprocess.run(["git", "add", "banky"], cwd=BASE, capture_output=True, text=True, timeout=15)
             subprocess.run(
-                ["git", "commit", "-m", "chore(banky): auto-sync question banks from upstream/main"],
+                ["git", "commit", "-m", "chore(banky): auto-sync question banks from origin/main"],
                 cwd=BASE, capture_output=True, text=True, timeout=15
             )
             push_res = subprocess.run(
