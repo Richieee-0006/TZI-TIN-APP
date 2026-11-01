@@ -30,7 +30,6 @@ def get_admin(request: Request, response: Response, limit: int = 100, user: Dict
             toggle_text = "Vrátit do žebříčku" if hidden else "Odebrat z žebříčku"
             toggle_bg = "var(--green)" if hidden else "var(--red)"
             confirm_toggle = f"return confirm('Opravdu chcete studenta {u_name} {action_verb} veřejného žebříčku?');"
-            confirm_reset = f"return confirm('Opravdu chcete vynulovat body studenta {u_name}?');"
             action_html = f"""
             <form method="POST" action="/admin/leaderboard/toggle" style="display:inline;margin:0 4px 0 0;" onsubmit="{confirm_toggle}">
                 <input type="hidden" name="user_id" value="{s['id']}">
@@ -39,11 +38,17 @@ def get_admin(request: Request, response: Response, limit: int = 100, user: Dict
                     {toggle_text}
                 </button>
             </form>
-            <form method="POST" action="/admin/leaderboard/reset" style="display:inline;margin:0;" onsubmit="{confirm_reset}">
+            <form method="POST" action="/admin/leaderboard/reset" style="display:inline-flex;align-items:center;gap:3px;margin:0;" onsubmit="var sel=this.querySelector('select');var txt=sel.options[sel.selectedIndex].text;return confirm('Opravdu chcete studentovi {u_name} ' + txt.toLowerCase() + '?');">
                 <input type="hidden" name="user_id" value="{s['id']}">
                 <input type="hidden" name="csrf_token" value="{csrf_tok}">
+                <select name="scope" style="padding:0.2rem 0.35rem;font-size:0.75rem;background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:0.4rem;cursor:pointer;">
+                    <option value="all">Všechno (body, streaky, aréna)</option>
+                    <option value="points">Pouze body</option>
+                    <option value="streaks">Pouze streaky</option>
+                    <option value="arena">Pouze arénu</option>
+                </select>
                 <button type="submit" class="btn" style="padding:0.25rem 0.55rem;font-size:0.75rem;background:var(--yellow);color:#11111b;border-radius:0.4rem;">
-                    Vynulovat body
+                    Vynulovat
                 </button>
             </form>
             """
@@ -123,9 +128,12 @@ async def post_admin_leaderboard_reset(
     request: Request,
     response: Response,
     user_id: int = Form(...),
+    scope: str = Form("all"),
     csrf_token: Optional[str] = Form(None),
     admin: Dict[str, Any] = Depends(require_admin),
 ):
     await validate_csrf(request, response, csrf_token=csrf_token)
-    db.reset_user_score(user_id)
+    allowed_scopes = {"all", "points", "streaks", "arena"}
+    clean_scope = scope if scope in allowed_scopes else "all"
+    db.reset_user_score(user_id, scope=clean_scope)
     return RedirectResponse(url="/admin", status_code=303)

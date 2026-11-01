@@ -7,7 +7,13 @@ from .constants import KOTH_DEFAULT_QUESTIONS
 def get_koth_status() -> Dict[str, Any]:
     """Vrátí aktuálního držitele kopce (King of the Hill), nedávné souboje a žebříček králů."""
     conn = get_db()
-    state_row = conn.execute("SELECT * FROM koth_state WHERE id = 1").fetchone()
+    state_row = conn.execute(
+        """
+        SELECT s.* FROM koth_state s
+        LEFT JOIN users u ON s.king_user_id = u.id
+        WHERE s.id = 1 AND (s.king_user_id IS NULL OR COALESCE(u.hide_leaderboard, 0) = 0)
+        """
+    ).fetchone()
     king = None
     if state_row and state_row["king_user_id"] is not None:
         king = {
@@ -22,24 +28,30 @@ def get_koth_status() -> Dict[str, Any]:
 
     match_rows = conn.execute(
         """
-        SELECT id, challenger_id, challenger_username, defender_id, defender_username,
-               defender_score_before, challenger_score, correct_count, total_questions,
-               time_ms, won_throne, created_at
-        FROM koth_matches
-        ORDER BY id DESC
+        SELECT m.id, m.challenger_id, m.challenger_username, m.defender_id, m.defender_username,
+               m.defender_score_before, m.challenger_score, m.correct_count, m.total_questions,
+               m.time_ms, m.won_throne, m.created_at
+        FROM koth_matches m
+        LEFT JOIN users uc ON m.challenger_id = uc.id
+        LEFT JOIN users ud ON m.defender_id = ud.id
+        WHERE COALESCE(uc.hide_leaderboard, 0) = 0
+          AND (m.defender_id IS NULL OR COALESCE(ud.hide_leaderboard, 0) = 0)
+        ORDER BY m.id DESC
         LIMIT 12
         """
     ).fetchall()
 
     lb_rows = conn.execute(
         """
-        SELECT challenger_id AS user_id,
-               challenger_username AS username,
-               MAX(challenger_score) AS best_score,
-               SUM(won_throne) AS crowns_won,
+        SELECT m.challenger_id AS user_id,
+               m.challenger_username AS username,
+               MAX(m.challenger_score) AS best_score,
+               SUM(m.won_throne) AS crowns_won,
                COUNT(*) AS attempts
-        FROM koth_matches
-        GROUP BY challenger_id, challenger_username
+        FROM koth_matches m
+        LEFT JOIN users u ON m.challenger_id = u.id
+        WHERE COALESCE(u.hide_leaderboard, 0) = 0
+        GROUP BY m.challenger_id, m.challenger_username
         ORDER BY crowns_won DESC, best_score DESC
         LIMIT 10
         """

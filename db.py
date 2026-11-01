@@ -506,17 +506,34 @@ def toggle_user_leaderboard_visibility(user_id: int) -> bool:
     return True
 
 
-def reset_user_score(user_id: int) -> bool:
-    """Vynuluje body a streak uživatele."""
+def reset_user_score(user_id: int, scope: str = "all") -> bool:
+    """Vynuluje zvolenou část skóre a statistik uživatele (all, points, streaks, arena)."""
+    uid = int(user_id)
     conn = get_db()
     with conn:
-        conn.execute(
-            """
-            UPDATE user_scores
-            SET total_points = 0, current_streak = 0, best_streak = 0
-            WHERE user_id = ?
-            """,
-            (int(user_id),)
-        )
+        if scope in ("all", "points"):
+            conn.execute("UPDATE user_scores SET total_points = 0 WHERE user_id = ?", (uid,))
+        if scope in ("all", "streaks"):
+            conn.execute(
+                """
+                UPDATE user_scores
+                SET current_streak = 0, best_streak = 0, daily_streak = 0, best_daily_streak = 0
+                WHERE user_id = ?
+                """,
+                (uid,)
+            )
+        if scope in ("all", "arena"):
+            conn.execute("DELETE FROM ffa_runs WHERE user_id = ?", (uid,))
+            conn.execute("DELETE FROM duel_matches WHERE creator_id = ? OR opponent_id = ? OR winner_id = ?", (uid, uid, uid))
+            conn.execute("DELETE FROM koth_matches WHERE challenger_id = ? OR defender_id = ?", (uid, uid))
+            conn.execute(
+                """
+                UPDATE koth_state
+                SET king_user_id = NULL, king_username = NULL, king_score = 0,
+                    king_correct = 0, king_time_ms = 0, defenses_count = 0
+                WHERE king_user_id = ?
+                """,
+                (uid,)
+            )
     return True
 

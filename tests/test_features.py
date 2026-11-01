@@ -872,13 +872,49 @@ def test_admin_leaderboard_management_and_removal(temp_env):
     assert not any(u["username"] == "CheaterX" for u in lb_after["leaderboard"])
     assert lb_after["rank"] == "-"
 
-    # 5. Admin vynuluje body
+    # Přidat záznam do arény (FFA, KotH)
+    scoring.submit_ffa_run(uid, "CheaterX", 10, 10, time_ms=1000)
+    scoring.submit_koth_challenge(uid, "CheaterX", 10, 10, time_ms=1000)
+
+    # V aréně je skrytý
+    ffa_st = scoring.get_ffa_status()
+    assert not any(u["username"] == "CheaterX" for u in ffa_st["leaderboard"])
+    koth_st = scoring.get_koth_status()
+    assert koth_st["king"] is None or koth_st["king"]["username"] != "CheaterX"
+
+    # 5. Admin otestuje fine-tuned reset (pouze body, pouze streaky, pouze arénu, all)
+    scoring.record_question_answer(uid, "1-2", True)
+    scoring.submit_ffa_run(uid, "CheaterX", 5, 10, time_ms=2000)
     client.cookies.set(server.SESSION_COOKIE, admin_token)
     csrf_token2 = client.cookies.get("csrf_token")
-    res_reset = client.post("/admin/leaderboard/reset", data={"user_id": uid, "csrf_token": csrf_token2}, follow_redirects=False)
+
+    # Reset pouze bodů
+    res_points = client.post("/admin/leaderboard/reset", data={"user_id": uid, "scope": "points", "csrf_token": csrf_token2}, follow_redirects=False)
+    assert res_points.status_code == 303
+    row = db.get_db().execute("SELECT total_points, current_streak FROM user_scores WHERE user_id = ?", (uid,)).fetchone()
+    assert row["total_points"] == 0
+    assert row["current_streak"] > 0
+
+    # Reset pouze streaků
+    res_streaks = client.post("/admin/leaderboard/reset", data={"user_id": uid, "scope": "streaks", "csrf_token": csrf_token2}, follow_redirects=False)
+    assert res_streaks.status_code == 303
+    row = db.get_db().execute("SELECT total_points, current_streak, best_streak FROM user_scores WHERE user_id = ?", (uid,)).fetchone()
+    assert row["current_streak"] == 0
+    assert row["best_streak"] == 0
+
+    # Reset all
+    res_reset = client.post("/admin/leaderboard/reset", data={"user_id": uid, "scope": "all", "csrf_token": csrf_token2}, follow_redirects=False)
     assert res_reset.status_code == 303
 
-    # 6. Admin vrátí studenta do žebříčku (má 0 bodů)
+    # Ověřit vynulování streaků v db
+    u_score = db.get_db().execute("SELECT * FROM user_scores WHERE user_id = ?", (uid,)).fetchone()
+    assert u_score["total_points"] == 0
+    assert u_score["current_streak"] == 0
+    assert u_score["best_streak"] == 0
+    assert u_score["daily_streak"] == 0
+    assert u_score["best_daily_streak"] == 0
+
+    # 6. Admin vrátí studenta do žebříčku (má 0 bodů i po vrácení)
     client.post("/admin/leaderboard/toggle", data={"user_id": uid, "csrf_token": csrf_token2}, follow_redirects=False)
     client.cookies.set(server.SESSION_COOKIE, cookie_user)
     lb_restored = client.get("/api/leaderboard").json()

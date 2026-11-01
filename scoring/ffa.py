@@ -9,13 +9,15 @@ def get_ffa_status() -> Dict[str, Any]:
     conn = get_db()
     lb_rows = conn.execute(
         """
-        SELECT user_id, username,
-               MAX(score) AS best_score,
-               MAX(correct_count) AS best_correct,
-               MIN(time_ms) AS best_time_ms,
+        SELECT r.user_id, r.username,
+               MAX(r.score) AS best_score,
+               MAX(r.correct_count) AS best_correct,
+               MIN(r.time_ms) AS best_time_ms,
                COUNT(*) AS runs_count
-        FROM ffa_runs
-        GROUP BY user_id, username
+        FROM ffa_runs r
+        LEFT JOIN users u ON r.user_id = u.id
+        WHERE COALESCE(u.hide_leaderboard, 0) = 0
+        GROUP BY r.user_id, r.username
         ORDER BY best_score DESC, best_time_ms ASC
         LIMIT 10
         """
@@ -23,9 +25,11 @@ def get_ffa_status() -> Dict[str, Any]:
 
     recent_rows = conn.execute(
         """
-        SELECT id, user_id, username, score, correct_count, total_questions, time_ms, created_at
-        FROM ffa_runs
-        ORDER BY id DESC
+        SELECT r.id, r.user_id, r.username, r.score, r.correct_count, r.total_questions, r.time_ms, r.created_at
+        FROM ffa_runs r
+        LEFT JOIN users u ON r.user_id = u.id
+        WHERE COALESCE(u.hide_leaderboard, 0) = 0
+        ORDER BY r.id DESC
         LIMIT 10
         """
     ).fetchall()

@@ -10,33 +10,39 @@ def get_duel_status(user_id: Optional[int] = None) -> Dict[str, Any]:
     conn = get_db()
     open_rows = conn.execute(
         """
-        SELECT id, creator_id, creator_username, creator_score, creator_correct, creator_time_ms,
-               question_ids_json, created_at
-        FROM duel_matches
-        WHERE status = 'open'
-        ORDER BY id DESC
+        SELECT m.id, m.creator_id, m.creator_username, m.creator_score, m.creator_correct, m.creator_time_ms,
+               m.question_ids_json, m.created_at
+        FROM duel_matches m
+        LEFT JOIN users u ON m.creator_id = u.id
+        WHERE m.status = 'open' AND COALESCE(u.hide_leaderboard, 0) = 0
+        ORDER BY m.id DESC
         LIMIT 10
         """
     ).fetchall()
 
     completed_rows = conn.execute(
         """
-        SELECT id, creator_id, creator_username, creator_score, creator_correct,
-               opponent_id, opponent_username, opponent_score, opponent_correct,
-               winner_id, winner_username, completed_at
-        FROM duel_matches
-        WHERE status = 'completed'
-        ORDER BY id DESC
+        SELECT m.id, m.creator_id, m.creator_username, m.creator_score, m.creator_correct,
+               m.opponent_id, m.opponent_username, m.opponent_score, m.opponent_correct,
+               m.winner_id, m.winner_username, m.completed_at
+        FROM duel_matches m
+        LEFT JOIN users uc ON m.creator_id = uc.id
+        LEFT JOIN users uo ON m.opponent_id = uo.id
+        WHERE m.status = 'completed'
+          AND COALESCE(uc.hide_leaderboard, 0) = 0
+          AND (m.opponent_id IS NULL OR COALESCE(uo.hide_leaderboard, 0) = 0)
+        ORDER BY m.id DESC
         LIMIT 10
         """
     ).fetchall()
 
     win_rows = conn.execute(
         """
-        SELECT winner_id AS user_id, winner_username AS username, COUNT(*) AS wins
-        FROM duel_matches
-        WHERE status = 'completed' AND winner_id IS NOT NULL
-        GROUP BY winner_id, winner_username
+        SELECT m.winner_id AS user_id, m.winner_username AS username, COUNT(*) AS wins
+        FROM duel_matches m
+        LEFT JOIN users u ON m.winner_id = u.id
+        WHERE m.status = 'completed' AND m.winner_id IS NOT NULL AND COALESCE(u.hide_leaderboard, 0) = 0
+        GROUP BY m.winner_id, m.winner_username
         ORDER BY wins DESC
         LIMIT 10
         """
