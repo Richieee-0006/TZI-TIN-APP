@@ -4,16 +4,18 @@ Challenger: teamwork_challenger_tzi_1
 """
 import time
 import secrets
+import sys
 from pathlib import Path
 from fastapi.testclient import TestClient
+
+BASE = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(BASE))
 
 import server
 import db
 import scoring
 from webapp import questions
 from webapp.routers import study, pwa
-
-BASE = Path(__file__).resolve().parent.parent
 
 
 def _cleanup_db(db_path: Path):
