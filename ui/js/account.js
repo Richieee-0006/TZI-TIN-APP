@@ -8,7 +8,7 @@ async function openLeaderboardView() {
     ]);
     if (lbRes.ok) {
       const lb = await lbRes.json();
-      if ($('lb-my-rank')) $('lb-my-rank').textContent = lb.rank !== '-' ? `#${lb.rank} z ${lb.total}` : 'Host';
+      if ($('lb-my-rank')) $('lb-my-rank').textContent = lb.rank !== '-' ? `#${lb.rank} z ${lb.total}` : (currentUserData ? 'Mimo žebříček' : 'Host');
       if ($('lb-my-xp')) $('lb-my-xp').textContent = `${lb.points || 0} XP`;
       if ($('lb-my-streak')) $('lb-my-streak').textContent = `${lb.best_streak || 0}`;
       if ($('lb-my-dstreak')) $('lb-my-dstreak').textContent = `${lb.daily_streak || 0} dní`;

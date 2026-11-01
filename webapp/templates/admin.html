@@ -109,6 +109,81 @@
         }
         .badge-admin { background: rgba(203, 166, 247, 0.2); color: var(--mauve); }
         .badge-student { background: rgba(166, 227, 161, 0.2); color: var(--green); }
+        .badge-hidden { background: rgba(243, 139, 168, 0.2); color: var(--red); margin-left: 6px; font-size: 0.75rem; }
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.28rem 0.6rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 0.45rem;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+            text-decoration: none;
+            font-family: inherit;
+        }
+        .btn-action-danger {
+            background: rgba(243, 139, 168, 0.15);
+            color: var(--red);
+            border-color: rgba(243, 139, 168, 0.35);
+        }
+        .btn-action-danger:hover {
+            background: rgba(243, 139, 168, 0.3);
+        }
+        .btn-action-success {
+            background: rgba(166, 227, 161, 0.15);
+            color: var(--green);
+            border-color: rgba(166, 227, 161, 0.35);
+        }
+        .btn-action-success:hover {
+            background: rgba(166, 227, 161, 0.3);
+        }
+        .btn-action-warning {
+            background: rgba(249, 226, 175, 0.15);
+            color: var(--yellow);
+            border-color: rgba(249, 226, 175, 0.35);
+        }
+        .btn-action-warning:hover {
+            background: rgba(249, 226, 175, 0.3);
+        }
+        dialog#reset-modal {
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            max-width: 500px;
+            width: 92vw;
+            margin: auto;
+            box-shadow: 0 20px 45px rgba(0,0,0,0.6);
+        }
+        dialog#reset-modal::backdrop {
+            background: rgba(17, 17, 27, 0.75);
+            backdrop-filter: blur(4px);
+        }
+        .scope-option {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.75rem 0.9rem;
+            border: 1px solid var(--border);
+            border-radius: 0.6rem;
+            background: #11111b;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .scope-option:hover {
+            border-color: var(--mauve);
+            background: rgba(203, 166, 247, 0.05);
+        }
+        .scope-option input[type="radio"] {
+            margin-top: 0.2rem;
+            accent-color: var(--mauve);
+            cursor: pointer;
+        }
         @media (max-width: 600px) {
             body { padding: 1.25rem 0.75rem; }
             h1 { font-size: 1.4rem; }
@@ -133,7 +208,15 @@
     </header>
 
     <div class="card">
-        <h2>👥 Registrovaní studenti & Žebříček</h2>
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; margin-bottom:1rem;">
+            <div>
+                <h2>👥 Registrovaní studenti & Žebříček</h2>
+                <p id="students-count-text" style="color:var(--text-dim); font-size:0.85rem;">Přehled studentů a jejich výsledků</p>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+                <input type="search" id="student-search" placeholder="🔍 Hledat studenta..." oninput="filterStudents()" style="padding:0.4rem 0.8rem; border-radius:0.5rem; background:#11111b; color:var(--text); border:1px solid var(--border); font-size:0.85rem; min-width:220px;">
+            </div>
+        </div>
         <div class="table-wrap">
             <table>
                 <thead>
@@ -148,7 +231,7 @@
                         <th>Akce</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="students-tbody">
                     <!--USERS_ROWS-->
                 </tbody>
             </table>
@@ -304,9 +387,125 @@
             }
         }
 
-        document.addEventListener("DOMContentLoaded", applyErrorFilters);
+        document.addEventListener("DOMContentLoaded", () => {
+            applyErrorFilters();
+            filterStudents();
+            const modal = document.getElementById("reset-modal");
+            if (modal) {
+                modal.addEventListener("click", (e) => {
+                    const rect = modal.getBoundingClientRect();
+                    const isInDialog = (rect.top <= e.clientY && e.clientY <= rect.top + rect.height
+                        && rect.left <= e.clientX && e.clientX <= rect.left + rect.width);
+                    if (!isInDialog) closeResetModal();
+                });
+            }
+        });
         // Spustit i přímo pro případ již načteného DOMu
         applyErrorFilters();
+        filterStudents();
+
+        function filterStudents() {
+            const query = (document.getElementById("student-search")?.value || "").toLowerCase().trim();
+            const rows = Array.from(document.querySelectorAll("#students-tbody tr.student-row"));
+            let visible = 0;
+            rows.forEach(r => {
+                const u = (r.getAttribute("data-username") || "").toLowerCase();
+                const match = !query || u.includes(query);
+                r.style.display = match ? "" : "none";
+                if (match) visible++;
+            });
+            const info = document.getElementById("students-count-text");
+            if (info && rows.length > 0) {
+                info.textContent = query ? `Nalezeno ${visible} z ${rows.length} studentů` : `Celkem ${rows.length} studentů v databázi`;
+            }
+        }
+
+        function openResetModal(uid, username, points, streak) {
+            const modal = document.getElementById("reset-modal");
+            if (!modal) return;
+            document.getElementById("modal-user-id").value = uid;
+            document.getElementById("modal-student-name").textContent = username;
+            document.getElementById("modal-student-stats").textContent = `(${points} bodů, 🔥 ${streak})`;
+            // Default check "all"
+            const radAll = modal.querySelector('input[name="scope"][value="all"]');
+            if (radAll) radAll.checked = true;
+            if (typeof modal.showModal === "function") {
+                modal.showModal();
+            } else {
+                modal.style.display = "block";
+            }
+        }
+
+        function closeResetModal() {
+            const modal = document.getElementById("reset-modal");
+            if (!modal) return;
+            if (typeof modal.close === "function") {
+                modal.close();
+            } else {
+                modal.style.display = "none";
+            }
+        }
     </script>
+
+    <dialog id="reset-modal">
+        <form method="POST" action="/admin/leaderboard/reset" style="margin:0;" id="reset-modal-form">
+            <input type="hidden" name="user_id" id="modal-user-id" value="">
+            <input type="hidden" name="csrf_token" value="<!--CSRF_TOKEN-->">
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid var(--border); padding-bottom:0.75rem;">
+                <h3 style="font-size:1.15rem; color:var(--yellow); display:flex; align-items:center; gap:0.5rem; margin:0;">
+                    <span>🔄</span> Vynulovat statistiky studenta
+                </h3>
+                <button type="button" onclick="closeResetModal()" style="background:none; border:none; color:var(--text-dim); font-size:1.3rem; cursor:pointer; padding:0.2rem 0.5rem; line-height:1;">✕</button>
+            </div>
+            
+            <p style="color:var(--text); margin-bottom:1rem; font-size:0.95rem;">
+                Student: <b id="modal-student-name" style="color:var(--mauve); font-size:1.05rem;"></b>
+                <span id="modal-student-stats" style="color:var(--text-dim); font-size:0.85rem; margin-left:0.5rem;"></span>
+            </p>
+            
+            <p style="color:var(--text-dim); font-size:0.85rem; margin-bottom:0.75rem;">Vyberte rozsah vynulování:</p>
+            
+            <div style="display:flex; flex-direction:column; gap:0.45rem; margin-bottom:1.25rem;">
+                <label class="scope-option">
+                    <input type="radio" name="scope" value="all" checked>
+                    <div>
+                        <div style="font-weight:600; color:var(--text);">⚡ Všechno (kompletní reset)</div>
+                        <div style="font-size:0.8rem; color:var(--text-dim);">Vynuluje body, série i zápasy v aréně (FFA, Duely, KotH).</div>
+                    </div>
+                </label>
+                <label class="scope-option">
+                    <input type="radio" name="scope" value="points">
+                    <div>
+                        <div style="font-weight:600; color:var(--text);">🎯 Pouze body (XP)</div>
+                        <div style="font-size:0.8rem; color:var(--text-dim);">Vynuluje celkové skóre na 0. Ponechá streaky i záznamy v aréně.</div>
+                    </div>
+                </label>
+                <label class="scope-option">
+                    <input type="radio" name="scope" value="streaks">
+                    <div>
+                        <div style="font-weight:600; color:var(--text);">🔥 Pouze streaky</div>
+                        <div style="font-size:0.8rem; color:var(--text-dim);">Vynuluje aktuální, nejlepší i denní série odpovědí.</div>
+                    </div>
+                </label>
+                <label class="scope-option">
+                    <input type="radio" name="scope" value="arena">
+                    <div>
+                        <div style="font-weight:600; color:var(--text);">⚔️ Pouze arénu</div>
+                        <div style="font-size:0.8rem; color:var(--text-dim);">Smaže historii FFA běhů, Duelů a King of the Hill zápasů.</div>
+                    </div>
+                </label>
+            </div>
+
+            <div style="background:rgba(243,139,168,0.12); border:1px solid rgba(243,139,168,0.3); border-radius:0.5rem; padding:0.6rem 0.8rem; margin-bottom:1.25rem; font-size:0.82rem; color:var(--red);">
+                ⚠️ Tato akce je nevratná a zvolená data budou trvale smazána.
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:0.6rem;">
+                <button type="button" class="btn" style="background:var(--border); color:var(--text); padding:0.45rem 1rem; font-size:0.85rem;" onclick="closeResetModal()">Zrušit</button>
+                <button type="submit" class="btn" style="background:var(--yellow); color:#11111b; padding:0.45rem 1rem; font-size:0.85rem;">Potvrdit vynulování</button>
+            </div>
+        </form>
+    </dialog>
 </body>
 </html>

@@ -20,41 +20,37 @@ def get_admin(request: Request, response: Response, limit: int = 100, user: Dict
     for idx, s in enumerate(students, 1):
         role_badge = f'<span class="badge badge-{escape(str(s["role"]))}">{escape(str(s["role"]))}</span>'
         hidden = bool(s.get("hide_leaderboard", 0))
-        status_badge = '<span class="badge" style="background:rgba(243,139,168,0.2);color:var(--red);margin-left:4px;">Skryt</span>' if hidden else ''
+        status_badge = '<span class="badge badge-hidden">Skryt</span>' if hidden else ''
 
         if s.get("role") == "admin":
             action_html = '<span style="color:var(--text-dim);font-size:0.8rem;">-</span>'
         else:
             u_name = escape(str(s.get("username", "")))
+            uid = int(s["id"])
+            pts = int(s.get("total_points") or 0)
+            stk = int(s.get("current_streak") or 0)
             action_verb = "vrátit do" if hidden else "odebrat z"
             toggle_text = "Vrátit do žebříčku" if hidden else "Odebrat z žebříčku"
-            toggle_bg = "var(--green)" if hidden else "var(--red)"
+            btn_class = "btn-action-success" if hidden else "btn-action-danger"
+            toggle_icon = "👁️"
             confirm_toggle = f"return confirm('Opravdu chcete studenta {u_name} {action_verb} veřejného žebříčku?');"
             action_html = f"""
-            <form method="POST" action="/admin/leaderboard/toggle" style="display:inline;margin:0 4px 0 0;" onsubmit="{confirm_toggle}">
-                <input type="hidden" name="user_id" value="{s['id']}">
-                <input type="hidden" name="csrf_token" value="{csrf_tok}">
-                <button type="submit" class="btn" style="padding:0.25rem 0.55rem;font-size:0.75rem;background:{toggle_bg};color:#11111b;border-radius:0.4rem;">
-                    {toggle_text}
+            <div style="display:inline-flex;align-items:center;gap:0.4rem;">
+                <form method="POST" action="/admin/leaderboard/toggle" style="margin:0;" onsubmit="{confirm_toggle}">
+                    <input type="hidden" name="user_id" value="{uid}">
+                    <input type="hidden" name="csrf_token" value="{csrf_tok}">
+                    <button type="submit" class="btn-action {btn_class}">
+                        {toggle_icon} {toggle_text}
+                    </button>
+                </form>
+                <button type="button" class="btn-action btn-action-warning" onclick="openResetModal({uid}, '{u_name}', {pts}, {stk})">
+                    🔄 Vynulovat...
                 </button>
-            </form>
-            <form method="POST" action="/admin/leaderboard/reset" style="display:inline-flex;align-items:center;gap:3px;margin:0;" onsubmit="var sel=this.querySelector('select');var txt=sel.options[sel.selectedIndex].text;return confirm('Opravdu chcete studentovi {u_name} ' + txt.toLowerCase() + '?');">
-                <input type="hidden" name="user_id" value="{s['id']}">
-                <input type="hidden" name="csrf_token" value="{csrf_tok}">
-                <select name="scope" style="padding:0.2rem 0.35rem;font-size:0.75rem;background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:0.4rem;cursor:pointer;">
-                    <option value="all">Všechno (body, streaky, aréna)</option>
-                    <option value="points">Pouze body</option>
-                    <option value="streaks">Pouze streaky</option>
-                    <option value="arena">Pouze arénu</option>
-                </select>
-                <button type="submit" class="btn" style="padding:0.25rem 0.55rem;font-size:0.75rem;background:var(--yellow);color:#11111b;border-radius:0.4rem;">
-                    Vynulovat
-                </button>
-            </form>
+            </div>
             """
 
         rows += f"""
-        <tr>
+        <tr class="student-row" data-username="{escape(str(s['username']))}">
             <td><b>#{idx}</b></td>
             <td><b>{escape(str(s['username']))}</b>{status_badge}</td>
             <td>{escape(str(s.get('theme', 'games')))}</td>
@@ -105,6 +101,7 @@ def get_admin(request: Request, response: Response, limit: int = 100, user: Dict
 
     html = ADMIN_HTML.replace("<!--GENERATED_CODE_SECTION-->", "")
     html = html.replace("<!--CURRENT_LIMIT-->", str(fetch_limit))
+    html = html.replace("<!--CSRF_TOKEN-->", csrf_tok)
     html = html.replace("<!--USERS_ROWS-->", rows if rows else "<tr><td colspan='8'>Žádní studenti zatím nejsou registrováni.</td></tr>")
     html = html.replace("<!--ERRORS_ROWS-->", error_rows if error_rows else "<tr><td colspan='5' style='color:var(--text-dim);'>Žádné chyby nezaznamenány.</td></tr>")
     return html
