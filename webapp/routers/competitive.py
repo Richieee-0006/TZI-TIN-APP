@@ -1,10 +1,21 @@
 """Soutěžní režimy: King of the Hill, FFA, 1v1 duel a místnosti (lobby)."""
 import json
 import logging
-from typing import Optional, Dict, Any, List
 import time
+from typing import Optional, Dict, Any, List
+from fastapi import APIRouter, Request, Response, HTTPException, Depends
+from itsdangerous import BadSignature, SignatureExpired
+import db
+import scoring
+import tzi_trener
+from .. import questions
+from ..questions import verify_answer
+from ..sessions import require_user
+from ..config import serializer
+from ..csrf import validate_csrf
 
 _log = logging.getLogger(__name__)
+router = APIRouter()
 
 
 async def _optional_json_dict(request: Request) -> dict:
@@ -21,18 +32,6 @@ def _clamped_count(body: dict, default: int) -> int:
         return max(1, min(30, int(body.get("count", default))))
     except (ValueError, TypeError):
         return default
-from fastapi import APIRouter, Request, Response, HTTPException, Depends
-from itsdangerous import BadSignature, SignatureExpired
-import db
-import scoring
-import tzi_trener
-from .. import questions
-from ..questions import verify_answer
-from ..sessions import require_user
-from ..config import serializer
-from ..csrf import validate_csrf
-
-router = APIRouter()
 
 # Sledování použitých match tokenů proti replay útokům (token_sig -> expire_timestamp)
 _CONSUMED_MATCH_TOKENS: Dict[str, float] = {}

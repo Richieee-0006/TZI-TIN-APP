@@ -5,8 +5,6 @@ import logging
 import threading
 import time
 
-_log = logging.getLogger(__name__)
-
 from fastapi import FastAPI, Request
 from starlette.middleware.base import BaseHTTPMiddleware
 
@@ -16,6 +14,8 @@ from .config import HASHED_PASSWORD
 from .git_sync import sync_worker
 from .sessions import get_current_user
 from .routers import account, admin, auth, competitive, pwa, study
+
+_log = logging.getLogger(__name__)
 
 # --- Initialize Database ---
 db.init_db()
