@@ -23,7 +23,7 @@ def get_admin(request: Request, response: Response, limit: int = 100, user: Dict
         status_badge = '<span class="badge badge-hidden">Skryt</span>' if hidden else ''
 
         if s.get("role") == "admin":
-            action_html = '<span style="color:var(--text-dim);font-size:0.8rem;">-</span>'
+            action_html = '<span class="adm-dash">-</span>'
         else:
             u_name = escape(str(s.get("username", "")))
             uid = int(s["id"])
@@ -32,17 +32,17 @@ def get_admin(request: Request, response: Response, limit: int = 100, user: Dict
             action_verb = "vrátit do" if hidden else "odebrat z"
             toggle_text = "Vrátit do žebříčku" if hidden else "Odebrat z žebříčku"
             btn_class = "btn-action-success" if hidden else "btn-action-danger"
-            confirm_toggle = f"return confirm('Opravdu chcete studenta {u_name} {action_verb} veřejného žebříčku?');"
+            confirm_toggle = f"Opravdu chcete studenta {u_name} {action_verb} veřejného žebříčku?"
             action_html = f"""
-            <div style="display:inline-flex;align-items:center;gap:0.4rem;">
-                <form method="POST" action="/admin/leaderboard/toggle" style="margin:0;" onsubmit="{confirm_toggle}">
+            <div class="adm-actions">
+                <form method="POST" action="/admin/leaderboard/toggle" class="adm-inline-form" data-confirm="{confirm_toggle}">
                     <input type="hidden" name="user_id" value="{uid}">
                     <input type="hidden" name="csrf_token" value="{csrf_tok}">
                     <button type="submit" class="btn-action {btn_class}">
                         {toggle_text}
                     </button>
                 </form>
-                <button type="button" class="btn-action btn-action-warning" onclick="openResetModal({uid}, '{u_name}', {pts}, {stk})">
+                <button type="button" class="btn-action btn-action-warning" data-reset-modal data-uid="{uid}" data-username="{u_name}" data-points="{pts}" data-streak="{stk}">
                     Vynulovat
                 </button>
             </div>
@@ -53,11 +53,11 @@ def get_admin(request: Request, response: Response, limit: int = 100, user: Dict
             <td><b>#{idx}</b></td>
             <td><b>{escape(str(s['username']))}</b>{status_badge}</td>
             <td>{escape(str(s.get('theme', 'games')))}</td>
-            <td><b style="color:var(--mauve);">{s.get('total_points') or 0} b.</b></td>
+            <td><b class="adm-pts">{s.get('total_points') or 0} b.</b></td>
             <td>{s.get('current_streak') or 0}</td>
             <td>{s.get('best_streak') or 0}</td>
             <td>{role_badge}</td>
-            <td style="white-space:nowrap;">{action_html}</td>
+            <td class="adm-nowrap">{action_html}</td>
         </tr>
         """
 
@@ -70,15 +70,12 @@ def get_admin(request: Request, response: Response, limit: int = 100, user: Dict
         lvl = str(err.get("level") or "UNKNOWN")
         levels_set.add(lvl)
         if lvl in ("ERROR", "UI_ERROR"):
-            lvl_color = "var(--red)"
-            bg_color = "rgba(243,139,168,0.2)"
+            lvl_cls = "badge-err"
         elif lvl == "WARNING":
-            lvl_color = "var(--yellow)"
-            bg_color = "rgba(249,226,175,0.2)"
+            lvl_cls = "badge-warn"
         else:
-            lvl_color = "var(--green)"
-            bg_color = "rgba(166,227,161,0.2)"
-        lvl_badge = f'<span class="badge" style="background:{bg_color};color:{lvl_color}">{escape(lvl)}</span>'
+            lvl_cls = "badge-info"
+        lvl_badge = f'<span class="badge {lvl_cls}">{escape(lvl)}</span>'
         ts = escape(str(err.get("created_at") or "")[:19].replace("T", " "))
         ep = str(err.get("endpoint") or "-")
         if ep and ep != "-":
@@ -86,15 +83,15 @@ def get_admin(request: Request, response: Response, limit: int = 100, user: Dict
         uid = str(err.get("user_id") if err.get("user_id") is not None else "-")
         msg = escape(str(err.get("message") or ""))
         stack = escape(str(err.get("stack_trace") or ""))
-        stack_html = f'<br><details style="font-size:0.75rem;color:var(--text-dim);margin-top:4px;"><summary>Stacktrace</summary><pre style="white-space:pre-wrap;margin:4px 0;background:#11111b;padding:6px;border-radius:4px;">{stack}</pre></details>' if stack else ""
+        stack_html = f'<br><details class="adm-stack"><summary>Stacktrace</summary><pre>{stack}</pre></details>' if stack else ""
 
         error_rows += f"""
         <tr class="error-item" data-level="{escape(lvl)}" data-endpoint="{escape(ep)}" data-uid="{escape(uid)}" data-ts="{escape(ts)}">
-            <td style="font-size:0.85rem;color:var(--text-dim);white-space:nowrap;">{ts}</td>
+            <td class="adm-ts">{ts}</td>
             <td>{lvl_badge}</td>
-            <td style="font-size:0.85rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;" title="{escape(ep)}">{escape(ep)}</td>
+            <td class="adm-ep" title="{escape(ep)}">{escape(ep)}</td>
             <td><code>{escape(uid)}</code></td>
-            <td class="msg-col" style="white-space:normal;max-width:400px;">{msg}{stack_html}</td>
+            <td class="msg-col adm-msg-col">{msg}{stack_html}</td>
         </tr>
         """
 
@@ -102,7 +99,7 @@ def get_admin(request: Request, response: Response, limit: int = 100, user: Dict
     html = html.replace("<!--CURRENT_LIMIT-->", str(fetch_limit))
     html = html.replace("<!--CSRF_TOKEN-->", csrf_tok)
     html = html.replace("<!--USERS_ROWS-->", rows if rows else "<tr><td colspan='8'>Žádní studenti zatím nejsou registrováni.</td></tr>")
-    html = html.replace("<!--ERRORS_ROWS-->", error_rows if error_rows else "<tr><td colspan='5' style='color:var(--text-dim);'>Žádné chyby nezaznamenány.</td></tr>")
+    html = html.replace("<!--ERRORS_ROWS-->", error_rows if error_rows else "<tr><td colspan='5' class='adm-empty'>Žádné chyby nezaznamenány.</td></tr>")
     return html
 
 

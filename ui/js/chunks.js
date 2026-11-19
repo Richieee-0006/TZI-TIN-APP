@@ -14,25 +14,40 @@ function applyChunkSize() {
 function showChunks() { fromChunks = false; syncChunkSizeUI(); renderChunks(); show('chunks'); }
 function getChunks() { const out = []; for (let i = 0; i < ALL.length; i += CHUNK_SIZE) out.push(ALL.slice(i, i + CHUNK_SIZE)); return out; }
 function renderChunks() {
-  const list = $('chunk-list'); list.innerHTML = '';
-  getChunks().forEach((qs, i) => {
+  const list = $('chunk-list');
+  const bitNode = q => progress[q.id] === 'correct'
+    ? TziDom.el('span', { class: 'bit ok' }, '1')
+    : progress[q.id] === 'wrong'
+      ? TziDom.el('span', { class: 'bit bad' }, '0')
+      : TziDom.el('span', { class: 'bit new' }, '·');
+  TziDom.setChildren(list, ...getChunks().map((qs, i) => {
     const done = qs.filter(q => progress[q.id] === 'correct').length;
     const wrong = qs.filter(q => progress[q.id] === 'wrong').length;
-    const btn = document.createElement('button');
-    btn.className = 'chunk-btn';
-    const bit = q => progress[q.id] === 'correct' ? '<span class="bit ok">1</span>' : progress[q.id] === 'wrong' ? '<span class="bit bad">0</span>' : '<span class="bit new">·</span>';
-    btn.innerHTML = `<span class="chunk-name">Blok ${i + 1}<small>otázky ${i * CHUNK_SIZE + 1} až ${i * CHUNK_SIZE + qs.length}</small></span>` +
-      `<span class="chunk-bits" aria-hidden="true">${qs.map(bit).join('')}</span>` +
-      `<span class="chunk-stats"><span class="ok" title="Správně">${done}</span><span class="bad" title="Chybně">${wrong}</span><span class="new" title="Nové">${qs.length - done - wrong}</span></span>`;
-    btn.onclick = () => showChunkDetail(qs, i);
-    list.appendChild(btn);
-  });
+    return TziDom.el('button', { class: 'chunk-btn', on: { click: () => showChunkDetail(qs, i) } },
+      TziDom.el('span', { class: 'chunk-name' }, `Blok ${i + 1}`, TziDom.el('small', null, `otázky ${i * CHUNK_SIZE + 1} až ${i * CHUNK_SIZE + qs.length}`)),
+      TziDom.el('span', { class: 'chunk-bits', 'aria-hidden': 'true' }, ...qs.map(bitNode)),
+      TziDom.el('span', { class: 'chunk-stats' },
+        TziDom.el('span', { class: 'ok', title: 'Správně' }, String(done)),
+        TziDom.el('span', { class: 'bad', title: 'Chybně' }, String(wrong)),
+        TziDom.el('span', { class: 'new', title: 'Nové' }, String(qs.length - done - wrong))
+      )
+    );
+  }));
 }
 let currentChunk = [];
 function showChunkDetail(qs, i) {
   currentChunk = qs;
   $('chunk-detail-title').textContent = `Blok ${i + 1}, otázky ${i * CHUNK_SIZE + 1} až ${i * CHUNK_SIZE + qs.length}`;
-  const pills = (el, list) => $(el).innerHTML = list.map(q => `<button class="q-pill${isInput(q) ? ' calc' : ''}" ${isInput(q) ? 'title="Příklad na výpočet" ' : ''}onclick="startChunkQuestion('${q.id}')">${q.number}</button>`).join('') || '<span class="cd-empty">Žádné otázky</span>';
+  const pills = (el, list) => {
+    const nodes = list.length
+      ? list.map(q => TziDom.el('button', {
+          class: `q-pill${isInput(q) ? ' calc' : ''}`,
+          title: isInput(q) ? 'Příklad na výpočet' : null,
+          on: { click: () => startChunkQuestion(q.id) }
+        }, String(q.number)))
+      : [TziDom.el('span', { class: 'cd-empty' }, 'Žádné otázky')];
+    TziDom.setChildren($(el), ...nodes);
+  };
   pills('cd-good', qs.filter(q => progress[q.id] === 'correct'));
   pills('cd-bad', qs.filter(q => progress[q.id] === 'wrong'));
   pills('cd-new', qs.filter(q => !progress[q.id]));

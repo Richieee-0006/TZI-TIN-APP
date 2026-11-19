@@ -33,34 +33,28 @@ app = FastAPI(title="TZI Trenér", docs_url=None, redoc_url=None)
 async def add_security_headers(request, call_next):
     response = await call_next(request)
     response.headers["X-Frame-Options"] = "DENY"
-    if request.url.path in ("/automat", "/teorie", "/glosar"):
-        csp = (
-            "default-src 'none'; "
-            "script-src 'self'; "
-            "style-src 'self' https://fonts.googleapis.com; "
-            "img-src 'self' data: blob:; "
-            "font-src 'self' https://fonts.gstatic.com; "
-            "connect-src 'self'; "
-            "frame-ancestors 'none'; "
-            "base-uri 'self'; "
-            "form-action 'self'; "
-            "object-src 'none'; "
-            "require-trusted-types-for 'script'; "
-            "trusted-types 'none'"
-        )
+    if request.url.path == "/":
+        script_src = "script-src 'self' 'wasm-unsafe-eval'"
+        tt_policy = "trusted-types tzi-sw"
     else:
-        csp = (
-            "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
-            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com; "
-            "img-src 'self' data: blob:; "
-            "font-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.gstatic.com data:; "
-            "connect-src 'self'; "
-            "frame-ancestors 'none'; "
-            "base-uri 'self'; "
-            "form-action 'self'; "
-            "object-src 'none'"
-        )
+        script_src = "script-src 'self'"
+        tt_policy = "trusted-types 'none'"
+    csp = (
+        "default-src 'none'; "
+        f"{script_src}; "
+        "style-src 'self' https://fonts.googleapis.com; "
+        "img-src 'self' data: blob:; "
+        "font-src 'self' https://fonts.gstatic.com; "
+        "connect-src 'self'; "
+        "manifest-src 'self'; "
+        "worker-src 'self'; "
+        "frame-ancestors 'none'; "
+        "base-uri 'self'; "
+        "form-action 'self'; "
+        "object-src 'none'; "
+        "require-trusted-types-for 'script'; "
+        f"{tt_policy}"
+    )
     if request.url.scheme == "https":
         csp += "; upgrade-insecure-requests"
     response.headers["Content-Security-Policy"] = csp
@@ -69,6 +63,9 @@ async def add_security_headers(request, call_next):
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
     response.headers["Cross-Origin-Resource-Policy"] = "same-origin"
+    if "text/html" in response.headers.get("content-type", "") and "cache-control" not in response.headers:
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
     return response
 
 

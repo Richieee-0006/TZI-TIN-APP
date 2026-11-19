@@ -48,15 +48,20 @@ function renderQ() {
   const lec = q.id.split('-')[0];
   $('q-src').textContent = isRecall(q) ? `Doplňovačka · ${q.category} · otázka ${q.number}`
     : `${lec}. přednáška · otázka ${q.number}` + (isReveal(q) ? ' · zadání na rozbor' : isInput(q) ? ' · příklad na výsledek' : ' · teorie');
-  const t = $('q-text'); t.innerHTML = fmt(q.text); t.className = 'question-text' + (q.type === 'input' ? ' calc' : '');
+  const t = $('q-text'); setFmt(t, q.text); t.className = 'question-text' + (q.type === 'input' ? ' calc' : '');
   const qh = $('q-hint');
-  if (isRecall(q)) qh.innerHTML = esc(`Očekáváno: ${wordsLabel(q.words)}`) + (q.hint ? `. ${fmt(q.hint)}` : '');
-  else if (isInput(q)) qh.innerHTML = q.hint ? fmt(q.hint) : '';
-  else qh.textContent = q.correct.length > 1 ? '(Vyberte více správných odpovědí)' : '';
+  if (isRecall(q)) {
+    TziDom.setChildren(qh, `Očekáváno: ${wordsLabel(q.words)}`, q.hint ? '. ' : null, q.hint ? fmtToFragment(q.hint) : null);
+  } else if (isInput(q)) {
+    if (q.hint) setFmt(qh, q.hint);
+    else qh.replaceChildren();
+  } else {
+    qh.textContent = q.correct.length > 1 ? '(Vyberte více správných odpovědí)' : '';
+  }
   $('feedback').textContent = ''; $('feedback').className = 'feedback';
   const sol = $('solution'); sol.style.display = 'none'; sol.textContent = '';
 
-  const optsEl = $('opts'); optsEl.innerHTML = '';
+  const optsEl = $('opts'); optsEl.replaceChildren();
   const inp = $('ans-input'); inp.value = ''; inp.disabled = false; inp.className = 'ans-input';
   inp.style.display = isInput(q) && !isReveal(q) ? 'block' : 'none';
   inp.setAttribute('autocapitalize', isRecall(q) ? 'off' : 'characters');
@@ -70,24 +75,25 @@ function renderQ() {
         div = frag.firstElementChild;
         div.id = 'opt-' + letter;
         div.querySelector('.letter').textContent = LETTERS[i];
-        div.querySelector('.opt-text').innerHTML = fmt(q.options[letter]);
+        setFmt(div.querySelector('.opt-text'), q.options[letter]);
         div.addEventListener('click', () => toggleOpt(letter));
         optsEl.appendChild(frag);
       } else {
-        div = document.createElement('div');
-        div.className = 'opt'; div.id = 'opt-' + letter;
-        div.innerHTML = `<span class="letter">${LETTERS[i]}</span><span class="opt-text">${fmt(q.options[letter])}</span>`;
-        div.addEventListener('click', () => toggleOpt(letter));
+        div = TziDom.el('div', { class: 'opt', id: 'opt-' + letter, on: { click: () => toggleOpt(letter) } },
+          TziDom.el('span', { class: 'letter' }, LETTERS[i]),
+          TziDom.el('span', { class: 'opt-text' }, fmtToFragment(q.options[letter]))
+        );
         optsEl.appendChild(div);
       }
     });
   }
 
+  const setActionBtn = label => TziDom.setChildren($('btn-action'), label, TziDom.el('span', { class: 'kh' }, 'Enter'));
   $('btn-prev').disabled = (idx === 0) || suddenDeath || studyMode;
-  $('btn-action').innerHTML = 'Potvrdit<span class="kh">Enter</span>';
+  setActionBtn('Potvrdit');
   renderChain();
   $('btn-action').disabled = true;
-  if (isReveal(q)) { $('btn-action').disabled = false; $('btn-action').innerHTML = 'Ukázat řešení<span class="kh">Enter</span>'; }
+  if (isReveal(q)) { $('btn-action').disabled = false; setActionBtn('Ukázat řešení'); }
 
   if (studyMode) { renderStudy(q); return; }
   const rec = history.find(h => h.id === q.id);
@@ -96,7 +102,7 @@ function renderQ() {
       if (isInput(q)) inp.value = rec.userKeys[0] || '';
       else { selected = new Set(rec.userKeys); rec.userKeys.forEach(l => $('opt-' + l)?.classList.add('selected')); }
     }
-    $('btn-action').innerHTML = (idx < total - 1 ? 'Další' : 'Odeslat test') + '<span class="kh">Enter</span>';
+    setActionBtn(idx < total - 1 ? 'Další' : 'Odeslat test');
     syncAction();
     if (isInput(q)) inp.focus();
     return;
@@ -106,14 +112,15 @@ function renderQ() {
 
 function renderChain() {
   const el = $('pchain');
-  if (studyMode || queue.length > 45) { el.innerHTML = ''; return; }
-  el.innerHTML = queue.map((q, i) => {
+  if (studyMode || queue.length > 45) { el.replaceChildren(); return; }
+  TziDom.setChildren(el, ...queue.map((q, i) => {
     const h = history.find(h => h.id === q.id);
     let c = '', ch = '·';
     if (h && examMode) { c = 'ans'; ch = '–'; }
     else if (h) { c = h.isCorrect ? 'ok' : 'bad'; ch = h.isCorrect ? '1' : '0'; }
-    return `<i class="${c}${i === idx ? ' cur' : ''}"${i === idx ? ' aria-current="step"' : ''}>${ch}</i>`;
-  }).join('');
+    const cls = (c + (i === idx ? ' cur' : '')).trim();
+    return TziDom.el('i', { class: cls || null, 'aria-current': i === idx ? 'step' : null }, ch);
+  }));
 }
 
 function renderStudy(q) {
@@ -129,7 +136,7 @@ function renderStudy(q) {
   }
   $('feedback').textContent = 'Studijní režim: správná odpověď je zvýrazněna';
   $('feedback').className = 'feedback ok study';
-  $('btn-action').innerHTML = (idx < queue.length - 1 ? 'Další' : 'Spustit test bez klíče') + '<span class="kh">Enter</span>';
+  TziDom.setChildren($('btn-action'), idx < queue.length - 1 ? 'Další' : 'Spustit test bez klíče', TziDom.el('span', { class: 'kh' }, 'Enter'));
   $('btn-action').disabled = false;
 }
 
@@ -139,7 +146,7 @@ function showSolution(q) {
     : isInput(q) ? q.solution : q.explanation;
   if (!text) return;
   el.className = 'solution' + (q.type === 'input' && !isReveal(q) ? '' : ' explain');
-  el.innerHTML = fmt(text); el.style.display = 'block';
+  setFmt(el, text); el.style.display = 'block';
 }
 
 function toggleOpt(letter) {
@@ -190,8 +197,13 @@ function revealTask(q) {
   showSolution(q);
   const rec = history.find(h => h.id === q.id);
   const mark = rec ? (rec.isCorrect ? 'Označeno: zvládl jsem. ' : 'Označeno: nezvládl jsem. ') : '';
-  $('feedback').innerHTML = mark + '<button class="btn-end" onclick="toggleSolution(this)">Skrýt řešení</button> <button class="btn-end" onclick="gradeTask(false)">Nezvládl jsem</button>';
-  $('btn-action').innerHTML = 'Zvládl jsem<span class="kh">Enter</span>';
+  TziDom.setChildren($('feedback'),
+    mark,
+    TziDom.el('button', { class: 'btn-end', on: { click: function () { toggleSolution(this); } } }, 'Skrýt řešení'),
+    ' ',
+    TziDom.el('button', { class: 'btn-end', on: { click: () => gradeTask(false) } }, 'Nezvládl jsem')
+  );
+  TziDom.setChildren($('btn-action'), 'Zvládl jsem', TziDom.el('span', { class: 'kh' }, 'Enter'));
   $('btn-action').focus();
 }
 
@@ -215,7 +227,13 @@ function confirmAnswer() {
   restoreState(rec);
   saveProgress();
   if (suddenDeath && !rec.isCorrect) {
-    setTimeout(() => { alert(`Konec hry. Správná odpověď: ${isRecall(q) ? q.accept[0] : isInput(q) ? q.answer : letters(q, rec.correctKeys)}`); showResults(); }, 600);
+    const ansNode = isRecall(q)
+      ? q.accept[0]
+      : isInput(q)
+        ? fmtToFragment(q.answer)
+        : letters(q, rec.correctKeys);
+    showToast(['Konec hry. Správná odpověď: ', ansNode]);
+    setTimeout(() => showResults(), 900);
   }
 }
 
@@ -226,10 +244,24 @@ function restoreState(rec) {
   if (isInput(q)) {
     const inp = $('ans-input'); inp.value = rec.userKeys[0] || ''; inp.disabled = true;
     inp.classList.add(rec.isCorrect ? 'correct' : 'wrong');
-    if (isRecall(q)) fb.innerHTML = (rec.manual ? esc(rec.isCorrect ? 'Uznáno ručně' : 'Ručně označeno jako špatně')
-        : rec.typo ? `Správně, uznáno jako překlep (${esc(rec.typo)})` : rec.isCorrect ? 'Správně' : `Špatně. Správně: ${fmt(q.accept[0])}`) +
-      ` <button class="btn-end" onclick="gradeTask(${!rec.isCorrect})">${rec.isCorrect ? 'Označit jako špatně' : 'Uznat jako správně'}</button>`;
-    else fb.innerHTML = rec.isCorrect ? 'Správně' : `Špatně. Správně: ${fmt(q.answer)}`;
+    if (isRecall(q)) {
+      const statusPart = rec.manual
+        ? (rec.isCorrect ? 'Uznáno ručně' : 'Ručně označeno jako špatně')
+        : rec.typo
+          ? `Správně, uznáno jako překlep (${rec.typo})`
+          : rec.isCorrect
+            ? 'Správně'
+            : ['Špatně. Správně: ', fmtToFragment(q.accept[0])];
+      TziDom.setChildren(fb,
+        ...(Array.isArray(statusPart) ? statusPart : [statusPart]),
+        ' ',
+        TziDom.el('button', { class: 'btn-end', on: { click: () => gradeTask(!rec.isCorrect) } }, rec.isCorrect ? 'Označit jako špatně' : 'Uznat jako správně')
+      );
+    } else if (rec.isCorrect) {
+      fb.textContent = 'Správně';
+    } else {
+      TziDom.setChildren(fb, 'Špatně. Správně: ', fmtToFragment(q.answer));
+    }
   } else {
     const cs = new Set(rec.correctKeys), us = new Set(rec.userKeys);
     for (const l of Object.keys(q.options)) {
@@ -247,7 +279,7 @@ function restoreState(rec) {
   $('score-label').textContent = `Úspěšnost: ${Math.round(correct / history.length * 100)} %`;
   renderChain();
   const btn = $('btn-action');
-  btn.innerHTML = (idx < queue.length - 1 ? 'Další' : 'Výsledky') + '<span class="kh">Enter</span>';
+  TziDom.setChildren(btn, idx < queue.length - 1 ? 'Další' : 'Výsledky', TziDom.el('span', { class: 'kh' }, 'Enter'));
   btn.disabled = false;
   btn.focus();
 }
@@ -313,29 +345,40 @@ function renderResults() {
     $('res-title').textContent = examMode ? (passed ? 'Ostrý test splněn' : 'Ostrý test nesplněn')
       : sdEnd ? 'Konec hry' : suddenDeath ? 'Sada bez chyby' : 'Výsledky sady';
   }
-  const p = $('res-pct'); p.innerHTML = pct + '<small>%</small>'; p.className = 'big-pct ' + (compGood ? 'good' : 'bad');
+  const p = $('res-pct');
+  TziDom.setChildren(p, String(pct), TziDom.el('small', null, '%'));
+  p.className = 'big-pct ' + (compGood ? 'good' : 'bad');
   if (kothMode && kothLastResult) {
     const m = kothLastResult.mode || compMode || 'koth';
     if (m === 'ffa') {
-      $('res-detail').innerHTML = `<b>${kothLastResult.score} bodů (${correct} z ${n})</b>Umístění v aréně: #${kothLastResult.rank}`;
+      TziDom.setChildren($('res-detail'),
+        TziDom.el('b', null, `${kothLastResult.score} bodů (${correct} z ${n})`),
+        `Umístění v aréně: #${kothLastResult.rank}`
+      );
     } else if (m === 'duel') {
-      $('res-detail').innerHTML = kothLastResult.resolved
-        ? `<b>${kothLastResult.my_score} b. vs ${kothLastResult.opponent_score} b. (${esc(kothLastResult.opponent_username || 'Soupeř')})</b>`
-        : `<b>${kothLastResult.my_score} bodů (${correct} z ${n})</b>Výzva #${kothLastResult.duel_id} čeká na soupeře`;
+      TziDom.setChildren($('res-detail'), ...(kothLastResult.resolved
+        ? [TziDom.el('b', null, `${kothLastResult.my_score} b. vs ${kothLastResult.opponent_score} b. (${kothLastResult.opponent_username || 'Soupeř'})`)]
+        : [TziDom.el('b', null, `${kothLastResult.my_score} bodů (${correct} z ${n})`), `Výzva #${kothLastResult.duel_id} čeká na soupeře`]
+      ));
     } else {
-      $('res-detail').innerHTML = `<b>${kothLastResult.challenger_score} bodů (${correct} z ${n})</b>${kothLastResult.won_throne ? 'Překonal jsi dosavadního krále!' : `Král drží ${kothLastResult.previous_king_score} b.`}`;
+      TziDom.setChildren($('res-detail'),
+        TziDom.el('b', null, `${kothLastResult.challenger_score} bodů (${correct} z ${n})`),
+        kothLastResult.won_throne ? 'Překonal jsi dosavadního krále!' : `Král drží ${kothLastResult.previous_king_score} b.`
+      );
     }
   } else {
-    $('res-detail').innerHTML = `<b>${correct} z ${n}</b>správně ze zodpovězených otázek`;
+    TziDom.setChildren($('res-detail'), TziDom.el('b', null, `${correct} z ${n}`), 'správně ze zodpovězených otázek');
   }
   // řetězec 1/0 právě dokončené sady
   const rb = $('res-bits');
   rb.className = 'res-bits anim';
   rb.setAttribute('aria-label', `Průběh: ${correct} správně, ${n - correct} chybně`);
-  rb.innerHTML = history.map((h, i) => {
+  TziDom.setChildren(rb, ...history.map((h, i) => {
     const last = sdEnd && i === n - 1;
-    return `<span class="bit ${h.isCorrect ? 'ok' : 'bad'}${last ? ' stop' : ''}" style="animation-delay:${Math.min(i, 60) * 14}ms">${h.isCorrect ? '1' : '0'}</span>`;
-  }).join('');
+    const bitEl = TziDom.el('span', { class: `bit ${h.isCorrect ? 'ok' : 'bad'}${last ? ' stop' : ''}` }, h.isCorrect ? '1' : '0');
+    bitEl.style.animationDelay = `${Math.min(i, 60) * 14}ms`;
+    return bitEl;
+  }));
   const note = $('res-note'), mw = $('res-meter-wrap');
   mw.style.display = examMode ? 'block' : 'none';
   if (kothMode && kothLastResult) {
@@ -388,7 +431,7 @@ function clearSourceProgress() {
 }
 
 document.addEventListener('keydown', e => {
-  if ($('quiz').style.display === 'none') return;
+  if ($('quiz').style.display !== 'block') return;
   const inField = e.target.tagName === 'INPUT';
   if (e.key === 'Enter') { if (!$('btn-action').disabled) { e.preventDefault(); handleAction(); } }
   else if (inField) return;
@@ -396,6 +439,6 @@ document.addEventListener('keydown', e => {
   else if (e.key === 'ArrowLeft') { if (!$('btn-prev').disabled) prevQ(); }
   else { const k = e.key.toUpperCase(), key = /^[A-D]$/.test(k) && (optOrder[queue[idx]?.id] || [])[LETTERS.indexOf(k)]; if (key) toggleOpt(key); }
 });
-$('rand-count').addEventListener('keydown', e => { if (e.key === 'Enter') startRandom(); if (e.key === 'Escape') closeModal(); });
+$('rand-count')?.addEventListener('keydown', e => { if (e.key === 'Enter') startRandom(); if (e.key === 'Escape') closeModal(); });
 
 init();

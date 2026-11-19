@@ -32,43 +32,21 @@ def test_r1_latex_katex_rendering():
     novy_html = (BASE / "ui" / "novy.html").read_text(encoding="utf-8")
     assert "katex.min.css" in novy_html
     assert "katex.min.js" in novy_html
+    assert 'data-katex-mode="mathml"' in novy_html
 
     node_check = r"""
     const fs = require('fs'), path = require('path'), vm = require('vm'), assert = require('assert');
-    const html = fs.readFileSync('ui/novy.html', 'utf8');
-    const scriptSrcs = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]).filter(s => s.startsWith('/static/js/'));
-    const js = scriptSrcs.length > 0
-      ? scriptSrcs.map(src => fs.readFileSync(path.join('ui', src.replace('/static/', '').split('?')[0]), 'utf8')).join('\n')
-      : [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]).join('\n');
-    const ctx = vm.createContext({
-      document: { getElementById: () => ({ style: {}, classList: { add(){}, remove(){} }, addEventListener(){} }), addEventListener(){}, querySelectorAll: () => [] },
-      localStorage: { getItem: () => null, setItem(){} },
-      fetch: () => new Promise(() => {}),
-      setTimeout, setInterval, clearInterval,
-      katex: {
-        renderToString: (tex, opts) => `<span class="katex-rendered" data-display="${opts.displayMode}">${tex}</span>`
-      }
-    });
-    vm.runInContext(js, ctx);
-    const fmt = vm.runInContext('fmt', ctx);
-
-    // 1. LaTeX vzorec nesmí mít rozbité podtržítko, stříšku ani nerovnost
-    const outLatex = fmt('Platí $a_{n-1} + x^2 < y$ v posloupnosti.');
-    assert(outLatex.includes('<span class="katex-rendered" data-display="false">a_{n-1} + x^2 < y</span>'), 'Chybné vykreslení inline LaTeXu: ' + outLatex);
-
-    // 2. Display LaTeX $$...$$
-    const outDisplay = fmt('Vzorec: $$\\sum_{i=1}^n i$$');
-    assert(outDisplay.includes('<span class="katex-rendered" data-display="true">\\sum_{i=1}^n i</span>'), 'Chybné vykreslení display LaTeXu: ' + outDisplay);
-
-    // 3. Běžný text bez LaTeXu si zachová dolní/horní indexy a šipky
-    const outPlain = fmt('Posloupnost a_n -> Z^2');
-    assert(outPlain.includes('a<sub>n</sub>') && outPlain.includes('→') && outPlain.includes('Z<sup>2</sup>'), 'Rozbité běžné formátování: ' + outPlain);
-
-    // 4. Rozšířené auto-KaTeX vzorce a přísný CSP mathml režim bez inline style= na reálném KaTeXu
-    const realKatex = require('./ui/vendor/katex/katex.min.js');
     function makeMiniDoc(mode) {
       class MiniNode {
-        constructor(tag) { this.tag = tag; this.children = []; this.attrs = {}; this.dataset = {}; this.style = {}; this.text = ''; this.parentNode = null; }
+        constructor(tag) {
+          this.tag = tag; this.children = []; this.attrs = {}; this.dataset = {}; this.style = {}; this.text = ''; this.parentNode = null;
+          this.classList = {
+            add: (...cs) => { const s = new Set((this.attrs.class || '').split(' ').filter(Boolean)); cs.forEach(c => s.add(c)); this.attrs.class = [...s].join(' '); },
+            remove: (...cs) => { const s = new Set((this.attrs.class || '').split(' ').filter(Boolean)); cs.forEach(c => s.delete(c)); this.attrs.class = [...s].join(' '); },
+            toggle: (c, f) => { const s = new Set((this.attrs.class || '').split(' ').filter(Boolean)); if (f === undefined ? !s.has(c) : f) s.add(c); else s.delete(c); this.attrs.class = [...s].join(' '); }
+          };
+        }
+        addEventListener() {}
         appendChild(c) {
           if (c && c.isFrag) { for (const x of c.children) { x.parentNode = this; this.children.push(x); } }
           else if (c) { c.parentNode = this; this.children.push(c); }
@@ -102,7 +80,8 @@ def test_r1_latex_katex_rendering():
         toHtml() {
           if (!this.tag) return this.text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
           const styleStr = Object.entries(this.style).map(([k, v]) => `${k}:${v}`).join(';');
-          const attrs = styleStr ? { ...this.attrs, style: styleStr } : this.attrs;
+          const dsAttrs = Object.fromEntries(Object.entries(this.dataset).map(([k, v]) => ['data-' + k, String(v)]));
+          const attrs = { ...this.attrs, ...dsAttrs, ...(styleStr ? { style: styleStr } : {}) };
           const a = Object.entries(attrs).map(([k, v]) => ` ${k}="${v.replace(/"/g, '&quot;')}"`).join('');
           const inner = (this.text ? this.text.replace(/&/g, '&amp;').replace(/</g, '&lt;') : '') + this.children.map(c => c.toHtml()).join('');
           return this.isFrag ? inner : `<${this.tag}${a}>${inner}</${this.tag}>`;
@@ -112,7 +91,12 @@ def test_r1_latex_katex_rendering():
       return {
         Node: MiniNode,
         doc: {
-          documentElement: { dataset: mode ? { katexMode: mode } : {} },
+          compatMode: 'CSS1Compat',
+          documentElement: { dataset: mode ? { katexMode: mode } : {}, setAttribute(){} },
+          getElementById: () => new MiniNode('div'),
+          addEventListener() {},
+          querySelector: () => null,
+          querySelectorAll: () => [],
           createElement: tag => new MiniNode(tag),
           createElementNS: (_ns, tag) => new MiniNode(tag),
           createTextNode: txt => { const n = new MiniNode(''); n.text = String(txt ?? ''); return n; },
@@ -120,6 +104,45 @@ def test_r1_latex_katex_rendering():
         }
       };
     }
+
+    const html = fs.readFileSync('ui/novy.html', 'utf8');
+    const scriptSrcs = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]).filter(s => s.startsWith('/static/js/'));
+    const js = scriptSrcs.map(src => fs.readFileSync(path.join('ui', src.replace('/static/', '').split('?')[0]), 'utf8')).join('\n');
+    const stubMini = makeMiniDoc('mathml');
+    global.document = stubMini.doc;
+    global.Node = stubMini.Node;
+    const ctx = vm.createContext({
+      Node: stubMini.Node,
+      document: stubMini.doc,
+      localStorage: { getItem: () => null, setItem(){} },
+      fetch: () => new Promise(() => {}),
+      setTimeout, setInterval, clearInterval,
+      katex: {
+        render: (tex, el, opts) => {
+          el.className = 'katex-rendered';
+          el.dataset.display = String(Boolean(opts.displayMode));
+          el.textContent = tex;
+        }
+      }
+    });
+    vm.runInContext(js, ctx);
+    const fmtToFragment = vm.runInContext('fmtToFragment', ctx);
+
+    // 1. LaTeX vzorec nesmí mít rozbité podtržítko, stříšku ani nerovnost
+    const outLatex = fmtToFragment('Platí $a_{n-1} + x^2 < y$ v posloupnosti.');
+    const latexSpan = outLatex.querySelector('span');
+    assert(latexSpan && latexSpan.dataset.display === 'false' && latexSpan.textContent === 'a_{n-1} + x^2 < y', 'Chybné vykreslení inline LaTeXu');
+
+    // 2. Display LaTeX $$...$$
+    const outDisplay = fmtToFragment('Vzorec: $$\\sum_{i=1}^n i$$').toHtml();
+    assert(outDisplay.includes('data-display="true">\\sum_{i=1}^n i</span>'), 'Chybné vykreslení display LaTeXu: ' + outDisplay);
+
+    // 3. Běžný text bez LaTeXu si zachová dolní/horní indexy a šipky
+    const outPlain = fmtToFragment('Posloupnost a_n -> Z^2').toHtml();
+    assert(outPlain.includes('a<sub>n</sub>') && outPlain.includes('→') && outPlain.includes('Z<sup>2</sup>'), 'Rozbité běžné formátování: ' + outPlain);
+
+    // 4. Rozšířené auto-KaTeX vzorce a přísný CSP mathml režim bez inline style= na reálném KaTeXu
+    const realKatex = require('./ui/vendor/katex/katex.min.js');
     for (const mode of ['', 'mathml']) {
       const mini = makeMiniDoc(mode);
       global.document = mini.doc;
@@ -131,7 +154,6 @@ def test_r1_latex_katex_rendering():
       });
       vm.runInContext(fs.readFileSync('ui/js/dom.js', 'utf8'), mCtx);
       vm.runInContext(fs.readFileSync('ui/js/format.js', 'utf8'), mCtx);
-      const rFmt = vm.runInContext('fmt', mCtx);
       const rFmtFrag = vm.runInContext('fmtToFragment', mCtx);
       for (const expr of [
         'V_k(n) = n! / (n−k)!',
@@ -142,18 +164,15 @@ def test_r1_latex_katex_rendering():
         'Platí ℕ ⊂ ℤ ⊂ ℚ ⊂ ℝ ⊂ ℂ.',
         'Q = {zavřeno, otevřeno}, u ⇒^(∗) z, D_(f⁻¹) = H_f, 𝓛_3 ⊆ 𝓛_2'
       ]) {
-        const rendered = rFmt(expr);
-        assert(rendered.includes('class="katex"'), 'Chybí KaTeX pro: ' + expr);
-        assert(!rendered.includes('katex-error'), 'Chyba KaTeX pro: ' + expr);
         const frag = rFmtFrag(expr);
         const fragHtml = frag.toHtml();
         assert(fragHtml.includes('class="katex"'), 'Chybí DOM KaTeX pro: ' + expr);
+        assert(!fragHtml.includes('katex-error'), 'Chyba KaTeX pro: ' + expr);
         if (mode === 'mathml') {
-          assert(!rendered.includes('style='), 'Zakázaný inline style= v mathml režimu: ' + expr);
           assert(!fragHtml.includes('style='), 'Zakázaný inline style= v DOM mathml režimu: ' + expr);
         }
       }
-      assert(!rFmt('V_k(n) = (n!) / ((n-k)!)').includes('((n-k)!)'), 'Neodstraněné zdvojené závorky jmenovatele');
+      assert(!rFmtFrag('V_k(n) = (n!) / ((n-k)!)').toHtml().includes('((n-k)!)'), 'Neodstraněné zdvojené závorky jmenovatele');
       if (mode === 'mathml') {
         vm.runInContext(fs.readFileSync('ui/js/glosar.js', 'utf8').replace(/\(\s*async\s*\(\)\s*=>[\s\S]*$/, ''), mCtx);
         const gBody = vm.runInContext('gBody', mCtx);
@@ -376,9 +395,12 @@ def test_r6_all_competitive_modes_and_classic_registration(temp_env):
     assert not (BASE / "ui" / "klasicky.html").exists()
     novy_html = (BASE / "ui" / "novy.html").read_text(encoding="utf-8")
     assert "Starý vzhled" not in novy_html
-    assert "startCompetitiveMode('ffa')" in novy_html
-    assert "startCompetitiveMode('duel')" in novy_html
-    assert "startKothChallenge()" in novy_html
+    events_js = (BASE / "ui" / "js" / "events.js").read_text(encoding="utf-8")
+    assert 'data-click="startCompetitiveMode" data-arg="ffa"' in novy_html
+    assert 'data-click="startCompetitiveMode" data-arg="duel"' in novy_html
+    assert 'data-click="startKothChallenge"' in novy_html
+    assert "startCompetitiveMode" in events_js
+    assert "startKothChallenge" in events_js
 
     # 2. Klasická registrace s vlastním uživatelským jménem a potvrzením hesla
     r1 = client.post("/register", data={

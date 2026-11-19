@@ -1,27 +1,28 @@
-const CACHE_NAME = 'tzi-pwa-v25';
+const CACHE_NAME = 'tzi-pwa-v26';
 const STATIC_ASSETS = [
   '/manifest.webmanifest',
   '/icon.svg',
   '/static/vendor/katex/katex.min.css',
   '/static/vendor/katex/katex.min.js',
-  '/static/css/style.css?v=22',
+  '/static/css/style.css?v=23',
   '/static/css/glosar.css?v=22',
-  '/static/js/core.js?v=14',
   '/static/js/dom.js?v=1',
-  '/static/js/format.js?v=17',
+  '/static/js/core.js?v=14',
+  '/static/js/format.js?v=18',
   '/static/js/glosar.js?v=21',
-  '/static/js/shell.js?v=16',
+  '/static/js/shell.js?v=17',
   '/static/js/arena.js?v=14',
-  '/static/js/account.js?v=14',
-  '/static/js/offline.js?v=14',
-  '/static/js/gamification.js?v=14',
-  '/static/js/rooms.js?v=15',
-  '/static/js/menu.js?v=15',
-  '/static/js/chunks.js?v=14',
-  '/static/js/modes.js?v=14',
-  '/static/js/comp_modes.js?v=14',
+  '/static/js/account.js?v=15',
+  '/static/js/offline.js?v=15',
+  '/static/js/gamification.js?v=15',
+  '/static/js/rooms.js?v=16',
+  '/static/js/menu.js?v=16',
+  '/static/js/chunks.js?v=15',
+  '/static/js/modes.js?v=15',
+  '/static/js/comp_modes.js?v=15',
   '/static/js/recall.js?v=14',
-  '/static/js/quiz.js?v=15'
+  '/static/js/quiz.js?v=16',
+  '/static/js/events.js?v=1'
 ];
 
 self.addEventListener('install', event => {

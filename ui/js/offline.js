@@ -24,7 +24,7 @@ async function syncOfflineQueue() {
       localStorage.removeItem(OFFLINE_QUEUE_KEY);
       updateNetStatus();
       if (data.points_awarded > 0) {
-        showToast(`🔄 Synchronizováno: <b>+${data.points_awarded} b.</b> (${data.synced_count} otázek)`);
+        showToast(['🔄 Synchronizováno: ', TziDom.el('b', null, `+${data.points_awarded} b.`), ` (${data.synced_count} otázek)`]);
       } else if (data.synced_count > 0) {
         showToast(`🔄 Synchronizováno ${data.synced_count} offline odpovědí.`);
       }

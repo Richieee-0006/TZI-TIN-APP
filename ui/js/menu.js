@@ -96,18 +96,25 @@ function renderLectures() {
   updateTeorieLink();
   const rc = typeFilter === 'recall';
   $('h-lec').textContent = rc ? 'Kategorie' : 'Přednáška';
+  const makeRow = (n, title, count, onClick, pressed) => TziDom.el('li', null,
+    TziDom.el('button', { class: 'lec', 'aria-pressed': String(pressed), on: { click: onClick } },
+      TziDom.el('span', { class: 'n' }, String(n)),
+      TziDom.el('span', { class: 't' }, String(title)),
+      TziDom.el('span', { class: 'd' }, String(count))
+    )
+  );
   if (rc) { // doplňovačka: místo přednášek kategorie
-    const row = (i, n, name, count, on) => `<li><button class="lec" onclick="selectRecallCat(${i})" aria-pressed="${on}">` +
-      `<span class="n">${n}</span><span class="t">${esc(name)}</span><span class="d">${count}</span></button></li>`;
-    $('lectures').innerHTML = recallCats().map((c, i) => row(i, i + 1, c, RECALL.filter(q => q.category === c).length, c === recallCat)).join('')
-      + row(-1, 'Σ', 'Všechny kategorie', RECALL.length, !recallCat);
+    const catItems = recallCats().map((c, i) =>
+      makeRow(i + 1, c, RECALL.filter(q => q.category === c).length, () => selectRecallCat(i), c === recallCat)
+    );
+    catItems.push(makeRow('Σ', 'Všechny kategorie', RECALL.length, () => selectRecallCat(-1), !recallCat));
+    TziDom.setChildren($('lectures'), ...catItems);
     return;
   }
-  $('lectures').innerHTML = sources.map(s => {
+  TziDom.setChildren($('lectures'), ...sources.map(s => {
     const p = parseSource(s);
-    return `<li><button class="lec" onclick="selectSource('${esc(s.id)}')" aria-pressed="${s.id === currentSource}">` +
-      `<span class="n">${esc(p.n)}</span><span class="t">${esc(p.title)}</span><span class="d">${esc(p.date)}</span></button></li>`;
-  }).join('');
+    return makeRow(p.n, p.title, p.date, () => selectSource(s.id), s.id === currentSource);
+  }));
 }
 
 async function loadSource(source) {
@@ -189,19 +196,27 @@ function goPrimary() { if (resumable) resumeSession(); else startAll(); }
 // Postup jako binární řetězec: jeden řádek = jeden blok, 1 správně, 0 chybně, · nová.
 function renderBits(animate) {
   let d = 0;
-  const html = getChunks().map((qs, i) => {
+  const rows = getChunks().map((qs, i) => {
     const cells = qs.map(q => {
       const s = progress[q.id];
       const k = s === 'correct' ? 'ok' : s === 'wrong' ? 'bad' : 'new';
       const c = k === 'ok' ? '1' : k === 'bad' ? '0' : '·';
-      const delay = animate ? ` style="animation-delay:${(d++) * 9}ms"` : '';
-      return `<span class="bit ${k}"${delay} title="Otázka ${esc(q.id)}">${c}</span>`;
-    }).join('');
-    return `<button class="brow" onclick="openBlock(${i})" aria-label="Blok ${i + 1}, otázky ${i * CHUNK_SIZE + 1} až ${i * CHUNK_SIZE + qs.length}"><b>${i + 1}</b><span class="cells">${cells}</span></button>`;
-  }).join('');
+      const bitEl = TziDom.el('span', { class: `bit ${k}`, title: `Otázka ${q.id}` }, c);
+      if (animate) bitEl.style.animationDelay = `${(d++) * 9}ms`;
+      return bitEl;
+    });
+    return TziDom.el('button', {
+      class: 'brow',
+      'aria-label': `Blok ${i + 1}, otázky ${i * CHUNK_SIZE + 1} až ${i * CHUNK_SIZE + qs.length}`,
+      on: { click: () => openBlock(i) }
+    },
+      TziDom.el('b', null, String(i + 1)),
+      TziDom.el('span', { class: 'cells' }, ...cells)
+    );
+  });
   const el = $('bits');
   el.className = 'bits' + (animate ? ' anim' : '');
-  el.innerHTML = html;
+  TziDom.setChildren(el, ...rows);
 }
 function openBlock(i) { const qs = getChunks()[i]; if (qs) showChunkDetail(qs, i); }
 

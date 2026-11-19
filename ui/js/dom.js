@@ -7,7 +7,7 @@
     if (item === null || item === undefined || item === false) return;
     if (Array.isArray(item)) {
       for (const x of item) appendChildSafe(parent, x);
-    } else if (item instanceof Node) {
+    } else if ((typeof Node !== 'undefined' && item instanceof Node) || (item && typeof item === 'object' && typeof item.nodeType === 'number')) {
       parent.appendChild(item);
     } else {
       parent.appendChild(document.createTextNode(String(item)));

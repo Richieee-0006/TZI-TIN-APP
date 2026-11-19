@@ -64,7 +64,7 @@ function updateExamTimer() {
 function beginSession(qs, sd) {
   if (!qs.length) return;
   queue = qs; idx = 0; history = []; optOrder = {}; suddenDeath = sd; studyMode = false; examMode = false; kothMode = false;
-  $('sudden-banner').innerHTML = 'Sudden Death<span>1 život, první chyba ukončí hru</span>';
+  TziDom.setChildren($('sudden-banner'), 'Sudden Death', TziDom.el('span', null, '1 život, první chyba ukončí hru'));
   $('sudden-banner').style.display = sd ? 'block' : 'none';
   show('quiz'); renderQ();
 }

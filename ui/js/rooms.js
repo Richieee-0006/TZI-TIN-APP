@@ -62,25 +62,39 @@ function renderKothUI(st, overview) {
     const ffaSt = overview && overview.ffa ? overview.ffa : null;
     if (duelSt && Array.isArray(duelSt.open_challenges)) {
       duelSt.open_challenges.slice(0, 2).forEach(ch => {
-        items.push(`<li><span>⚔️ <b>1v1 výzva: ${esc(ch.creator_username)}</b> (${ch.creator_score} b.)</span><span><button class="lnk" onclick="startCompetitiveMode('duel', ${Number(ch.id)})">Přijmout 1v1</button></span></li>`);
+        items.push(TziDom.el('li', null,
+          TziDom.el('span', null, '⚔️ ', TziDom.el('b', null, `1v1 výzva: ${ch.creator_username}`), ` (${ch.creator_score} b.)`),
+          TziDom.el('span', null,
+            TziDom.el('button', { class: 'lnk', on: { click: () => startCompetitiveMode('duel', Number(ch.id)) } }, 'Přijmout 1v1')
+          )
+        ));
       });
     }
     if (duelSt && Array.isArray(duelSt.recent_duels)) {
       duelSt.recent_duels.slice(0, 2).forEach(d => {
-        const winTxt = d.winner_username ? `🏆 ${esc(d.winner_username)}` : '🤝 Remíza';
-        items.push(`<li><span>⚔️ 1v1: <b>${esc(d.creator_username)}</b> (${d.creator_score}) vs <b>${esc(d.opponent_username)}</b> (${d.opponent_score})</span><span><b>${winTxt}</b></span></li>`);
+        const winTxt = d.winner_username ? `🏆 ${d.winner_username}` : '🤝 Remíza';
+        items.push(TziDom.el('li', null,
+          TziDom.el('span', null, '⚔️ 1v1: ', TziDom.el('b', null, d.creator_username), ` (${d.creator_score}) vs `, TziDom.el('b', null, d.opponent_username), ` (${d.opponent_score})`),
+          TziDom.el('span', null, TziDom.el('b', null, winTxt))
+        ));
       });
     }
     if (ffaSt && Array.isArray(ffaSt.leaderboard) && ffaSt.leaderboard.length > 0) {
-      const topFfa = ffaSt.leaderboard.slice(0, 2).map((r, i) => `#${i+1} ${esc(r.username)} (${r.best_score} b.)`).join(' · ');
-      items.push(`<li><span>🏟️ <b>FFA TOP:</b> ${topFfa}</span><span><b>${ffaSt.total_players} hráčů</b></span></li>`);
+      const topFfa = ffaSt.leaderboard.slice(0, 2).map((r, i) => `#${i + 1} ${r.username} (${r.best_score} b.)`).join(' · ');
+      items.push(TziDom.el('li', null,
+        TziDom.el('span', null, '🏟️ ', TziDom.el('b', null, 'FFA TOP:'), ` ${topFfa}`),
+        TziDom.el('span', null, TziDom.el('b', null, `${ffaSt.total_players} hráčů`))
+      ));
     }
     if (Array.isArray(st.recent_matches)) {
       st.recent_matches.slice(0, 3).forEach(m => {
-        items.push(`<li><span>${m.won_throne ? '👑' : '🛡️'} KotH: <b>${esc(m.challenger_username)}</b> (${m.correct_count}/${m.total_questions})</span><span><b>${m.challenger_score} b.</b></span></li>`);
+        items.push(TziDom.el('li', null,
+          TziDom.el('span', null, `${m.won_throne ? '👑' : '🛡️'} KotH: `, TziDom.el('b', null, m.challenger_username), ` (${m.correct_count}/${m.total_questions})`),
+          TziDom.el('span', null, TziDom.el('b', null, `${m.challenger_score} b.`))
+        ));
       });
     }
-    listEl.innerHTML = items.slice(0, 6).join('');
+    TziDom.setChildren(listEl, ...items.slice(0, 6));
   }
 }
 
@@ -126,13 +140,15 @@ function renderRoomsListUI(roomsData) {
   const waiting = active.filter(r => r.status === 'waiting');
   if (badgeEl) badgeEl.textContent = `${waiting.length} otevřených`;
   if (!active.length) {
-    listEl.innerHTML = `<li class="room-row"><span class="room-row-meta">Žádná aktivní místnost – vytvoř novou roomku výše a počkej na hráče nebo ji spusť jako 👑!</span></li>`;
+    TziDom.setChildren(listEl, TziDom.el('li', { class: 'room-row' },
+      TziDom.el('span', { class: 'room-row-meta' }, 'Žádná aktivní místnost – vytvoř novou roomku výše a počkej na hráče nebo ji spusť jako 👑!')
+    ));
     return;
   }
   const myUid = currentUserData ? currentUserData.user_id : 0;
-  listEl.innerHTML = active.slice(0, 6).map(r => {
+  TziDom.setChildren(listEl, ...active.slice(0, 6).map(r => {
     const isMember = Array.isArray(r.players) && r.players.some(p => p.user_id === myUid);
-    const playersNames = Array.isArray(r.players) ? r.players.map(p => (p.is_host ? '👑 ' : '') + esc(p.username)).join(', ') : '';
+    const playersNames = Array.isArray(r.players) ? r.players.map(p => (p.is_host ? '👑 ' : '') + p.username).join(', ') : '';
     const expText = (r.status === 'waiting' && typeof r.expires_in_seconds === 'number')
       ? ` · ⏱ ${formatRoomCountdown(r.expires_in_seconds)}`
       : '';
@@ -140,14 +156,20 @@ function renderRoomsListUI(roomsData) {
       ? (isMember ? 'Otevřít lobby 👑' : 'Připojit se')
       : (isMember ? 'Probíhá (Vstoupit)' : 'Probíhá');
     const canClick = r.status === 'waiting' || isMember;
-    return `<li class="room-row">
-      <div>
-        <div><b>${modeBadgeLabel(r.mode)} · ${esc(r.name)}</b> <span class="room-row-meta">(${r.player_count}/${r.max_players} hráčů · ${r.question_count} ot.${expText})</span></div>
-        <div class="room-row-meta">Hráči: ${playersNames || esc(r.host_username)}</div>
-      </div>
-      ${canClick ? `<button type="button" class="room-join-btn" onclick="joinCompRoom(${Number(r.id)})">${btnLabel}</button>` : `<span class="room-row-meta">Hraje se</span>`}
-    </li>`;
-  }).join('');
+    return TziDom.el('li', { class: 'room-row' },
+      TziDom.el('div', null,
+        TziDom.el('div', null,
+          TziDom.el('b', null, `${modeBadgeLabel(r.mode)} · ${r.name}`),
+          ' ',
+          TziDom.el('span', { class: 'room-row-meta' }, `(${r.player_count}/${r.max_players} hráčů · ${r.question_count} ot.${expText})`)
+        ),
+        TziDom.el('div', { class: 'room-row-meta' }, `Hráči: ${playersNames || r.host_username}`)
+      ),
+      canClick
+        ? TziDom.el('button', { type: 'button', class: 'room-join-btn', on: { click: () => joinCompRoom(Number(r.id)) } }, btnLabel)
+        : TziDom.el('span', { class: 'room-row-meta' }, 'Hraje se')
+    );
+  }));
 }
 
 async function refreshKothStatus() {
@@ -228,12 +250,17 @@ function renderRoomLobbyView(room) {
   }
   const plEl = $('rl-players-list');
   if (plEl && Array.isArray(room.players)) {
-    plEl.innerHTML = room.players.map(p => `
-      <li>
-        <span>${p.is_host ? '👑' : '👤'} <b>${esc(p.username)}</b> ${p.is_host ? '<small style="color:var(--muted)">(Hostitel)</small>' : ''}</span>
-        <span style="font-family:var(--mono);font-size:.8rem;color:var(--ok);">Připraven</span>
-      </li>
-    `).join('');
+    TziDom.setChildren(plEl, ...room.players.map(p =>
+      TziDom.el('li', null,
+        TziDom.el('span', null,
+          `${p.is_host ? '👑' : '👤'} `,
+          TziDom.el('b', null, p.username),
+          p.is_host ? ' ' : null,
+          p.is_host ? TziDom.el('small', { class: 'rl-host-tag' }, '(Hostitel)') : null
+        ),
+        TziDom.el('span', { class: 'rl-ready-tag' }, 'Připraven')
+      )
+    ));
   }
   const startBtn = $('btn-rl-start');
   if (startBtn) {
@@ -260,8 +287,11 @@ function launchRoomQuiz(room, questions) {
   activeRoomId = room ? room.id : activeRoomId;
   activeRoomData = room || activeRoomData;
   kothStartTime = Date.now(); kothLastResult = null;
-  const pNames = room && Array.isArray(room.players) ? room.players.map(p => (p.is_host ? '👑' : '') + esc(p.username)).join(' vs ') : '';
-  $('sudden-banner').innerHTML = `${modeBadgeLabel(compMode)} · ${esc(room ? room.name : 'Místnost')}<span>Hráči v místnosti: ${pNames}</span>`;
+  const pNames = room && Array.isArray(room.players) ? room.players.map(p => (p.is_host ? '👑' : '') + p.username).join(' vs ') : '';
+  TziDom.setChildren($('sudden-banner'),
+    `${modeBadgeLabel(compMode)} · ${room ? room.name : 'Místnost'}`,
+    TziDom.el('span', null, `Hráči v místnosti: ${pNames}`)
+  );
   $('sudden-banner').style.display = 'block';
   show('quiz');
   renderQ();
@@ -400,10 +430,15 @@ function renderRoomStandingsBoard(room) {
     return;
   }
   wrap.style.display = 'block';
-  list.innerHTML = room.players.map((p, i) => {
-    const st = p.status === 'finished' ? `<b>${p.score} b.</b> (${p.correct_count}/${p.total_questions} · ${Math.round((p.time_ms || 0)/1000)}s)` : '⏳ Hraje...';
+  TziDom.setChildren(list, ...room.players.map((p, i) => {
+    const st = p.status === 'finished'
+      ? [TziDom.el('b', null, `${p.score} b.`), ` (${p.correct_count}/${p.total_questions} · ${Math.round((p.time_ms || 0) / 1000)}s)`]
+      : ['⏳ Hraje...'];
     const crown = i === 0 && p.status === 'finished' ? '🏆 ' : (p.is_host ? '👑 ' : '');
-    return `<li><span>#${i+1} ${crown}<b>${esc(p.username)}</b></span><span>${st}</span></li>`;
-  }).join('');
+    return TziDom.el('li', null,
+      TziDom.el('span', null, `#${i + 1} ${crown}`, TziDom.el('b', null, p.username)),
+      TziDom.el('span', null, ...st)
+    );
+  }));
 }
 

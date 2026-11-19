@@ -29,10 +29,11 @@ if (typeof window !== 'undefined' && typeof window.fetch === 'function') {
   };
 }
 
-function showToast(html) {
+function showToast(content) {
   const t = document.getElementById('score-toast');
   if (!t) return;
-  t.innerHTML = html;
+  const parts = Array.isArray(content) ? content : [content];
+  TziDom.setChildren(t, ...parts);
   t.classList.add('visible');
   setTimeout(() => t.classList.remove('visible'), 2800);
 }
@@ -54,7 +55,19 @@ function applyUserTheme(th) {
 // PWA Service Worker Registration
 if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator && typeof window !== 'undefined') {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(e => console.warn('[TZI] SW reg failed:', e));
+    let swUrl = '/sw.js';
+    if (window.trustedTypes && typeof window.trustedTypes.createPolicy === 'function') {
+      try {
+        const swPolicy = window.trustedTypes.createPolicy('tzi-sw', {
+          createScriptURL: u => {
+            if (u === '/sw.js') return u;
+            throw new TypeError('Blocked untrusted Service Worker URL');
+          }
+        });
+        swUrl = swPolicy.createScriptURL('/sw.js');
+      } catch (e) {}
+    }
+    navigator.serviceWorker.register(swUrl, { scope: '/' }).catch(e => console.warn('[TZI] SW reg failed:', e));
   });
 }
 
@@ -86,11 +99,11 @@ function toggleOfflineMode() {
   localStorage.setItem('tzi_force_offline', forceOffline ? '1' : '0');
   updateNetStatus();
   if (!forceOffline && isOnline()) {
-    showToast('Switched to <b>Online mode</b>. Syncing...');
+    showToast(['Switched to ', TziDom.el('b', null, 'Online mode'), '. Syncing...']);
     syncOfflineQueue();
     refreshUserStats();
   } else {
-    showToast('Switched to <b>Offline mode</b>. Progress is saved locally.');
+    showToast(['Switched to ', TziDom.el('b', null, 'Offline mode'), '. Progress is saved locally.']);
   }
 }
 
