@@ -206,8 +206,8 @@ class MutationCommand extends DiagramCommand {
   execute(ed) { return this.fn(ed) !== false; }
 }
 class AddStateCommand extends DiagramCommand {
-  constructor(x, y) { super(); this.x = x; this.y = y; }
-  execute(ed) { return ed.insertStateAt(this.x, this.y); }
+  constructor(x, y, selectNew = true) { super(); this.x = x; this.y = y; this.selectNew = selectNew; }
+  execute(ed) { return ed.insertStateAt(this.x, this.y, this.selectNew); }
 }
 class PasteCommand extends DiagramCommand {
   execute(ed) { return ed.clipboard.pasteInto(ed); }
@@ -309,7 +309,7 @@ class DiagramClipboard {
   }
   pasteInto(ed) {
     if (!this.hasData) return false;
-    if (ed.model.states.length + this.payload.states.length > 64) { alert('Maximální počet stavů je 64.'); return false; }
+    if (ed.model.states.length + this.payload.states.length > 64) { ed.warnStatus('Maximální počet stavů je 64.'); return false; }
     const used = new Set(), map = {};
     ed.selection.clear();
     for (const s of this.payload.states) {
@@ -483,12 +483,7 @@ class MoveTool extends CanvasTool {
     this.editor.toolbar.render();
   }
   renderIdleBar() {
-    return `<span class="selbar-title">Plátno</span>` +
-      `<button type="button" class="btn icon-btn" id="ctxZoomOut" aria-label="Oddálit">${ico('<line x1="5" y1="12" x2="19" y2="12"/>')}</button>` +
-      `<button type="button" class="btn zoom-pct" id="ctxZoomReset" title="Obnovit 100 %">${Math.round(this.editor.viewport.zoom * 100)}%</button>` +
-      `<button type="button" class="btn icon-btn" id="ctxZoomIn" aria-label="Přiblížit">${ico('<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>')}</button>` +
-      `<button type="button" class="btn" id="ctxZoomFit" title="Přizpůsobit diagram do okna">Celý</button>` +
-      `<span class="selbar-hint">Táhni plátnem</span>`;
+    return '';
   }
 }
 
@@ -582,12 +577,8 @@ class SelectTool extends CanvasTool {
     };
   }
   renderIdleBar() {
-    const hasStates = this.editor.model.states.length > 0, canPaste = this.editor.clipboard.hasData;
-    return `<span class="selbar-title">Výběr</span>` +
-      `<button type="button" class="btn" id="selAll"${hasStates ? '' : ' disabled'}>Select all</button>` +
-      `<button type="button" class="btn" id="selCopy" disabled>Copy</button>` +
-      `<button type="button" class="btn" id="selPaste"${canPaste ? '' : ' disabled'}>Paste</button>` +
-      `<button type="button" class="btn danger" id="selDel" disabled>Delete</button>`;
+    if (!this.editor.clipboard.hasData) return '';
+    return `<button type="button" class="btn" id="selPaste">Vložit</button>`;
   }
 }
 
@@ -599,10 +590,10 @@ class StateTool extends CanvasTool {
     const pd = this.pending; this.pending = null;
     if (canceled || !pd || Math.hypot(ev.clientX - pd.sx, ev.clientY - pd.sy) > 8) return;
     if (pd.hit.stateId) { this.editor.selection.selectOnlyState(pd.hit.stateId); this.editor.render(); }
-    else this.editor.execute(new AddStateCommand(pd.p.x, pd.p.y));
+    else this.editor.execute(new AddStateCommand(pd.p.x, pd.p.y, false));
   }
   onDblClick(hit, ev, p) {
-    if (!hit.stateId && hit.edgeIndex === null) this.editor.execute(new AddStateCommand(p.x, p.y));
+    if (!hit.stateId && hit.edgeIndex === null) this.editor.execute(new AddStateCommand(p.x, p.y, false));
   }
   renderIdleBar() {
     return `<span class="selbar-hint">Klepni na plátno pro vložení stavu</span>` +
@@ -614,13 +605,6 @@ class StateTool extends CanvasTool {
 class EdgeTool extends CanvasTool {
   get cursorClass() { return 'mode-edge'; }
   onDeactivate() { this.linkDrag = null; this.emptyClick = null; }
-  onActivate(prevSel) {
-    if (!prevSel.linkFrom && prevSel.singleState()) {
-      prevSel.linkFrom = prevSel.singleState();
-      prevSel.states.clear(); prevSel.edgeIndex = null; prevSel.pendingEdge = null;
-    }
-    return true;
-  }
   beginPortDrag(from, ev, p) {
     const s = this.editor.pos(from); if (!s) return;
     this.linkDrag = { from, x1: s.x, y1: s.y, x2: p.x, y2: p.y, sx: ev.clientX, sy: ev.clientY, moved: false };
@@ -665,24 +649,8 @@ class EdgeTool extends CanvasTool {
     return { hidePort: moved, rubber: moved ? this.linkDrag : null };
   }
   renderIdleBar() {
-    return `<span class="selbar-hint">Táhni mezi stavy nebo klepni na výchozí</span><button type="button" class="btn" id="cancelTool">Zrušit</button>`;
+    return `<span class="selbar-hint">Táhni ze stavu do stavu nebo klepni na zdroj</span><button type="button" class="btn" id="cancelTool">Zrušit</button>`;
   }
-}
-
-class RoleTool extends CanvasTool {
-  constructor(editorInstance, id, role, hint) { super(editorInstance, id); this.role = role; this.hint = hint; }
-  onDeactivate() { this.pending = null; }
-  onActivate(prevSel) {
-    if (this.role === 'start' && prevSel.singleState()) { this.editor.applyRoleToState('start', prevSel.singleState()); return false; }
-    if (this.role === 'acc' && prevSel.states.size > 0) { this.editor.toggleAcceptSet([...prevSel.states]); return false; }
-    return true;
-  }
-  onPointerDown(hit, ev) { if (hit.stateId) this.pending = { id: hit.stateId, sx: ev.clientX, sy: ev.clientY }; }
-  onPointerUp(ev, canceled) {
-    const pd = this.pending; this.pending = null;
-    if (!canceled && pd && Math.hypot(ev.clientX - pd.sx, ev.clientY - pd.sy) <= 8) this.editor.applyRoleToState(this.role, pd.id);
-  }
-  renderIdleBar() { return `<span class="selbar-hint">${this.hint}</span><button type="button" class="btn" id="cancelTool">Hotovo</button>`; }
 }
 
 class EraseTool extends CanvasTool {
@@ -715,7 +683,7 @@ class ContextToolbar {
         matches: ed => !!ed.selection.renaming,
         render: ed => {
           const s = ed.pos(ed.selection.renaming);
-          return `<span class="selbar-title">Název ${esc(S(s.id))}</span>` +
+          return `<span class="selbar-title">Přejmenovat ${esc(S(s.id))}</span>` +
             `<input type="text" id="renInput" class="selbar-rename" maxlength="8" value="${esc(s.id)}" autocomplete="off" aria-label="Nový název stavu">` +
             `<button type="button" class="btn primary" id="renSave">Uložit</button>` +
             `<button type="button" class="btn" id="renCancel">Zrušit</button>` +
@@ -743,22 +711,22 @@ class ContextToolbar {
         render: ed => {
           const id = ed.selection.singleState();
           return `<span class="selbar-title">Stav ${esc(S(id))}</span>` +
-            `<button type="button" class="btn" id="stStart" aria-pressed="${ed.model.start === id}" title="Počáteční stav (vstup)">${ico('<line x1="3" y1="12" x2="13" y2="12"/><polyline points="9 8 13 12 9 16"/><circle cx="17.5" cy="12" r="3.5"/>')}Start</button>` +
-            `<button type="button" class="btn" id="stAcc" aria-pressed="${ed.model.accept.includes(id)}" title="Přijímací stav (výstup)">${ico('<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="5"/>')}End</button>` +
-            `<button type="button" class="btn" id="stLink" title="Přidat přechod (šipka)">${ico('<line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/>')}Step</button>` +
-            `<button type="button" class="btn" id="stRen" title="Přejmenovat stav">${ico('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>')}Název</button>` +
-            `<button type="button" class="btn" id="stCopy" title="Kopírovat (Ctrl+C)">${ico('<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>')}Copy</button>` +
-            `<button type="button" class="btn danger" id="stDel" title="Smazat (Delete)">${ico('<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>')}Delete</button>`;
+            `<button type="button" class="btn" id="stStart" aria-pressed="${ed.model.start === id}" title="Počáteční stav (šipka dovnitř)">${ico('<line x1="2" y1="12" x2="11" y2="12"/><polyline points="7.5 8.5 11 12 7.5 15.5"/><circle cx="16.5" cy="12" r="5"/>')}Počáteční</button>` +
+            `<button type="button" class="btn" id="stAcc" aria-pressed="${ed.model.accept.includes(id)}" title="Přijímací stav (šipka ven)">${ico('<circle cx="7.5" cy="12" r="5"/><line x1="12.5" y1="12" x2="22" y2="12"/><polyline points="18.5 8.5 22 12 18.5 15.5"/>')}Přijímací</button>` +
+            `<button type="button" class="btn" id="stLink" title="Přidat přechod z tohoto stavu">${ico('<line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/>')}+ Přechod</button>` +
+            `<button type="button" class="btn" id="stRen" title="Přejmenovat stav (R)">${ico('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>')}Název</button>` +
+            `<button type="button" class="btn" id="stDup" title="Duplikovat stav (Ctrl+D)">${ico('<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>')}Duplikovat</button>` +
+            `<button type="button" class="btn danger" id="stDel" title="Smazat (Delete)">${ico('<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>')}Smazat</button>`;
         }
       },
       {
         matches: ed => ed.selection.states.size > 1,
         render: ed => `<span class="selbar-title">Vybráno: ${ed.selection.states.size}</span>` +
-          `<button type="button" class="btn" id="selAll">Select all</button>` +
-          `<button type="button" class="btn" id="selCopy">Copy</button>` +
-          `<button type="button" class="btn" id="selPaste"${ed.clipboard.hasData ? '' : ' disabled'}>Paste</button>` +
-          `<button type="button" class="btn" id="selAccAll">End ±</button>` +
-          `<button type="button" class="btn danger" id="selDel">Delete</button>` +
+          `<button type="button" class="btn" id="selAll">Vybrat vše</button>` +
+          `<button type="button" class="btn" id="selAccAll">Přijímací ±</button>` +
+          `<button type="button" class="btn" id="selCopy">Kopírovat</button>` +
+          (ed.clipboard.hasData ? `<button type="button" class="btn" id="selPaste">Vložit</button>` : '') +
+          `<button type="button" class="btn danger" id="selDel">Smazat</button>` +
           `<button type="button" class="btn" id="selNone">Zrušit</button>`
       }
     ];
@@ -795,16 +763,12 @@ class ContextToolbar {
       selAll: () => { ed.model.states.forEach(s => ed.selection.states.add(s.id)); ed.selection.edgeIndex = null; ed.selection.pendingEdge = null; ed.selection.renaming = null; ed.render(); },
       selNone: () => { ed.selection.clear(); ed.render(); },
       selCopy: () => ed.copySelection(),
-      stCopy: () => ed.copySelection(),
+      stDup: () => ed.duplicateSelection(),
       selPaste: () => ed.execute(new PasteCommand()),
       selDel: () => ed.execute(new DeleteSelectionCommand()),
       stDel: () => ed.execute(new DeleteSelectionCommand()),
       selAccAll: () => ed.toggleAcceptSet([...ed.selection.states]),
-      addCenterState: () => { const pt = ed.freeSpot(); ed.execute(new AddStateCommand(pt.x, pt.y)); },
-      ctxZoomOut: () => ed.zoomBy(0.8),
-      ctxZoomIn: () => ed.zoomBy(1.25),
-      ctxZoomReset: () => ed.resetZoom(),
-      ctxZoomFit: () => ed.fitToStates(),
+      addCenterState: () => { const pt = ed.freeSpot(); ed.execute(new AddStateCommand(pt.x, pt.y, false)); },
       stStart: () => { const id = ed.selection.singleState(); if (id) ed.applyRoleToState('start', id); },
       stAcc: () => { const id = ed.selection.singleState(); if (id) ed.applyRoleToState('acc', id); },
       stLink: () => { const id = ed.selection.singleState(); if (id) { ed.selection.linkFrom = id; ed.selection.states.clear(); ed.setTool('edge', true); } },
@@ -841,8 +805,6 @@ class DiagramEditor {
       move: new MoveTool(this, 'move'),
       select: new SelectTool(this, 'select'),
       state: new StateTool(this, 'state'),
-      start: new RoleTool(this, 'start', 'start', 'Klepni na počáteční stav'),
-      acc: new RoleTool(this, 'acc', 'acc', 'Klepni na přijímací stav'),
       edge: new EdgeTool(this, 'edge'),
       erase: new EraseTool(this, 'erase')
     };
@@ -854,6 +816,7 @@ class DiagramEditor {
     this.portOverride = false;
     this.lastAddedAt = 0;
     this.needsFit = false;
+    this.statusNote = null;
     this.bindEvents();
   }
   pos(id) { return this.model.states.find(s => s.id === id); }
@@ -868,9 +831,11 @@ class DiagramEditor {
   }
   undo() { if (this.history.undo(this)) { this.selection.clear(); this.notifyChanged(true); } }
   redo() { if (this.history.redo(this)) { this.selection.clear(); this.notifyChanged(true); } }
+  warnStatus(text) { this.statusNote = { text, cls: 'warn' }; this.render(); }
   notifyChanged(persist = true) {
     if (persist) save();
     sim.active = false; sim.cur = null;
+    this.statusNote = null;
     this.render();
   }
   persist() { save(); }
@@ -890,13 +855,14 @@ class DiagramEditor {
     const ctr = this.viewport.centerPoint();
     return { x: Math.round(ctr.x + (this.model.states.length * 37 % 140) - 70), y: Math.round(ctr.y + (this.model.states.length * 53 % 120) - 60) };
   }
-  insertStateAt(x, y) {
-    if (this.model.states.length >= 64) { alert('Maximální počet stavů je 64.'); return false; }
+  insertStateAt(x, y, selectNew = true) {
+    if (this.model.states.length >= 64) { this.warnStatus('Maximální počet stavů je 64.'); return false; }
     const id = this.nextStateId();
     this.model.states.push({ id, x: clamp(Math.round(x), 44, 1956), y: clamp(Math.round(y), 40, 960) });
     if (!this.model.start) this.model.start = id;
     this.lastAddedAt = Date.now();
-    this.selection.selectOnlyState(id);
+    if (selectNew) this.selection.selectOnlyState(id);
+    else this.selection.clear();
     return true;
   }
   removeState(id) {
@@ -954,6 +920,7 @@ class DiagramEditor {
     const idx = this.model.trans.findIndex(t => t.from === from && t.to === to);
     if (idx >= 0) this.selection.edgeIndex = idx;
     else this.selection.pendingEdge = { from, to };
+    this.setTool('select', true);
     this.render();
   }
   toggleEdgeSymbol(sym) {
@@ -1037,6 +1004,10 @@ class DiagramEditor {
     const inp = $('renInput'); if (inp) { inp.focus(); inp.select(); }
   }
   copySelection() { if (this.clipboard.copy(this.model, this.selection)) this.toolbar.render(); }
+  duplicateSelection() {
+    if (!this.clipboard.copy(this.model, this.selection)) return false;
+    return this.execute(new PasteCommand());
+  }
   setTool(nextId, skipActivate = false) {
     const nextTool = this.tools[nextId]; if (!nextTool) return;
     if (!skipActivate) {
@@ -1045,10 +1016,10 @@ class DiagramEditor {
     }
     this.activeTool.onDeactivate();
     this.activeTool = nextTool;
-    if (nextId === 'move' || nextId === 'state') this.selection.clear();
+    if (nextId === 'move' || nextId === 'state' || (nextId === 'edge' && !skipActivate)) this.selection.clear();
     if (nextId !== 'edge') this.selection.linkFrom = null;
     this.selection.renaming = null; this.selection.error = '';
-    if (!skipActivate) this.render();
+    if (!skipActivate) { this.statusNote = null; this.render(); }
   }
   hitTest(target) {
     const port = target.closest('[data-port]'), st = target.closest('[data-s]'), ed = target.closest('[data-e]');
@@ -1095,7 +1066,8 @@ class DiagramEditor {
     this.toolbar.render();
     renderWordDiagram(); syncDelta();
     const st = $('dStatus');
-    if (!this.model.states.length) { st.className = 'status'; st.textContent = ''; }
+    if (this.statusNote) { st.className = 'status ' + this.statusNote.cls; st.textContent = this.statusNote.text; }
+    else if (!this.model.states.length) { st.className = 'status'; st.textContent = ''; }
     else if (chk.ok) { st.className = 'status ok'; st.textContent = 'Deterministický a úplný automat'; }
     else { st.className = 'status ' + (chk.multi.length ? 'bad' : 'warn'); st.textContent = chk.problems.map(p => p.text).join(' '); }
     if (!given) renderLive();
@@ -1146,6 +1118,7 @@ class DiagramEditor {
       if (mod && ev.key.toLowerCase() === 'a') { ev.preventDefault(); this.setTool('select', true); this.model.states.forEach(s => this.selection.states.add(s.id)); this.selection.edgeIndex = null; this.selection.pendingEdge = null; this.render(); return; }
       if (mod && ev.key.toLowerCase() === 'c') { if (this.selection.states.size) { ev.preventDefault(); this.copySelection(); } return; }
       if (mod && ev.key.toLowerCase() === 'v') { if (this.clipboard.hasData) { ev.preventDefault(); this.execute(new PasteCommand()); } return; }
+      if (mod && ev.key.toLowerCase() === 'd') { if (this.selection.states.size) { ev.preventDefault(); this.duplicateSelection(); } return; }
       if (ev.key === ' ') { ev.preventDefault(); if (!this.spacePan) { this.spacePan = true; this.render(); } return; }
       if (ev.key === 'Escape') { this.selection.clear(); this.setTool('select'); return; }
       if (ev.key === 'Delete' || ev.key === 'Backspace') { this.execute(new DeleteSelectionCommand()); return; }
@@ -1154,7 +1127,8 @@ class DiagramEditor {
       }
       if (!mod) {
         const k = ev.key.toLowerCase();
-        const keyMap = { '1': 'move', m: 'move', '2': 'select', v: 'select', '3': 'state', s: 'state', '4': 'start', '5': 'acc', '6': 'edge', a: 'edge', '7': 'erase', x: 'erase' };
+        if ((k === 'r' || ev.key === 'F2') && this.selection.singleState()) { ev.preventDefault(); this.openRename(this.selection.singleState()); return; }
+        const keyMap = { '1': 'select', v: 'select', '2': 'move', h: 'move', m: 'move', '3': 'state', s: 'state', '4': 'edge', a: 'edge', '5': 'erase', x: 'erase' };
         if (keyMap[k]) { ev.preventDefault(); this.setTool(keyMap[k]); return; }
         if (k === '=' || k === '+') this.zoomBy(1.2);
         else if (k === '-') this.zoomBy(0.83);
@@ -1174,11 +1148,12 @@ class DiagramEditor {
     $('zoomReset').onclick = () => this.resetZoom();
     $('zoomFit').onclick = () => this.fitToStates();
     $('clear').onclick = () => {
-      if (this.model.states.length && !confirm('Smazat celý návrh?')) return;
+      if (!this.model.states.length) return;
       this.execute(new MutationCommand(ed => {
         ed.model = fresh(ed.model.alphabet); ed.selection.clear(); ed.viewport.reset();
         exTask = null; $('ex').value = ''; lsSet('tzi_automat_ex', ''); renderZad();
       }));
+      this.warnStatus('Plátno vyčištěno. Vrátíš přes Zpět (Ctrl+Z).');
     };
     $('alpha').onchange = () => {
       const a = parseSymbols($('alpha').value);
@@ -1391,7 +1366,7 @@ function buildGiven() {
   for (const q of ids) for (const a of al) h += `<label>δ(${esc(S(q))}, ${esc(a)}) = ${cellIn('d', q, a)}</label>`;
   $('p-delta').innerHTML = h + '</div><div class="row"><button class="btn primary" id="rD">Zkontrolovat δ</button><span id="rDo"></span></div>';
   const dgrid = $('p-delta').querySelector('.dgrid');
-  if (dgrid) dgrid.style.gridTemplateColumns = `repeat(${al.length},auto)`;
+  if (dgrid) dgrid.dataset.cols = String(Math.min(6, Math.max(1, al.length)));
   h = '<h2>2. Tabulka přechodů</h2><p class="hint">Vyplň buňky. Zaškrtni → u počátečního a ← u přijímacích stavů.</p><div class="table-wrap"><table><tr><th>→</th><th>←</th><th></th>' + al.map(a => `<th>${esc(a)}</th>`).join('') + '</tr>';
   for (const q of ids) h += `<tr><td><input type="checkbox" data-m="${esc(q)}|start" ${(RP.marks[q] || {}).start ? 'checked' : ''}></td><td><input type="checkbox" data-m="${esc(q)}|accept" ${(RP.marks[q] || {}).accept ? 'checked' : ''}></td><th>${esc(S(q))}</th>` + al.map(a => `<td>${cellIn('t', q, a)}</td>`).join('') + '</tr>';
   $('p-table').innerHTML = h + '</table></div><div class="row"><button class="btn primary" id="rTb">Zkontrolovat tabulku</button><span id="rTo"></span></div>';

@@ -444,6 +444,36 @@ def test_glosar_and_automat_routes():
         assert chk.returncode == 0, f"{js_file}: {chk.stderr}"
 
 
+def test_automat_toolbar_shortcuts_and_csp():
+    """Ověří pořadí nástrojů v #dock, shodu tooltipů 1-5 s keyMap a čistotu bez .style."""
+    import re
+
+    root = BASE.parent
+    html = (root / "ui" / "automat.html").read_text(encoding="utf-8")
+    js = (root / "ui" / "js" / "automat.js").read_text(encoding="utf-8")
+
+    assert "</script></script>" not in html
+    assert ".style." not in js
+
+    dock_match = re.search(r'<div id="dock"[^>]*>(.*?)</div>', html, re.S)
+    assert dock_match
+    dock_html = dock_match.group(1)
+
+    tools = re.findall(r'data-tool="([^"]+)"[^>]*title="([^"]+)"', dock_html)
+    assert [t for t, _ in tools] == ["select", "move", "state", "edge", "erase"]
+    for idx, (tool, title) in enumerate(tools, start=1):
+        assert f"({idx} /" in title, f"Tool {tool} missing ({idx} / in title: {title}"
+
+    for eng in (">Move<", ">Select<", ">Delete<"):
+        assert eng not in dock_html
+
+    km_match = re.search(r"const keyMap = \{([^}]+)\}", js)
+    assert km_match
+    km = km_match.group(1)
+    for idx, (tool, _) in enumerate(tools, start=1):
+        assert re.search(rf"'{idx}':\s*'{tool}'", km), f"keyMap missing '{idx}': '{tool}'"
+
+
 def test_pentest_regressions(monkeypatch):
     """Verify no premature XP grant, room detail IDOR, or browser-UA CSRF bypass."""
     from webapp.routers import pwa
