@@ -25,8 +25,8 @@ const safeParseJson = raw => {
   return JSON.parse(raw, (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v);
 };
 
+const { el: aEl, svgEl: aSvg, setChildren: aSet, iconSvg: aIco } = TziDom;
 const fresh = alphabet => ({ alphabet, states: [], start: null, accept: [], trans: [] });
-const ico = d => `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 const parseSymbols = text => [...new Set([...String(text)].filter(c => !/[\s,;]/.test(c)))].slice(0, 32);
 let task = null, given = false, tab = 'diagram', TABS = [], exTask = null, sim = { word: '', pos: 0 }, RP = null;
@@ -139,23 +139,42 @@ function edgeGeom(model, pendingEdge, t) {
 // ── stavový strom jako obrázek (sdílí ho živý náhled i kontrola ve cvičení) ──
 function treeSvg(m) {
   const tr = Auto.tree(m);
-  if (!tr) return '<span class="hint">Strom potřebuje počáteční stav.</span>';
+  if (!tr) return [aEl('span', { class: 'hint' }, 'Strom potřebuje počáteční stav.')];
   const L = Auto.treeLayout(tr), DX = 86, DY = 96, r = 22, X = o => 64 + DX / 2 + o.x * DX, Y = o => 40 + o.y * DY;
   const W = 64 + L.leaves * DX + 30, H = 40 + L.depth * DY + 50;
-  let e = '', n = '', lv = '';
+  const kids = [
+    aSvg('defs', null,
+      aSvg('marker', { id: 'tarrow', viewBox: '0 0 10 10', refX: 9, refY: 5, markerUnits: 'userSpaceOnUse', markerWidth: 11, markerHeight: 11, orient: 'auto' },
+        aSvg('path', { d: 'M 0 0 L 10 5 L 0 10 z', class: 'svg-arrow' })
+      )
+    )
+  ];
+  for (let i = 0; i <= L.depth; i++) {
+    kids.push(aSvg('text', { class: 'tr-l', x: 8, y: 40 + i * DY + 4 }, `úr. ${i}`));
+  }
+  const edgeNodes = [], nodeNodes = [];
   for (const o of L.nodes) {
     if (o.parent) {
       const x1 = X(o.parent), y1 = Y(o.parent), x2 = X(o), y2 = Y(o), l = Math.hypot(x2 - x1, y2 - y1), ux = (x2 - x1) / l, uy = (y2 - y1) / l;
       const mx = x1 + (x2 - x1) * .45, my = y1 + (y2 - y1) * .45;
-      e += `<g class="tr-e"><line x1="${x1 + ux * r}" y1="${y1 + uy * r}" x2="${x2 - ux * (r + 4)}" y2="${y2 - uy * (r + 4)}" marker-end="url(#tarrow)"/><rect x="${mx - 11}" y="${my - 11}" width="22" height="22" rx="6"/><text x="${mx}" y="${my}">${esc(o.n.sym)}</text></g>`;
+      edgeNodes.push(aSvg('g', { class: 'tr-e' },
+        aSvg('line', { x1: x1 + ux * r, y1: y1 + uy * r, x2: x2 - ux * (r + 4), y2: y2 - uy * (r + 4), 'marker-end': 'url(#tarrow)' }),
+        aSvg('rect', { x: mx - 11, y: my - 11, width: 22, height: 22, rx: 6 }),
+        aSvg('text', { x: mx, y: my }, o.n.sym)
+      ));
     }
     const acc = m.accept.includes(o.n.state);
-    n += `<g class="tr-n${o.n.seen ? ' seen' : ''}"><circle cx="${X(o)}" cy="${Y(o)}" r="${r}"/><text x="${X(o)}" y="${Y(o)}">${esc(S(o.n.state))}</text>` +
-      (acc ? `<line class="tr-acc" x1="${X(o) + r}" y1="${Y(o)}" x2="${X(o) + r + 20}" y2="${Y(o)}" marker-end="url(#tarrow)"/>` : '') + '</g>';
+    nodeNodes.push(aSvg('g', { class: `tr-n${o.n.seen ? ' seen' : ''}` },
+      aSvg('circle', { cx: X(o), cy: Y(o), r }),
+      aSvg('text', { x: X(o), y: Y(o) }, S(o.n.state)),
+      acc ? aSvg('line', { class: 'tr-acc', x1: X(o) + r, y1: Y(o), x2: X(o) + r + 20, y2: Y(o), 'marker-end': 'url(#tarrow)' }) : null
+    ));
   }
-  for (let i = 0; i <= L.depth; i++) lv += `<text class="tr-l" x="8" y="${40 + i * DY + 4}">úr. ${i}</text>`;
-  return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Stavový strom"><defs><marker id="tarrow" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="svg-arrow"/></marker></defs>${lv}${e}${n}</svg>` +
-    '<p class="hint mt-xs">← šipka ven = přijímací stav · čárkovaně a šedě = stav, který už ve stromu někde rozvinutý je (dál se nerozvíjí)</p>';
+  kids.push(...edgeNodes, ...nodeNodes);
+  return [
+    aSvg('svg', { width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Stavový strom' }, kids),
+    aEl('p', { class: 'hint mt-xs' }, '← šipka ven = přijímací stav · čárkovaně a šedě = stav, který už ve stromu někde rozvinutý je (dál se nerozvíjí)')
+  ];
 }
 
 // ── GoF OOP jádro diagramu (Memento, Command, State, Strategy, Facade) ─────────
@@ -327,71 +346,112 @@ class DiagramClipboard {
 
 class SvgDiagramRenderer {
   renderInner(mid, interactive, model, selection, viewport, overlays) {
-    const safeMid = esc(mid), find = id => model.states.find(s => s.id === id);
-    let h = `<defs><marker id="${safeMid}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" class="svg-arrow"/></marker>` +
-      (interactive ? `<pattern id="grid-${safeMid}" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="12" cy="12" r="1" class="svg-grid-dot"/></pattern>` : '') +
-      `</defs>` + (interactive ? `<rect x="-8000" y="-8000" width="16000" height="16000" fill="url(#grid-${safeMid})" pointer-events="none"/>` : '');
+    const find = id => model.states.find(s => s.id === id);
+    const defs = aSvg('defs', null,
+      aSvg('marker', { id: mid, viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 9, markerHeight: 9, orient: 'auto-start-reverse' },
+        aSvg('path', { d: 'M 0 0 L 10 5 L 0 10 z', class: 'svg-arrow' })
+      ),
+      interactive ? aSvg('pattern', { id: `grid-${mid}`, width: 24, height: 24, patternUnits: 'userSpaceOnUse' },
+        aSvg('circle', { cx: 12, cy: 12, r: 1, class: 'svg-grid-dot' })
+      ) : null
+    );
+    const out = [defs];
+    if (interactive) out.push(aSvg('rect', { x: -8000, y: -8000, width: 16000, height: 16000, fill: `url(#grid-${mid})`, 'pointer-events': 'none' }));
     if (interactive && !model.states.length && viewport) {
       const c = viewport.centerPoint();
-      h += `<g class="empty-hint"><rect x="${c.x - 150}" y="${c.y - 28}" width="300" height="56" rx="12"/><text x="${c.x}" y="${c.y}">Dvakrát klepni nebo vyber Stav</text></g>`;
+      out.push(aSvg('g', { class: 'empty-hint' },
+        aSvg('rect', { x: c.x - 150, y: c.y - 28, width: 300, height: 56, rx: 12 }),
+        aSvg('text', { x: c.x, y: c.y }, 'Dvakrát klepni nebo vyber Stav')
+      ));
     }
     model.trans.forEach((t, i) => {
       const g = edgeGeom(model, interactive ? selection.pendingEdge : null, t), label = t.symbols.join(', '), w = Math.max(24, label.length * 10 + 10);
-      h += `<g class="ed${interactive && selection.edgeIndex === i ? ' sel' : ''}" ${interactive ? `data-e="${i}"` : ''}><path d="${g.d}" marker-end="url(#${safeMid})"/>` +
-        (interactive ? `<path d="${g.d}" class="svg-hit" marker-end=""/>` : '') +
-        `<rect x="${g.lx - w / 2}" y="${g.ly - 11}" width="${w}" height="22" rx="6"/><text x="${g.lx}" y="${g.ly}">${esc(label)}</text></g>`;
+      out.push(aSvg('g', { class: `ed${interactive && selection.edgeIndex === i ? ' sel' : ''}`, dataset: interactive ? { e: i } : null },
+        aSvg('path', { d: g.d, 'marker-end': `url(#${mid})` }),
+        interactive ? aSvg('path', { d: g.d, class: 'svg-hit', 'marker-end': '' }) : null,
+        aSvg('rect', { x: g.lx - w / 2, y: g.ly - 11, width: w, height: 22, rx: 6 }),
+        aSvg('text', { x: g.lx, y: g.ly }, label)
+      ));
     });
     if (interactive && selection.pendingEdge && find(selection.pendingEdge.from) && find(selection.pendingEdge.to)) {
       const g = edgeGeom(model, selection.pendingEdge, selection.pendingEdge);
-      h += `<g class="ed pending"><path d="${g.d}" marker-end="url(#${safeMid})"/><rect x="${g.lx - 14}" y="${g.ly - 11}" width="28" height="22" rx="6"/><text x="${g.lx}" y="${g.ly}">?</text></g>`;
+      out.push(aSvg('g', { class: 'ed pending' },
+        aSvg('path', { d: g.d, 'marker-end': `url(#${mid})` }),
+        aSvg('rect', { x: g.lx - 14, y: g.ly - 11, width: 28, height: 22, rx: 6 }),
+        aSvg('text', { x: g.lx, y: g.ly }, '?')
+      ));
     }
     model.states.forEach(s => {
-      if (model.start === s.id) h += `<line class="mark" x1="${s.x - R - 46}" y1="${s.y}" x2="${s.x - R - 2}" y2="${s.y}" marker-end="url(#${safeMid})"/>`;
-      if (model.accept.includes(s.id)) h += `<line class="mark" x1="${s.x + R}" y1="${s.y}" x2="${s.x + R + 44}" y2="${s.y}" marker-end="url(#${safeMid})"/>`;
+      if (model.start === s.id) out.push(aSvg('line', { class: 'mark', x1: s.x - R - 46, y1: s.y, x2: s.x - R - 2, y2: s.y, 'marker-end': `url(#${mid})` }));
+      if (model.accept.includes(s.id)) out.push(aSvg('line', { class: 'mark', x1: s.x + R, y1: s.y, x2: s.x + R + 44, y2: s.y, 'marker-end': `url(#${mid})` }));
       const cls = `st${interactive && selection.states.has(s.id) ? ' sel' : ''}${interactive && selection.linkFrom === s.id ? ' src' : ''}${sim.cur === s.id ? ' cur' : ''}`;
-      h += `<g class="${cls}" data-s="${esc(s.id)}">${interactive ? `<circle class="st-hit" cx="${s.x}" cy="${s.y}" r="${R + 14}"/>` : ''}<circle cx="${s.x}" cy="${s.y}" r="${R}"/><text x="${s.x}" y="${s.y}">${esc(S(s.id))}</text></g>`;
+      out.push(aSvg('g', { class: cls, dataset: { s: s.id } },
+        interactive ? aSvg('circle', { class: 'st-hit', cx: s.x, cy: s.y, r: R + 14 }) : null,
+        aSvg('circle', { cx: s.x, cy: s.y, r: R }),
+        aSvg('text', { x: s.x, y: s.y }, S(s.id))
+      ));
     });
     const sid = interactive ? selection.singleState() : null;
     if (interactive && sid && !selection.linkFrom && !overlays.hidePort) {
       const ss = find(sid);
       if (ss) {
         const px = ss.x + 26, py = ss.y < 76 ? ss.y + 26 : ss.y - 26;
-        h += `<g class="svg-port" data-port="${esc(ss.id)}"><title>Táhni k dalšímu stavu</title><circle class="port-hit" cx="${px}" cy="${py}" r="22"/><circle class="port-dot" cx="${px}" cy="${py}" r="12"/><text x="${px}" y="${py}">→</text></g>`;
+        out.push(aSvg('g', { class: 'svg-port', dataset: { port: ss.id } },
+          aSvg('title', null, 'Táhni k dalšímu stavu'),
+          aSvg('circle', { class: 'port-hit', cx: px, cy: py, r: 22 }),
+          aSvg('circle', { class: 'port-dot', cx: px, cy: py, r: 12 }),
+          aSvg('text', { x: px, y: py }, '→')
+        ));
       }
     }
     if (interactive && overlays.rubber) {
       const rb = overlays.rubber;
-      h += `<line class="rubber" x1="${rb.x1}" y1="${rb.y1}" x2="${rb.x2}" y2="${rb.y2}"/>`;
+      out.push(aSvg('line', { class: 'rubber', x1: rb.x1, y1: rb.y1, x2: rb.x2, y2: rb.y2 }));
     }
     if (interactive && overlays.marquee) {
       const mq = overlays.marquee, mx = Math.min(mq.x1, mq.x2), my = Math.min(mq.y1, mq.y2);
-      h += `<rect class="marquee" x="${mx}" y="${my}" width="${Math.abs(mq.x2 - mq.x1)}" height="${Math.abs(mq.y2 - mq.y1)}"/>`;
+      out.push(aSvg('rect', { class: 'marquee', x: mx, y: my, width: Math.abs(mq.x2 - mq.x1), height: Math.abs(mq.y2 - mq.y1) }));
     }
-    return h;
+    return out;
   }
 }
 
 function renderWordDiagram() { // diagram pod čtením slova (jen k prohlížení)
   if (!editor) return;
   const w = $('wBoard'), m = editor.model; if (!w) return;
-  if (!m.states.length) { w.setAttribute('viewBox', '0 0 600 120'); w.innerHTML = '<text x="300" y="60" class="svg-empty-msg">Diagram je zatím prázdný. Nakresli ho v kroku Diagram.</text>'; return; }
+  if (!m.states.length) {
+    w.setAttribute('viewBox', '0 0 600 120');
+    aSet(w, aSvg('text', { x: 300, y: 60, class: 'svg-empty-msg' }, 'Diagram je zatím prázdný. Nakresli ho v kroku Diagram.'));
+    return;
+  }
   const xs = m.states.map(s => s.x), ys = m.states.map(s => s.y), pad = 95;
   const x0 = Math.min(...xs) - pad, y0 = Math.min(...ys) - pad - 30;
   w.setAttribute('viewBox', `${x0} ${y0} ${Math.max(360, Math.max(...xs) + pad - x0)} ${Math.max(240, Math.max(...ys) + pad - y0)}`);
-  w.innerHTML = editor.renderer.renderInner('arrow2', false, m, editor.selection, null, {});
+  aSet(w, editor.renderer.renderInner('arrow2', false, m, editor.selection, null, {}));
 }
 
 function renderLive() { // tabulka, strom a čtení slova z vlastního návrhu
   if (!$('lTable') || !editor) return;
   const m = editor.model, d = Auto.delta(m);
-  let t = '<table><tr><th></th>' + m.alphabet.map(a => `<th>${esc(a)}</th>`).join('') + '</tr>';
-  for (const s of m.states) {
-    t += `<tr><th>${m.start === s.id ? '→ ' : ''}${m.accept.includes(s.id) ? '← ' : ''}${esc(S(s.id))}</th>`;
-    for (const a of m.alphabet) { const c = (d[s.id] && d[s.id][a]) || []; t += `<td class="${!c.length ? 'miss' : c.length > 1 ? 'multi' : ''}">${c.length ? c.map(x => esc(S(x))).join(', ') : '–'}</td>`; }
-    t += '</tr>';
+  if (!m.states.length) {
+    aSet($('lTable'), aEl('span', { class: 'hint' }, 'Zatím žádný stav. V kroku Diagram přidej stavy.'));
+  } else {
+    const tbl = aEl('table', null,
+      aEl('tr', null, aEl('th'), m.alphabet.map(a => aEl('th', null, a))),
+      m.states.map(s => aEl('tr', null,
+        aEl('th', null, `${m.start === s.id ? '→ ' : ''}${m.accept.includes(s.id) ? '← ' : ''}${S(s.id)}`),
+        m.alphabet.map(a => {
+          const c = (d[s.id] && d[s.id][a]) || [];
+          return aEl('td', { class: !c.length ? 'miss' : c.length > 1 ? 'multi' : null }, c.length ? c.map(S).join(', ') : '–');
+        })
+      ))
+    );
+    aSet($('lTable'),
+      aEl('div', { class: 'table-wrap' }, tbl),
+      aEl('p', { class: 'hint' }, 'Tabulka se plní sama z tvého automatu. → počáteční, ← přijímací, „–“ = chybí přechod.')
+    );
   }
-  $('lTable').innerHTML = m.states.length ? `<div class="table-wrap">${t}</table></div><p class="hint">Tabulka se plní sama z tvého automatu. → počáteční, ← přijímací, „–“ = chybí přechod.</p>` : '<span class="hint">Zatím žádný stav. V kroku Diagram přidej stavy.</span>';
-  $('lTree').innerHTML = treeSvg(m);
+  aSet($('lTree'), treeSvg(m));
   renderTrace();
 }
 
@@ -403,10 +463,14 @@ function renderTrace() {
   let txt = S(m.start || '?');
   for (let i = 0; i < k; i++) txt += ` –${r.steps[i].read}→ ${S(r.steps[i].to)}`;
   const done = k === sim.word.length || (r.stuck && k === r.steps.length), rest = [...sim.word].slice(k).join('');
-  let verdict = '';
-  if (r.stuck && k === r.steps.length && sim.pos > r.steps.length) verdict = `<br><b class="verdict-bad">Zaseknuto: ${esc(r.stuck)}</b>`;
-  else if (done) verdict = `<br><b class="${r.accepted ? 'verdict-ok' : 'verdict-bad'}">${r.accepted ? 'Přijato ✓' : 'Nepřijato ✗'}</b> (skončil ve stavu ${esc(S(r.state || '?'))})`;
-  out.innerHTML = `${esc(txt)}${rest ? `<br><span class="hint">zbývá: ${esc(rest)}</span>` : ''}${verdict}`;
+  const nodes = [txt];
+  if (rest) nodes.push(aEl('br'), aEl('span', { class: 'hint' }, `zbývá: ${rest}`));
+  if (r.stuck && k === r.steps.length && sim.pos > r.steps.length) {
+    nodes.push(aEl('br'), aEl('b', { class: 'verdict-bad' }, `Zaseknuto: ${r.stuck}`));
+  } else if (done) {
+    nodes.push(aEl('br'), aEl('b', { class: r.accepted ? 'verdict-ok' : 'verdict-bad' }, r.accepted ? 'Přijato ✓' : 'Nepřijato ✗'), ` (skončil ve stavu ${S(r.state || '?')})`);
+  }
+  aSet(out, nodes);
   sim.cur = k === 0 ? m.start : r.steps[k - 1] ? r.steps[k - 1].to : r.state;
   svgCur();
 }
@@ -577,8 +641,8 @@ class SelectTool extends CanvasTool {
     };
   }
   renderIdleBar() {
-    if (!this.editor.clipboard.hasData) return '';
-    return `<button type="button" class="btn" id="selPaste">Vložit</button>`;
+    if (!this.editor.clipboard.hasData) return null;
+    return [aEl('button', { type: 'button', class: 'btn', id: 'selPaste' }, 'Vložit')];
   }
 }
 
@@ -596,9 +660,11 @@ class StateTool extends CanvasTool {
     if (!hit.stateId && hit.edgeIndex === null) this.editor.execute(new AddStateCommand(p.x, p.y, false));
   }
   renderIdleBar() {
-    return `<span class="selbar-hint">Klepni na plátno pro vložení stavu</span>` +
-      `<button type="button" class="btn" id="addCenterState">+ Přidat stav</button>` +
-      `<button type="button" class="btn" id="cancelTool">Hotovo</button>`;
+    return [
+      aEl('span', { class: 'selbar-hint' }, 'Klepni na plátno pro vložení stavu'),
+      aEl('button', { type: 'button', class: 'btn', id: 'addCenterState' }, '+ Přidat stav'),
+      aEl('button', { type: 'button', class: 'btn', id: 'cancelTool' }, 'Hotovo')
+    ];
   }
 }
 
@@ -649,7 +715,10 @@ class EdgeTool extends CanvasTool {
     return { hidePort: moved, rubber: moved ? this.linkDrag : null };
   }
   renderIdleBar() {
-    return `<span class="selbar-hint">Táhni ze stavu do stavu nebo klepni na zdroj</span><button type="button" class="btn" id="cancelTool">Zrušit</button>`;
+    return [
+      aEl('span', { class: 'selbar-hint' }, 'Táhni ze stavu do stavu nebo klepni na zdroj'),
+      aEl('button', { type: 'button', class: 'btn', id: 'cancelTool' }, 'Zrušit')
+    ];
   }
 }
 
@@ -670,7 +739,12 @@ class EraseTool extends CanvasTool {
     if (pd.type === 'state') this.editor.removeState(pd.id);
     else this.editor.removeEdge(pd.idx);
   }
-  renderIdleBar() { return `<span class="selbar-hint">Klepni na stav nebo šipku ke smazání</span><button type="button" class="btn" id="cancelTool">Hotovo</button>`; }
+  renderIdleBar() {
+    return [
+      aEl('span', { class: 'selbar-hint' }, 'Klepni na stav nebo šipku ke smazání'),
+      aEl('button', { type: 'button', class: 'btn', id: 'cancelTool' }, 'Hotovo')
+    ];
+  }
 }
 
 // ── GoF Strategy: kontextová podnabídka v #selBar ───────────────────────────
@@ -683,51 +757,75 @@ class ContextToolbar {
         matches: ed => !!ed.selection.renaming,
         render: ed => {
           const s = ed.pos(ed.selection.renaming);
-          return `<span class="selbar-title">Přejmenovat ${esc(S(s.id))}</span>` +
-            `<input type="text" id="renInput" class="selbar-rename" maxlength="8" value="${esc(s.id)}" autocomplete="off" aria-label="Nový název stavu">` +
-            `<button type="button" class="btn primary" id="renSave">Uložit</button>` +
-            `<button type="button" class="btn" id="renCancel">Zrušit</button>` +
-            (ed.selection.error ? `<span class="status bad">${esc(ed.selection.error)}</span>` : '');
+          return [
+            aEl('span', { class: 'selbar-title' }, `Přejmenovat ${S(s.id)}`),
+            aEl('input', { type: 'text', id: 'renInput', class: 'selbar-rename', maxlength: 8, value: s.id, autocomplete: 'off', 'aria-label': 'Nový název stavu' }),
+            aEl('button', { type: 'button', class: 'btn primary', id: 'renSave' }, 'Uložit'),
+            aEl('button', { type: 'button', class: 'btn', id: 'renCancel' }, 'Zrušit'),
+            ed.selection.error ? aEl('span', { class: 'status bad' }, ed.selection.error) : null
+          ];
         }
       },
       {
         matches: ed => !!ed.selection.linkFrom,
-        render: ed => `<span class="selbar-title">Šipka z ${esc(S(ed.selection.linkFrom))} → klepni na cíl</span><button type="button" class="btn" id="selCancelLink">Zrušit</button>`
+        render: ed => [
+          aEl('span', { class: 'selbar-title' }, `Šipka z ${S(ed.selection.linkFrom)} → klepni na cíl`),
+          aEl('button', { type: 'button', class: 'btn', id: 'selCancelLink' }, 'Zrušit')
+        ]
       },
       {
         matches: ed => !!(ed.selection.pendingEdge || (ed.selection.edgeIndex !== null && ed.model.trans[ed.selection.edgeIndex])),
         render: ed => {
           const sel = ed.selection, edge = sel.pendingEdge || ed.model.trans[sel.edgeIndex], syms = sel.pendingEdge ? [] : edge.symbols;
-          return `<span class="selbar-title">${esc(S(edge.from))} → ${esc(S(edge.to))}</span>` +
-            ed.model.alphabet.map(a => `<button type="button" class="btn sym" data-sym="${esc(a)}" aria-pressed="${syms.includes(a)}">${esc(a)}</button>`).join('') +
-            (ed.model.alphabet.length > 8 ? `<input type="text" id="edgeSymInput" class="selbar-rename" maxlength="32" value="${esc(syms.join(', '))}" autocomplete="off" aria-label="Znaky přechodu"><button type="button" class="btn" id="edgeSymApply">Použít</button>` : '') +
-            (edge.from !== edge.to ? `<button type="button" class="btn" id="edgeFlip" title="Otočit směr šipky">${ico('<polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>')}Otočit</button>` : '') +
-            (sel.pendingEdge ? `<button type="button" class="btn" id="edgeDiscard">Zrušit</button>` : `<button type="button" class="btn danger" id="edgeDel">${ico('<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>')}Smazat</button>`) +
-            (sel.error ? `<span class="status bad">${esc(sel.error)}</span>` : '');
+          const flipIco = aIco([['polyline', { points: '17 1 21 5 17 9' }], ['path', { d: 'M3 11V9a4 4 0 0 1 4-4h14' }], ['polyline', { points: '7 23 3 19 7 15' }], ['path', { d: 'M21 13v2a4 4 0 0 1-4 4H3' }]]);
+          const delIco = aIco([['polyline', { points: '3 6 5 6 21 6' }], ['path', { d: 'M19 6l-1 14H6L5 6' }]]);
+          return [
+            aEl('span', { class: 'selbar-title' }, `${S(edge.from)} → ${S(edge.to)}`),
+            ...ed.model.alphabet.map(a => aEl('button', { type: 'button', class: 'btn sym', dataset: { sym: a }, 'aria-pressed': String(syms.includes(a)) }, a)),
+            ...(ed.model.alphabet.length > 8 ? [
+              aEl('input', { type: 'text', id: 'edgeSymInput', class: 'selbar-rename', maxlength: 32, value: syms.join(', '), autocomplete: 'off', 'aria-label': 'Znaky přechodu' }),
+              aEl('button', { type: 'button', class: 'btn', id: 'edgeSymApply' }, 'Použít')
+            ] : []),
+            edge.from !== edge.to ? aEl('button', { type: 'button', class: 'btn', id: 'edgeFlip', title: 'Otočit směr šipky' }, flipIco, 'Otočit') : null,
+            sel.pendingEdge
+              ? aEl('button', { type: 'button', class: 'btn', id: 'edgeDiscard' }, 'Zrušit')
+              : aEl('button', { type: 'button', class: 'btn danger', id: 'edgeDel' }, delIco, 'Smazat'),
+            sel.error ? aEl('span', { class: 'status bad' }, sel.error) : null
+          ];
         }
       },
       {
         matches: ed => !!ed.selection.singleState(),
         render: ed => {
           const id = ed.selection.singleState();
-          return `<span class="selbar-title">Stav ${esc(S(id))}</span>` +
-            `<button type="button" class="btn" id="stStart" aria-pressed="${ed.model.start === id}" title="Počáteční stav (šipka dovnitř)">${ico('<line x1="2" y1="12" x2="11" y2="12"/><polyline points="7.5 8.5 11 12 7.5 15.5"/><circle cx="16.5" cy="12" r="5"/>')}Počáteční</button>` +
-            `<button type="button" class="btn" id="stAcc" aria-pressed="${ed.model.accept.includes(id)}" title="Přijímací stav (šipka ven)">${ico('<circle cx="7.5" cy="12" r="5"/><line x1="12.5" y1="12" x2="22" y2="12"/><polyline points="18.5 8.5 22 12 18.5 15.5"/>')}Přijímací</button>` +
-            `<button type="button" class="btn" id="stLink" title="Přidat přechod z tohoto stavu">${ico('<line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/>')}+ Přechod</button>` +
-            `<button type="button" class="btn" id="stRen" title="Přejmenovat stav (R)">${ico('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>')}Název</button>` +
-            `<button type="button" class="btn" id="stDup" title="Duplikovat stav (Ctrl+D)">${ico('<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>')}Duplikovat</button>` +
-            `<button type="button" class="btn danger" id="stDel" title="Smazat (Delete)">${ico('<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>')}Smazat</button>`;
+          return [
+            aEl('span', { class: 'selbar-title' }, `Stav ${S(id)}`),
+            aEl('button', { type: 'button', class: 'btn', id: 'stStart', 'aria-pressed': String(ed.model.start === id), title: 'Počáteční stav (šipka dovnitř)' },
+              aIco([['line', { x1: 2, y1: 12, x2: 11, y2: 12 }], ['polyline', { points: '7.5 8.5 11 12 7.5 15.5' }], ['circle', { cx: 16.5, cy: 12, r: 5 }]]), 'Počáteční'),
+            aEl('button', { type: 'button', class: 'btn', id: 'stAcc', 'aria-pressed': String(ed.model.accept.includes(id)), title: 'Přijímací stav (šipka ven)' },
+              aIco([['circle', { cx: 7.5, cy: 12, r: 5 }], ['line', { x1: 12.5, y1: 12, x2: 22, y2: 12 }], ['polyline', { points: '18.5 8.5 22 12 18.5 15.5' }]]), 'Přijímací'),
+            aEl('button', { type: 'button', class: 'btn', id: 'stLink', title: 'Přidat přechod z tohoto stavu' },
+              aIco([['line', { x1: 5, y1: 12, x2: 19, y2: 12 }], ['polyline', { points: '13 6 19 12 13 18' }]]), '+ Přechod'),
+            aEl('button', { type: 'button', class: 'btn', id: 'stRen', title: 'Přejmenovat stav (R)' },
+              aIco([['path', { d: 'M12 20h9' }], ['path', { d: 'M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z' }]]), 'Název'),
+            aEl('button', { type: 'button', class: 'btn', id: 'stDup', title: 'Duplikovat stav (Ctrl+D)' },
+              aIco([['rect', { x: 9, y: 9, width: 13, height: 13, rx: 2 }], ['path', { d: 'M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1' }]]), 'Duplikovat'),
+            aEl('button', { type: 'button', class: 'btn danger', id: 'stDel', title: 'Smazat (Delete)' },
+              aIco([['polyline', { points: '3 6 5 6 21 6' }], ['path', { d: 'M19 6l-1 14H6L5 6' }]]), 'Smazat')
+          ];
         }
       },
       {
         matches: ed => ed.selection.states.size > 1,
-        render: ed => `<span class="selbar-title">Vybráno: ${ed.selection.states.size}</span>` +
-          `<button type="button" class="btn" id="selAll">Vybrat vše</button>` +
-          `<button type="button" class="btn" id="selAccAll">Přijímací ±</button>` +
-          `<button type="button" class="btn" id="selCopy">Kopírovat</button>` +
-          (ed.clipboard.hasData ? `<button type="button" class="btn" id="selPaste">Vložit</button>` : '') +
-          `<button type="button" class="btn danger" id="selDel">Smazat</button>` +
-          `<button type="button" class="btn" id="selNone">Zrušit</button>`
+        render: ed => [
+          aEl('span', { class: 'selbar-title' }, `Vybráno: ${ed.selection.states.size}`),
+          aEl('button', { type: 'button', class: 'btn', id: 'selAll' }, 'Vybrat vše'),
+          aEl('button', { type: 'button', class: 'btn', id: 'selAccAll' }, 'Přijímací ±'),
+          aEl('button', { type: 'button', class: 'btn', id: 'selCopy' }, 'Kopírovat'),
+          ed.clipboard.hasData ? aEl('button', { type: 'button', class: 'btn', id: 'selPaste' }, 'Vložit') : null,
+          aEl('button', { type: 'button', class: 'btn danger', id: 'selDel' }, 'Smazat'),
+          aEl('button', { type: 'button', class: 'btn', id: 'selNone' }, 'Zrušit')
+        ]
       }
     ];
     this.bindEvents();
@@ -738,9 +836,10 @@ class ContextToolbar {
     const prevId = hadFocus ? act.id : '', prevSym = hadFocus && act.dataset ? act.dataset.sym : undefined;
     this.editor.selection.prune(this.editor.model);
     const strat = this.strategies.find(s => s.matches(this.editor));
-    const html = strat ? strat.render(this.editor) : this.editor.activeTool.renderIdleBar();
-    if (!html) { bar.hidden = true; bar.innerHTML = ''; return; }
-    bar.innerHTML = html;
+    const nodes = strat ? strat.render(this.editor) : this.editor.activeTool.renderIdleBar();
+    const list = (Array.isArray(nodes) ? nodes : [nodes]).filter(Boolean);
+    if (!list.length) { bar.hidden = true; bar.replaceChildren(); return; }
+    aSet(bar, list);
     bar.hidden = false;
     let focusTarget = null;
     if (hadFocus) {
@@ -1062,7 +1161,7 @@ class DiagramEditor {
     if ($('redoBtn')) $('redoBtn').disabled = !this.history.canRedo;
     this.applyView();
     const overlays = this.portOverride ? this.tools.edge.getOverlays() : this.activeTool.getOverlays();
-    this.svg.innerHTML = this.renderer.renderInner('arrow', true, this.model, this.selection, this.viewport, overlays);
+    aSet(this.svg, this.renderer.renderInner('arrow', true, this.model, this.selection, this.viewport, overlays));
     this.toolbar.render();
     renderWordDiagram(); syncDelta();
     const st = $('dStatus');
@@ -1171,17 +1270,22 @@ editor = new DiagramEditor();
 
 function doGrade() {
   const g = Auto.grade(editor.model, task), outs = [...document.querySelectorAll('.gradeOut')];
-  const setOut = h => { outs.forEach(o => { o.innerHTML = h; }); };
+  const setOut = makeNodes => { outs.forEach(o => aSet(o, makeNodes())); };
   if (g.ok) {
-    setOut('<div class="result ok">✓ Správně. Tvůj automat přijímá přesně správná slova (porovnáno na všech možných slovech, ne jen na pár).</div>');
+    setOut(() => aEl('div', { class: 'result ok' }, '✓ Správně. Tvůj automat přijímá přesně správná slova (porovnáno na všech možných slovech, ne jen na pár).'));
     if (given) { RP.done.diagram = true; rsave(); } else { const dm = doneMap(); dm[task.id] = true; lsSet('tzi_automat_done', JSON.stringify(dm)); }
     renderTabs(); return;
   }
   if (given) { RP.done.diagram = false; rsave(); renderTabs(); }
-  if (g.kind === 'invalid') { setOut('<div class="result bad">Nejdřív oprav automat:<br>' + g.problems.map(p => esc(p.text)).join('<br>') + '</div>'); return; }
-  const w = g.word === '' ? 'prázdné slovo' : `slovo „${esc(g.word)}“`;
-  setOut(`<div class="result bad">Ještě ne. Na ${w} se liší: tvůj automat ho ${g.mine ? 'přijímá' : 'nepřijímá'}, ale má ho ${g.expected ? 'přijímat' : 'nepřijímat'}. <button class="btn tryWord">Přečíst toto slovo</button></div>`);
-  document.querySelectorAll('.tryWord').forEach(b => { b.onclick = () => { showTab('word'); if (!given) { $('word').value = g.word; $('whole').click(); } }; });
+  if (g.kind === 'invalid') {
+    setOut(() => aEl('div', { class: 'result bad' }, 'Nejdřív oprav automat:', ...g.problems.flatMap(p => [aEl('br'), p.text])));
+    return;
+  }
+  const w = g.word === '' ? 'prázdné slovo' : `slovo „${g.word}“`;
+  setOut(() => aEl('div', { class: 'result bad' },
+    `Ještě ne. Na ${w} se liší: tvůj automat ho ${g.mine ? 'přijímá' : 'nepřijímá'}, ale má ho ${g.expected ? 'přijímat' : 'nepřijímat'}. `,
+    aEl('button', { type: 'button', class: 'btn tryWord', on: { click: () => { showTab('word'); if (!given) { $('word').value = g.word; $('whole').click(); } } } }, 'Přečíst toto slovo')
+  ));
 }
 $('grade').onclick = doGrade;
 
@@ -1215,23 +1319,27 @@ $('ex').onchange = () => {
 };
 
 // ── zadání vlevo, kroky nahoře ───────────────────────────────────────────────
-const formatZadBody = t => (t.steps && t.text.includes('\n') ? `<pre>${esc(t.text)}</pre>` : `<p>${typeof fmt === 'function' ? fmt(t.text) : esc(t.text)}</p>`);
+const formatZadBody = t => t.steps && t.text.includes('\n')
+  ? aEl('pre', null, t.text)
+  : aEl('p', null, typeof fmtToFragment === 'function' ? fmtToFragment(t.text) : t.text);
 const zadOf = t => {
   const img = safeImgSrc(t.image);
-  return (img ? `<img src="${esc(img)}" alt="Zadání úlohy">` : '') + formatZadBody(t);
+  return [img ? aEl('img', { src: img, alt: 'Zadání úlohy' }) : null, formatZadBody(t)];
 };
 function renderZad() {
-  let h;
+  const nodes = [];
   if (!task) {
-    h = '<h2>Volný návrh</h2><p class="hint">Kresli, co chceš. Úlohu s kontrolou vybereš nahoře. Tabulka, strom i čtení slova se řídí tvým diagramem.</p>';
-    if (exTask) h += `<hr class="zad-sep"><h2>Zadání příkladu: ${esc(exTask.title)}</h2>` + zadOf(exTask);
+    nodes.push(
+      aEl('h2', null, 'Volný návrh'),
+      aEl('p', { class: 'hint' }, 'Kresli, co chceš. Úlohu s kontrolou vybereš nahoře. Tabulka, strom i čtení slova se řídí tvým diagramem.')
+    );
+    if (exTask) {
+      nodes.push(aEl('hr', { class: 'zad-sep' }), aEl('h2', null, `Zadání příkladu: ${exTask.title}`), ...zadOf(exTask));
+    }
   } else {
-    h = `<h2>${esc(task.title)}</h2>`;
-    const img = safeImgSrc(task.image);
-    if (img) h += `<img src="${esc(img)}" alt="Zadání úlohy">`;
-    h += formatZadBody(task);
+    nodes.push(aEl('h2', null, task.title), ...zadOf(task));
   }
-  $('zadBody').innerHTML = h;
+  aSet($('zadBody'), nodes);
 }
 const doneOf = id => !task ? false : task.steps ? ({ delta: RP.done.delta, table: RP.done.table, diagram: RP.done.diagram, tree: RP.done.tree, word: RP.wordsOk >= 3 })[id] : id === 'diagram' && !!doneMap()[task.id];
 let tabScrollObs = null;
@@ -1258,13 +1366,19 @@ function syncTabList(focusCurrent) {
 function renderTabs(focusCurrent) {
   const openZad = !$('app').classList.contains('noZad');
   if (!$('tabList')) {
-    $('tabs').innerHTML = '<div class="tablist" id="tabList" role="tablist" focusgroup="tablist nomemory" aria-label="Kroky úlohy">' +
-      TABS.map(([id, label]) => `<button type="button" class="tab" id="tab-${esc(id)}" role="tab" data-t="${esc(id)}"><span class="tab-lbl">${esc(label)}</span><span class="ck" hidden><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></span></button>`).join('') +
-      `</div><button type="button" class="btn" id="zadToggle" aria-expanded="${openZad}" aria-controls="zad" title="Skrýt nebo ukázat zadání"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>Zadání</button>`;
-    $('zadToggle').onclick = () => {
-      const hiddenNow = $('app').classList.toggle('noZad');
-      $('zadToggle').setAttribute('aria-expanded', String(!hiddenNow));
-    };
+    const tl = aEl('div', { class: 'tablist', id: 'tabList', role: 'tablist', focusgroup: 'tablist nomemory', 'aria-label': 'Kroky úlohy' },
+      TABS.map(([id, label]) => aEl('button', { type: 'button', class: 'tab', id: `tab-${id}`, role: 'tab', dataset: { t: id } },
+        aEl('span', { class: 'tab-lbl' }, label),
+        aEl('span', { class: 'ck', hidden: true }, aIco([['polyline', { points: '20 6 9 17 4 12' }]]))
+      ))
+    );
+    const zBtn = aEl('button', { type: 'button', class: 'btn', id: 'zadToggle', 'aria-expanded': String(openZad), 'aria-controls': 'zad', title: 'Skrýt nebo ukázat zadání', on: {
+      click: () => {
+        const hiddenNow = $('app').classList.toggle('noZad');
+        $('zadToggle').setAttribute('aria-expanded', String(!hiddenNow));
+      }
+    } }, aIco([['rect', { x: 3, y: 3, width: 18, height: 18, rx: 2 }], ['line', { x1: 9, y1: 3, x2: 9, y2: 21 }]]), 'Zadání');
+    aSet($('tabs'), tl, zBtn);
   }
   const tl = $('tabList');
   if (tl) {
@@ -1361,28 +1475,80 @@ function buildGiven() {
     if (raw) parsedRP = safeParseJson(raw);
   } catch (e) { parsedRP = null; }
   RP = sanitizeRP(parsedRP, ids, al, task.words.length);
-  const cellIn = (kind, q, a) => `<input type="text" class="cell" maxlength="32" data-${kind}="${esc(q)}|${esc(a)}" value="${esc((RP[kind === 'd' ? 'delta' : 'table'][q] || {})[a] || '')}" autocomplete="off" aria-label="δ(${esc(q)}, ${esc(a)})">`;
-  let h = '<h2>1. Přechodová funkce δ</h2><p class="hint">Podle zadání vlevo napiš, kam automat přejde, např. <code>q2</code>.</p><div class="dgrid">';
-  for (const q of ids) for (const a of al) h += `<label>δ(${esc(S(q))}, ${esc(a)}) = ${cellIn('d', q, a)}</label>`;
-  $('p-delta').innerHTML = h + '</div><div class="row"><button class="btn primary" id="rD">Zkontrolovat δ</button><span id="rDo"></span></div>';
-  const dgrid = $('p-delta').querySelector('.dgrid');
-  if (dgrid) dgrid.dataset.cols = String(Math.min(6, Math.max(1, al.length)));
-  h = '<h2>2. Tabulka přechodů</h2><p class="hint">Vyplň buňky. Zaškrtni → u počátečního a ← u přijímacích stavů.</p><div class="table-wrap"><table><tr><th>→</th><th>←</th><th></th>' + al.map(a => `<th>${esc(a)}</th>`).join('') + '</tr>';
-  for (const q of ids) h += `<tr><td><input type="checkbox" data-m="${esc(q)}|start" ${(RP.marks[q] || {}).start ? 'checked' : ''}></td><td><input type="checkbox" data-m="${esc(q)}|accept" ${(RP.marks[q] || {}).accept ? 'checked' : ''}></td><th>${esc(S(q))}</th>` + al.map(a => `<td>${cellIn('t', q, a)}</td>`).join('') + '</tr>';
-  $('p-table').innerHTML = h + '</table></div><div class="row"><button class="btn primary" id="rTb">Zkontrolovat tabulku</button><span id="rTo"></span></div>';
-  h = '<h2>4. Stavový strom</h2><p class="hint">Po úrovních shora dolů, stavy zleva doprava oddělené mezerou (znaky na hranách nepiš). Stav, který už je ve stromu rozvinutý, se dál nerozvíjí. Po správné odpovědi se strom nakreslí.</p>';
-  for (let i = 0; i < nLevels; i++) h += `<div class="row"><label class="lv-label">Úroveň ${i}</label><input type="text" class="lv" maxlength="512" data-l="${i}" value="${esc(RP.levels[i] || '')}" autocomplete="off" placeholder="např. q0 q1"></div>`;
-  $('p-tree').innerHTML = h + '<div class="row"><button class="btn primary" id="rSb">Zkontrolovat strom</button><span id="rSo"></span></div><div id="rSt" class="treebox" hidden></div>';
-  $('p-word').innerHTML = '<h2>5. Čtení slova</h2><div id="rWbody"></div><svg id="wBoard" aria-label="Diagram"></svg>';
-  const showTree = () => { $('rSt').hidden = !RP.done.tree; if (RP.done.tree) $('rSt').innerHTML = treeSvg(rm); };
+  const cellIn = (kind, q, a) => aEl('input', {
+    type: 'text', class: 'cell', maxlength: 32,
+    dataset: { [kind]: `${q}|${a}` },
+    value: (RP[kind === 'd' ? 'delta' : 'table'][q] || {})[a] || '',
+    autocomplete: 'off',
+    'aria-label': `δ(${q}, ${a})`
+  });
+  const dgrid = aEl('div', { class: 'dgrid', dataset: { cols: String(Math.min(6, Math.max(1, al.length))) } },
+    ids.flatMap(q => al.map(a => aEl('label', null, `δ(${S(q)}, ${a}) = `, cellIn('d', q, a))))
+  );
+  aSet($('p-delta'),
+    aEl('h2', null, '1. Přechodová funkce δ'),
+    aEl('p', { class: 'hint' }, 'Podle zadání vlevo napiš, kam automat přejde, např. ', aEl('code', null, 'q2'), '.'),
+    dgrid,
+    aEl('div', { class: 'row' }, aEl('button', { type: 'button', class: 'btn primary', id: 'rD' }, 'Zkontrolovat δ'), aEl('span', { id: 'rDo' }))
+  );
+  const tbl = aEl('table', null,
+    aEl('tr', null, aEl('th', null, '→'), aEl('th', null, '←'), aEl('th'), al.map(a => aEl('th', null, a))),
+    ids.map(q => aEl('tr', null,
+      aEl('td', null, aEl('input', { type: 'checkbox', dataset: { m: `${q}|start` }, checked: !!(RP.marks[q] || {}).start })),
+      aEl('td', null, aEl('input', { type: 'checkbox', dataset: { m: `${q}|accept` }, checked: !!(RP.marks[q] || {}).accept })),
+      aEl('th', null, S(q)),
+      al.map(a => aEl('td', null, cellIn('t', q, a)))
+    ))
+  );
+  aSet($('p-table'),
+    aEl('h2', null, '2. Tabulka přechodů'),
+    aEl('p', { class: 'hint' }, 'Vyplň buňky. Zaškrtni → u počátečního a ← u přijímacích stavů.'),
+    aEl('div', { class: 'table-wrap' }, tbl),
+    aEl('div', { class: 'row' }, aEl('button', { type: 'button', class: 'btn primary', id: 'rTb' }, 'Zkontrolovat tabulku'), aEl('span', { id: 'rTo' }))
+  );
+  const lvRows = Array.from({ length: nLevels }, (_, i) =>
+    aEl('div', { class: 'row' },
+      aEl('label', { class: 'lv-label' }, `Úroveň ${i}`),
+      aEl('input', { type: 'text', class: 'lv', maxlength: 512, dataset: { l: String(i) }, value: RP.levels[i] || '', autocomplete: 'off', placeholder: 'např. q0 q1' })
+    )
+  );
+  aSet($('p-tree'),
+    aEl('h2', null, '4. Stavový strom'),
+    aEl('p', { class: 'hint' }, 'Po úrovních shora dolů, stavy zleva doprava oddělené mezerou (znaky na hranách nepiš). Stav, který už je ve stromu rozvinutý, se dál nerozvíjí. Po správné odpovědi se strom nakreslí.'),
+    lvRows,
+    aEl('div', { class: 'row' }, aEl('button', { type: 'button', class: 'btn primary', id: 'rSb' }, 'Zkontrolovat strom'), aEl('span', { id: 'rSo' })),
+    aEl('div', { id: 'rSt', class: 'treebox', hidden: true })
+  );
+  aSet($('p-word'),
+    aEl('h2', null, '5. Čtení slova'),
+    aEl('div', { id: 'rWbody' }),
+    aSvg('svg', { id: 'wBoard', 'aria-label': 'Diagram' })
+  );
+  const showTree = () => { $('rSt').hidden = !RP.done.tree; if (RP.done.tree) aSet($('rSt'), treeSvg(rm)); };
   const word = () => task.words[RP.wi];
   function drawWord() {
     const w = word();
-    let x = `<p class="hint">Slovo <b class="trace">${esc(w)}</b>: začni ve stavu ${esc(S(ref.start))}, dopiš stav po přečtení každého znaku a rozhodni, jestli automat slovo přijme.</p><div class="row trace">${esc(S(ref.start))}`;
-    [...w].forEach((c, i) => { x += ` –${esc(c)}→ <input type="text" class="cell" maxlength="32" data-w="${i}" value="${esc(RP.run.states[i] || '')}" autocomplete="off" aria-label="stav po ${i + 1}. znaku">`; });
-    x += `</div><div class="row"><label><input type="radio" name="verdict" data-v="1" ${RP.run.verdict === true ? 'checked' : ''}> Přijato</label><label><input type="radio" name="verdict" data-v="0" ${RP.run.verdict === false ? 'checked' : ''}> Nepřijato</label></div>`;
-    x += `<div class="row"><button class="btn primary" id="rWb">Zkontrolovat slovo</button><button class="btn" id="rWn">Další slovo</button><span id="rWo"></span></div><p class="hint">Správně zvládnutých slov: ${RP.wordsOk} (✓ u kroku od 3)</p>`;
-    $('rWbody').innerHTML = x;
+    const traceRow = aEl('div', { class: 'row trace' },
+      S(ref.start),
+      ...[...w].flatMap((c, i) => [
+        ` –${c}→ `,
+        aEl('input', { type: 'text', class: 'cell', maxlength: 32, dataset: { w: String(i) }, value: RP.run.states[i] || '', autocomplete: 'off', 'aria-label': `stav po ${i + 1}. znaku` })
+      ])
+    );
+    aSet($('rWbody'),
+      aEl('p', { class: 'hint' }, 'Slovo ', aEl('b', { class: 'trace' }, w), `: začni ve stavu ${S(ref.start)}, dopiš stav po přečtení každého znaku a rozhodni, jestli automat slovo přijme.`),
+      traceRow,
+      aEl('div', { class: 'row' },
+        aEl('label', null, aEl('input', { type: 'radio', name: 'verdict', dataset: { v: '1' }, checked: RP.run.verdict === true }), ' Přijato'),
+        aEl('label', null, aEl('input', { type: 'radio', name: 'verdict', dataset: { v: '0' }, checked: RP.run.verdict === false }), ' Nepřijato')
+      ),
+      aEl('div', { class: 'row' },
+        aEl('button', { type: 'button', class: 'btn primary', id: 'rWb' }, 'Zkontrolovat slovo'),
+        aEl('button', { type: 'button', class: 'btn', id: 'rWn' }, 'Další slovo'),
+        aEl('span', { id: 'rWo' })
+      ),
+      aEl('p', { class: 'hint' }, `Správně zvládnutých slov: ${RP.wordsOk} (✓ u kroku od 3)`)
+    );
     $('rWb').onclick = () => {
       const r = Auto.gradeRun(RP.run.states, RP.run.verdict, ref, w);
       $('rWbody').querySelectorAll('input[data-w]').forEach(i => paint(i, !r.wrong.includes(+i.dataset.w)));
@@ -1440,7 +1606,7 @@ const skeleton = () => `Q = {}\nΣ = {${editor.model.alphabet.join(', ')}}\npoč
 function syncDelta() { const t = $('dText'); if (t && document.activeElement !== t) t.value = editor.model.states.length ? specFromM() : skeleton(); }
 function applySpec(text) {
   const sp = Auto.parseSpec(String(text).slice(0, 20000)), msg = $('dMsg'), m = editor.model;
-  if (!text.trim()) { msg.innerHTML = ''; return; }
+  if (!text.trim()) { msg.replaceChildren(); return; }
   if (sp.states.length) {
     const al = task ? task.alphabet : (sp.alphabet.length ? sp.alphabet : m.alphabet), old = Object.fromEntries(m.states.map(s => [s.id, s]));
     m.alphabet = al.slice();
@@ -1450,13 +1616,23 @@ function applySpec(text) {
     if (!task) $('alpha').value = al.join(', ');
     editor.notifyChanged(true);
   }
-  msg.innerHTML = sp.ok ? '<p class="done">✓ Úplná přechodová funkce, tabulka, diagram i strom se podle ní vykreslily.</p>' : sp.problems.map(x => `<p class="status warn">${esc(x)}</p>`).join('');
+  aSet(msg, sp.ok
+    ? aEl('p', { class: 'done' }, '✓ Úplná přechodová funkce, tabulka, diagram i strom se podle ní vykreslily.')
+    : sp.problems.map(x => aEl('p', { class: 'status warn' }, x)));
 }
 function buildLive() {
   RP = null;
-  $('p-delta').innerHTML = '<h2>1. Přechodová funkce δ</h2><p class="hint">Navrhni ji sám podle zadání vlevo: napiš stavy Q, abecedu Σ, počáteční stav, F a přechody <code>δ(q0, 0) = q1</code>, každý na jeden řádek. Tabulka, diagram a strom se podle toho udělají samy. Stejně tak se tu ukáže δ z diagramu, který nakreslíš.</p>' +
-    '<textarea id="dText" rows="14" maxlength="20000" spellcheck="false"></textarea><div id="dMsg"></div>' +
-    '<div class="row"><button class="btn" id="dAdd" title="Přidá řádek δ( , ) = a nastaví kurzor do závorky">+ přechod δ( , ) =</button><button class="btn primary" id="dGrade">Zkontrolovat automat</button></div><div class="gradeOut"></div>';
+  aSet($('p-delta'),
+    aEl('h2', null, '1. Přechodová funkce δ'),
+    aEl('p', { class: 'hint' }, 'Navrhni ji sám podle zadání vlevo: napiš stavy Q, abecedu Σ, počáteční stav, F a přechody ', aEl('code', null, 'δ(q0, 0) = q1'), ', každý na jeden řádek. Tabulka, diagram a strom se podle toho udělají samy. Stejně tak se tu ukáže δ z diagramu, který nakreslíš.'),
+    aEl('textarea', { id: 'dText', rows: 14, maxlength: 20000, spellcheck: 'false' }),
+    aEl('div', { id: 'dMsg' }),
+    aEl('div', { class: 'row' },
+      aEl('button', { type: 'button', class: 'btn', id: 'dAdd', title: 'Přidá řádek δ( , ) = a nastaví kurzor do závorky' }, '+ přechod δ( , ) ='),
+      aEl('button', { type: 'button', class: 'btn primary', id: 'dGrade' }, 'Zkontrolovat automat')
+    ),
+    aEl('div', { class: 'gradeOut' })
+  );
   $('dText').oninput = () => applySpec($('dText').value);
   $('dGrade').onclick = doGrade; $('dGrade').hidden = !task;
   $('dAdd').onclick = () => {
@@ -1465,9 +1641,20 @@ function buildLive() {
     const c = t.value.lastIndexOf('δ(, )') + 2; t.setSelectionRange(c, c);
   };
   syncDelta();
-  $('p-table').innerHTML = '<h2>2. Tabulka přechodů</h2><div id="lTable"></div>';
-  $('p-tree').innerHTML = '<h2>4. Stavový strom</h2><div id="lTree" class="treebox"></div>';
-  $('p-word').innerHTML = '<h2>5. Čtení slova</h2><div class="row"><input type="text" id="word" maxlength="256" placeholder="např. 1011010" size="16" autocomplete="off"><button class="btn" id="step">Krok</button><button class="btn" id="whole">Celé</button><button class="btn" id="reset">Znovu</button></div><div id="trace" class="trace"></div><p class="hint">Slovo čte tvůj diagram, aktuální stav je zvýrazněný.</p><svg id="wBoard" aria-label="Diagram"></svg>';
+  aSet($('p-table'), aEl('h2', null, '2. Tabulka přechodů'), aEl('div', { id: 'lTable' }));
+  aSet($('p-tree'), aEl('h2', null, '4. Stavový strom'), aEl('div', { id: 'lTree', class: 'treebox' }));
+  aSet($('p-word'),
+    aEl('h2', null, '5. Čtení slova'),
+    aEl('div', { class: 'row' },
+      aEl('input', { type: 'text', id: 'word', maxlength: 256, placeholder: 'např. 1011010', size: 16, autocomplete: 'off' }),
+      aEl('button', { type: 'button', class: 'btn', id: 'step' }, 'Krok'),
+      aEl('button', { type: 'button', class: 'btn', id: 'whole' }, 'Celé'),
+      aEl('button', { type: 'button', class: 'btn', id: 'reset' }, 'Znovu')
+    ),
+    aEl('div', { id: 'trace', class: 'trace' }),
+    aEl('p', { class: 'hint' }, 'Slovo čte tvůj diagram, aktuální stav je zvýrazněný.'),
+    aSvg('svg', { id: 'wBoard', 'aria-label': 'Diagram' })
+  );
   const startWord = () => { sim = { word: $('word').value.replace(/\s/g, '').slice(0, 256), pos: 0, active: true, cur: editor.model.start }; };
   $('word').oninput = () => { startWord(); sim.active = false; renderTrace(); };
   $('step').onclick = () => { if (!sim.active || sim.word !== $('word').value.replace(/\s/g, '').slice(0, 256)) startWord(); sim.pos = Math.min(sim.pos + 1, sim.word.length + 1); renderTrace(); };
@@ -1479,10 +1666,13 @@ function buildLive() {
 // ── výběr úlohy ──────────────────────────────────────────────────────────────
 const sel = $('task');
 function fillSelect() {
-  const all = allTasks(), opt = t => `<option value="${esc(t.id)}">${t.custom ? '[vlastní] ' : ''}${esc(t.title)}</option>`;
-  sel.innerHTML = `<optgroup label="Zadaný automat: δ, tabulka, diagram, strom, slovo">${all.filter(t => t.steps).map(opt).join('')}</optgroup>` +
-    `<optgroup label="Navrhni automat podle popisu">${all.filter(t => !t.steps).map(opt).join('')}</optgroup><option value="">Volný návrh</option>`;
-  $('ex').innerHTML = '<option value="">Vyber…</option>' + all.map(t => `<option value="${esc(t.id)}">${esc(t.title)}</option>`).join('');
+  const all = allTasks(), opt = t => aEl('option', { value: t.id }, `${t.custom ? '[vlastní] ' : ''}${t.title}`);
+  aSet(sel,
+    aEl('optgroup', { label: 'Zadaný automat: δ, tabulka, diagram, strom, slovo' }, all.filter(t => t.steps).map(opt)),
+    aEl('optgroup', { label: 'Navrhni automat podle popisu' }, all.filter(t => !t.steps).map(opt)),
+    aEl('option', { value: '' }, 'Volný návrh')
+  );
+  aSet($('ex'), aEl('option', { value: '' }, 'Vyber…'), all.map(t => aEl('option', { value: t.id }, t.title)));
 }
 function setTask(id) {
   task = allTasks().find(t => t.id === id) || null; given = !!(task && task.steps);
@@ -1491,7 +1681,7 @@ function setTask(id) {
   sim = { word: '', pos: 0 };
   $('alpha').value = editor.model.alphabet.join(', '); $('freeTools').hidden = !!task;
   exTask = task ? null : allTasks().find(t => t.id === lsGet('tzi_automat_ex')) || null; $('ex').value = exTask ? exTask.id : '';
-  $('grade').hidden = !task; document.querySelectorAll('.gradeOut').forEach(o => { o.innerHTML = ''; }); $('delTask').hidden = !(task && task.custom);
+  $('grade').hidden = !task; document.querySelectorAll('.gradeOut').forEach(o => o.replaceChildren()); $('delTask').hidden = !(task && task.custom);
   if (given) buildGiven(); else buildLive();
   TABS = [['delta', '1. δ'], ['table', '2. Tabulka'], ['diagram', '3. Diagram'], ['tree', '4. Strom'], ['word', '5. Čtení slova']];
   renderZad();
@@ -1509,10 +1699,15 @@ $('delTask').onclick = () => {
 const dlg = $('newDlg'); let nImg = null;
 function previewSpec() {
   const sp = Auto.parseSpec(String($('nSpec').value).slice(0, 20000));
-  let h = '';
-  if (sp.states.length) h += `<p class="hint">Rozpoznáno: stavy ${sp.states.map(s => esc(S(s.id))).join(', ')} · Σ = {${sp.alphabet.map(esc).join(', ')}} · počáteční ${esc(S(sp.start || '?'))} · F = {${sp.accept.map(x => esc(S(x))).join(', ')}} · přechodů ${sp.trans.reduce((n, t) => n + t.symbols.length, 0)}</p>`;
-  h += sp.ok ? '<p class="done">✓ Úplný deterministický automat, můžeš uložit.</p>' : sp.problems.map(p => `<p class="status bad">${esc(p)}</p>`).join('');
-  $('nPrev').innerHTML = h; $('nSave').disabled = !sp.ok;
+  const nodes = [];
+  if (sp.states.length) {
+    nodes.push(aEl('p', { class: 'hint' },
+      `Rozpoznáno: stavy ${sp.states.map(s => S(s.id)).join(', ')} · Σ = {${sp.alphabet.join(', ')}} · počáteční ${S(sp.start || '?')} · F = {${sp.accept.map(S).join(', ')}} · přechodů ${sp.trans.reduce((n, t) => n + t.symbols.length, 0)}`
+    ));
+  }
+  if (sp.ok) nodes.push(aEl('p', { class: 'done' }, '✓ Úplný deterministický automat, můžeš uložit.'));
+  else sp.problems.forEach(p => nodes.push(aEl('p', { class: 'status bad' }, p)));
+  aSet($('nPrev'), nodes); $('nSave').disabled = !sp.ok;
 }
 function readImg(file) {
   if (!file || !file.type.startsWith('image/') || file.size > 10 * 1024 * 1024) return;

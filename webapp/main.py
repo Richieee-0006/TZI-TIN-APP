@@ -44,7 +44,9 @@ async def add_security_headers(request, call_next):
             "frame-ancestors 'none'; "
             "base-uri 'self'; "
             "form-action 'self'; "
-            "object-src 'none'"
+            "object-src 'none'; "
+            "require-trusted-types-for 'script'; "
+            "trusted-types 'none'"
         )
     else:
         csp = (

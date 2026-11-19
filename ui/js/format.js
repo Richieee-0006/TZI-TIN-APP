@@ -4,6 +4,34 @@ const _escFmt = s => (typeof esc === 'function'
       '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
     }[c])));
 
+function renderLatexNode(tex, displayMode) {
+  const span = document.createElement('span');
+  if (typeof katex !== 'undefined' && katex && typeof katex.render === 'function') {
+    const opts = { displayMode: !!displayMode, throwOnError: false };
+    const isMathml = typeof document !== 'undefined' && document.documentElement && document.documentElement.dataset && document.documentElement.dataset.katexMode === 'mathml';
+    if (isMathml) opts.output = 'mathml';
+    try {
+      katex.render(tex, span, opts);
+      if (isMathml) {
+        const bb = { N: 'ℕ', Z: 'ℤ', Q: 'ℚ', R: 'ℝ', C: 'ℂ' };
+        span.querySelectorAll('mi[mathvariant="double-struck"]').forEach(mi => {
+          const ch = bb[mi.textContent];
+          if (!ch) return;
+          const mt = document.createElementNS('http://www.w3.org/1998/Math/MathML', 'mtext');
+          mt.setAttribute('class', 'math-bb');
+          mt.textContent = ch;
+          mi.replaceWith(mt);
+        });
+      }
+      return span;
+    } catch (e) {}
+  }
+  span.className = 'math-tex katex-fallback';
+  span.dataset.display = displayMode ? '1' : '0';
+  span.textContent = tex;
+  return span;
+}
+
 function renderLatexExpr(tex, displayMode) {
   if (typeof katex !== 'undefined' && katex && typeof katex.renderToString === 'function') {
     const opts = { displayMode: !!displayMode, throwOnError: false };
@@ -68,12 +96,12 @@ function toLatexMathStr(raw) {
   return t.replace(/\s+/g, ' ').trim();
 }
 
-function fmt(s) {
+function _prepareFmt(s) {
   s = String(s);
   const mathBlocks = [];
   const pushMath = (tex, display = false) => {
     const idx = mathBlocks.length;
-    mathBlocks.push(renderLatexExpr(tex, display));
+    mathBlocks.push({ tex, display });
     return `\x00MATH${idx}\x00`;
   };
   const subMath = (regex, mapFn = toLatexMathStr) => {
@@ -118,18 +146,18 @@ function fmt(s) {
     // 1. Čistý zlomek (např. "n! / ((n-k)! · k!)", "n! / (n-k)!")
     const fracMatch = trimmed.match(/^([0-9A-Za-z()−\-+·…!\s_]+)\s*\/\s*([0-9A-Za-z()−\-+·…!\s_]+)$/);
     if (fracMatch && !hasProseWord(trimmed) && (trimmed.includes('!') || trimmed.includes('−') || trimmed.includes('·') || /^\d+\s*\/\s*\d+$/.test(trimmed))) {
-      return renderLatexExpr(`\\frac{${toLatexMathStr(unwrapDen(fracMatch[1]))}}{${toLatexMathStr(unwrapDen(fracMatch[2]))}}`, false);
+      return { wholeMath: { tex: `\\frac{${toLatexMathStr(unwrapDen(fracMatch[1]))}}{${toLatexMathStr(unwrapDen(fracMatch[2]))}}`, display: false } };
     }
     // 2. Čistá rovnice / výraz (např. "V_k(n) = n! / (n−k)!", "a = a_n·Z^n + ...", "(n+k−1 nad k)", "n^k")
     const eqFrac = trimmed.match(/^([A-Za-z0-9_()′'!]+)\s*=\s*([0-9A-Za-z()−\-+·…!\s_]+)\s*\/\s*([0-9A-Za-z()−\-+·…!\s_]+)$/);
     if (eqFrac && !hasProseWord(eqFrac[2] + ' ' + eqFrac[3])) {
-      return renderLatexExpr(`${toLatexMathStr(eqFrac[1])} = \\frac{${toLatexMathStr(unwrapDen(eqFrac[2]))}}{${toLatexMathStr(unwrapDen(eqFrac[3]))}}`, false);
+      return { wholeMath: { tex: `${toLatexMathStr(eqFrac[1])} = \\frac{${toLatexMathStr(unwrapDen(eqFrac[2]))}}{${toLatexMathStr(unwrapDen(eqFrac[3]))}}`, display: false } };
     }
     if (/^(?:[A-Za-z0-9_()′'!]+|[Σ∑Π∏]_\([^)]+\)\^[A-Za-z0-9]+|\|\{-?\d+\}\|)\s*=\s*[0-9A-Za-z()_\^−\-+·….\s!{}\[\]]+$/.test(trimmed) && !hasProseWord(trimmed)) {
-      return renderLatexExpr(toLatexMathStr(trimmed), false);
+      return { wholeMath: { tex: toLatexMathStr(trimmed), display: false } };
     }
     if (/^\([A-Za-z0-9+\-−\s]+\s+nad\s+[A-Za-z0-9+\-−\s?]+\)$/.test(trimmed) || /^[A-Za-z0-9]\^[A-Za-z0-9]$/.test(trimmed)) {
-      return renderLatexExpr(toLatexMathStr(trimmed), false);
+      return { wholeMath: { tex: toLatexMathStr(trimmed), display: false } };
     }
 
     // 3. Inline kombinační čísla, sumy, součiny, odmocniny a zlomky
@@ -168,16 +196,65 @@ function fmt(s) {
     subMath(/¬\s*[A-Za-z]\b|(?:\([^)\n]+\)|[A-Za-zΣΠφ]|𝓛)_\([^)]+\)(?:\^\([^)]+\))?|(?:[A-Za-zΣΠ]|𝓛)_[A-Za-z0-9]+|[A-Za-zΣΠ]\^\([^)]+\)|[A-Za-z]\^[A-Za-z0-9]+|\b[Vqpu][₀-₉]+\b|\bV\*(?!\w)|[ℕℤℚℝℂ∅∑∏∀∃¬∧∨⇒⇔→←↔↦]|(?<![A-Za-z])[ΣΠδεγλφ](?![A-Za-z])/g);
   }
 
-  s = s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  s = s
+  return { text: s, mathBlocks };
+}
+
+function fmtToFragment(s) {
+  const frag = document.createDocumentFragment();
+  const prep = _prepareFmt(s);
+  if (prep.wholeMath) {
+    frag.appendChild(renderLatexNode(prep.wholeMath.tex, prep.wholeMath.display));
+    return frag;
+  }
+  const { text, mathBlocks } = prep;
+  const tokRe = /\x00MATH(\d+)\x00|_\(([^)]+)\)|_([A-Za-z0-9]+)|\^\(([^)]+)\)|\^([A-Za-z0-9]+)|([₀-₉]+)|(->|<-|\.\.\.)/g;
+  let pos = 0;
+  for (const m of text.matchAll(tokRe)) {
+    if (m.index > pos) frag.appendChild(document.createTextNode(text.slice(pos, m.index)));
+    if (m[1] !== undefined) {
+      const blk = mathBlocks[Number(m[1])];
+      frag.appendChild(renderLatexNode(blk.tex, blk.display));
+    } else if (m[2] !== undefined || m[3] !== undefined) {
+      const subEl = document.createElement('sub');
+      subEl.textContent = m[2] !== undefined ? m[2] : m[3];
+      frag.appendChild(subEl);
+    } else if (m[4] !== undefined || m[5] !== undefined) {
+      const supEl = document.createElement('sup');
+      supEl.textContent = m[4] !== undefined ? m[4] : m[5];
+      frag.appendChild(supEl);
+    } else if (m[6] !== undefined) {
+      const subEl = document.createElement('sub');
+      subEl.textContent = [...m[6]].map(c => '₀₁₂₃₄₅₆₇₈₉'.indexOf(c)).join('');
+      frag.appendChild(subEl);
+    } else if (m[7] !== undefined) {
+      const map = { '->': '→', '<-': '←', '...': '…' };
+      frag.appendChild(document.createTextNode(map[m[7]] || m[7]));
+    }
+    pos = m.index + m[0].length;
+  }
+  if (pos < text.length) frag.appendChild(document.createTextNode(text.slice(pos)));
+  return frag;
+}
+
+function setFmt(targetEl, s) {
+  if (!targetEl) return targetEl;
+  targetEl.replaceChildren(fmtToFragment(s));
+  return targetEl;
+}
+
+function fmt(s) {
+  const prep = _prepareFmt(s);
+  if (prep.wholeMath) return renderLatexExpr(prep.wholeMath.tex, prep.wholeMath.display);
+  let out = prep.text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  out = out
     .replace(/_\(([^)]+)\)/g, '<sub>$1</sub>').replace(/_([A-Za-z0-9]+)/g, '<sub>$1</sub>')
     .replace(/\^\(([^)]+)\)/g, '<sup>$1</sup>').replace(/\^([A-Za-z0-9]+)/g, '<sup>$1</sup>')
     .replace(/[₀-₉]+/g, m => '<sub>' + [...m].map(c => '₀₁₂₃₄₅₆₇₈₉'.indexOf(c)).join('') + '</sub>')
     .replace(/-&gt;/g, '→').replace(/&lt;-/g, '←').replace(/\.\.\./g, '…');
-  if (mathBlocks.length > 0) {
-    s = s.replace(/\x00MATH(\d+)\x00/g, (_, i) => mathBlocks[Number(i)]);
+  if (prep.mathBlocks.length > 0) {
+    out = out.replace(/\x00MATH(\d+)\x00/g, (_, i) => renderLatexExpr(prep.mathBlocks[Number(i)].tex, prep.mathBlocks[Number(i)].display));
   }
-  return s;
+  return out;
 }
 
 

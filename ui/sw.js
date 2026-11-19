@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tzi-pwa-v24';
+const CACHE_NAME = 'tzi-pwa-v25';
 const STATIC_ASSETS = [
   '/manifest.webmanifest',
   '/icon.svg',
@@ -7,8 +7,9 @@ const STATIC_ASSETS = [
   '/static/css/style.css?v=22',
   '/static/css/glosar.css?v=22',
   '/static/js/core.js?v=14',
-  '/static/js/format.js?v=16',
-  '/static/js/glosar.js?v=20',
+  '/static/js/dom.js?v=1',
+  '/static/js/format.js?v=17',
+  '/static/js/glosar.js?v=21',
   '/static/js/shell.js?v=16',
   '/static/js/arena.js?v=14',
   '/static/js/account.js?v=14',
