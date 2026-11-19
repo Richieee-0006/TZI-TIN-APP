@@ -387,6 +387,8 @@ def test_glosar_and_automat_routes():
         assert "'wasm-unsafe-eval'" not in csp
         assert "frame-ancestors 'none'" in csp
         assert "object-src 'none'" in csp
+        assert "require-trusted-types-for 'script'" in csp
+        assert "trusted-types 'none'" in csp
         assert resp.headers.get("x-frame-options") == "DENY"
         assert resp.headers.get("x-content-type-options") == "nosniff"
         assert resp.headers.get("cross-origin-opener-policy") == "same-origin"
@@ -403,6 +405,8 @@ def test_glosar_and_automat_routes():
     assert client.get("/automat-core.js").status_code == 200
     assert client.get("/automat-delta.jpg").status_code == 200
     assert client.get("/static/css/automat.css").status_code == 200
+    assert client.get("/static/js/dom.js").status_code == 200
+    assert client.get("/static/js/format.js").status_code == 200
     assert client.get("/static/js/automat.js").status_code == 200
     assert client.get("/static/css/glosar.css").status_code == 200
     assert client.get("/static/js/glosar.js").status_code == 200
@@ -439,9 +443,14 @@ def test_glosar_and_automat_routes():
     """
     res = subprocess.run(["node", "-e", js_check], cwd=str(BASE.parent), capture_output=True, text=True)
     assert res.returncode == 0, res.stderr
-    for js_file in ("ui/js/automat.js", "ui/js/glosar.js", "ui/fmt.js", "ui/automat-core.js"):
+    for js_file in ("ui/js/dom.js", "ui/js/format.js", "ui/js/automat.js", "ui/js/glosar.js", "ui/fmt.js", "ui/automat-core.js"):
         chk = subprocess.run(["node", "--check", js_file], cwd=str(BASE.parent), capture_output=True, text=True)
         assert chk.returncode == 0, f"{js_file}: {chk.stderr}"
+
+    for clean_js in ("ui/js/automat.js", "ui/js/glosar.js"):
+        src = (BASE.parent / clean_js).read_text(encoding="utf-8")
+        for sink in ("innerHTML", "outerHTML", "insertAdjacentHTML", "document.write"):
+            assert sink not in src, f"{clean_js} contains forbidden DOM sink {sink}"
 
 
 def test_automat_toolbar_shortcuts_and_csp():

@@ -1,33 +1,35 @@
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({
-  '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-}[c]));
+const { el: gEl, setChildren: gSet, iconSvg: gIco } = TziDom;
 
 function gInlineSeg(str) {
-  const out = [];
+  const frag = document.createDocumentFragment();
   let pos = 0;
   const re = /(?:^|(?<=[\s(>„"']))\*(?!\*)((?:[^*\n]|\*\*[^*\n]+?\*\*)+?)(?<!\*)\*(?=$|[\s.,:;!?)"“'<])|\*\*(.+?)\*\*/g;
   for (const m of str.matchAll(re)) {
-    if (m.index > pos) out.push(fmt(str.slice(pos, m.index)));
-    if (m[1] !== undefined) out.push(`<i>${gInlineSeg(m[1])}</i>`);
-    else out.push(`<b>${gInlineSeg(m[2])}</b>`);
+    if (m.index > pos) frag.appendChild(fmtToFragment(str.slice(pos, m.index)));
+    if (m[1] !== undefined) frag.appendChild(gEl('i', null, gInlineSeg(m[1])));
+    else frag.appendChild(gEl('b', null, gInlineSeg(m[2])));
     pos = m.index + m[0].length;
   }
-  if (pos < str.length) out.push(fmt(str.slice(pos)));
-  return out.join('');
+  if (pos < str.length) frag.appendChild(fmtToFragment(str.slice(pos)));
+  return frag;
 }
 
 function gInline(raw) {
-  return String(raw ?? '').split(/(`[^`\n]+`)/g).map(part =>
-    part.startsWith('`') && part.endsWith('`') && part.length >= 2
-      ? `<code>${esc(part.slice(1, -1))}</code>`
-      : gInlineSeg(part)
-  ).join('');
+  const frag = document.createDocumentFragment();
+  for (const part of String(raw ?? '').split(/(`[^`\n]+`)/g)) {
+    if (part.startsWith('`') && part.endsWith('`') && part.length >= 2) {
+      frag.appendChild(gEl('code', null, part.slice(1, -1)));
+    } else {
+      frag.appendChild(gInlineSeg(part));
+    }
+  }
+  return frag;
 }
 
-const ICO_WARN = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
-const ICO_X = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
-const ICO_CHECK = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><polyline points="8.5 12.5 11 15 15.5 9.5"/></svg>';
-const ICO_CHEV = '<svg class="chev ico" viewBox="0 0 24 24" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>';
+const mkWarnIco = () => gIco([['circle', { cx: 12, cy: 12, r: 9 }], ['line', { x1: 12, y1: 8, x2: 12, y2: 12 }], ['line', { x1: 12, y1: 16, x2: 12.01, y2: 16 }]]);
+const mkXIco = () => gIco([['circle', { cx: 12, cy: 12, r: 9 }], ['line', { x1: 15, y1: 9, x2: 9, y2: 15 }], ['line', { x1: 9, y1: 9, x2: 15, y2: 15 }]]);
+const mkCheckIco = () => gIco([['circle', { cx: 12, cy: 12, r: 9 }], ['polyline', { points: '8.5 12.5 11 15 15.5 9.5' }]]);
+const mkChevIco = () => gIco([['polyline', { points: '9 18 15 12 9 6' }]], 'chev ico');
 
 let _gTblSeq = 0;
 
@@ -46,38 +48,50 @@ function gTable(lines, label) {
     }
     rows.push(l.replace(/^\||\|$/g, '').split('|'));
   }
-  if (!rows.length) return '';
-  const head = rows[0].map((c, idx) => {
+  if (!rows.length) return null;
+  const headRow = gEl('tr', null, rows[0].map((c, idx) => {
     const raw = c.trim();
-    const cls = aligns[idx] ? ` class="${aligns[idx]}"` : '';
+    const cls = aligns[idx] || null;
+    if (!raw) return gEl('th', { scope: 'col', class: cls }, gEl('span', { class: 'sr-only' }, 'Sloupec'));
     const h = gInline(raw);
-    if (!raw) return `<th scope="col"${cls}><span class="sr-only">Sloupec</span></th>`;
-    return h.includes('<math')
-      ? `<th scope="col"${cls}><span class="sr-only">${esc(raw)}</span><span aria-hidden="true">${h}</span></th>`
-      : `<th scope="col"${cls}>${h}</th>`;
-  }).join('');
-  const body = rows.slice(1).map(r => '<tr>' + r.map((c, idx) => {
-    const cls = aligns[idx] ? ` class="${aligns[idx]}"` : '';
-    return `<td${cls}>${gInline(c.trim())}</td>`;
-  }).join('') + '</tr>').join('');
+    if (h.querySelector('math')) {
+      return gEl('th', { scope: 'col', class: cls },
+        gEl('span', { class: 'sr-only' }, raw),
+        gEl('span', { 'aria-hidden': 'true' }, h)
+      );
+    }
+    return gEl('th', { scope: 'col', class: cls }, h);
+  }));
+  const bodyRows = rows.slice(1).map(r =>
+    gEl('tr', null, r.map((c, idx) => gEl('td', { class: aligns[idx] || null }, gInline(c.trim()))))
+  );
   const regionLabel = `${label || 'Tabulka'} #${++_gTblSeq}`;
-  return `<div class="table-wrap" tabindex="0" role="region" aria-label="${esc(regionLabel)}"><table class="g-table"><thead><tr>${head}</tr></thead>${body ? `<tbody>${body}</tbody>` : ''}</table></div>`;
+  return gEl('div', { class: 'table-wrap', tabindex: '0', role: 'region', 'aria-label': regionLabel },
+    gEl('table', { class: 'g-table' },
+      gEl('thead', null, headRow),
+      bodyRows.length ? gEl('tbody', null, bodyRows) : null
+    )
+  );
 }
 
 function gMistakeItem(raw) {
   const txt = String(raw || '').trim();
   const checkPos = txt.indexOf('✅');
-  if (!txt.includes('❌') && checkPos === -1) return `<li>${gInline(txt)}</li>`;
+  if (!txt.includes('❌') && checkPos === -1) return gEl('li', null, gInline(txt));
   const before = (checkPos !== -1 ? txt.slice(0, checkPos) : txt).replace(/^❌\s*/, '').trim();
   const after = checkPos !== -1 ? txt.slice(checkPos + 1).trim() : '';
   const qm = before.match(/^(„[^“]+“)\s*(.+)$/);
   const claim = qm ? qm[1] : before;
   const why = qm ? qm[2] : '';
-  return `<li class="mistake-item">${claim ? `<div class="m-row m-wrong">${ICO_X}<span class="m-claim">${gInline(claim)}</span></div>` : ''}${why ? `<div class="m-why">${gInline(why)}</div>` : ''}${after ? `<div class="m-row m-right">${ICO_CHECK}<span>${gInline(after)}</span></div>` : ''}</li>`;
+  return gEl('li', { class: 'mistake-item' },
+    claim ? gEl('div', { class: 'm-row m-wrong' }, mkXIco(), gEl('span', { class: 'm-claim' }, gInline(claim))) : null,
+    why ? gEl('div', { class: 'm-why' }, gInline(why)) : null,
+    after ? gEl('div', { class: 'm-row m-right' }, mkCheckIco(), gEl('span', null, gInline(after))) : null
+  );
 }
 
 function gSourceFooter(rawLines) {
-  if (!rawLines.length) return '';
+  if (!rawLines.length) return null;
   const items = rawLines.map(rawLine => {
     const s = rawLine.trim();
     return (/^\*[^*\n].*\*$/.test(s) ? s.slice(1, -1) : s).trim();
@@ -85,7 +99,7 @@ function gSourceFooter(rawLines) {
   const combinedPlain = items.join(' ').replace(/\*\*/g, '');
   const hasClaude = /Doplněno z Claude/i.test(combinedPlain);
   if (items.length === 1 && combinedPlain.length <= 85 && !combinedPlain.includes(';') && !hasClaude) {
-    return `<p class="src-inline">${gInline(items[0])}</p>`;
+    return gEl('p', { class: 'src-inline' }, gInline(items[0]));
   }
   const firstPlain = items[0].replace(/\*\*/g, '');
   const shortMatch = firstPlain.match(/^([^;(]+)/);
@@ -95,7 +109,10 @@ function gSourceFooter(rawLines) {
     .replace(/[.:,\s]+$/, '');
   if (!shortLabel || shortLabel.toLowerCase() === 'zdroj:') shortLabel = 'Zdroj: přednáška';
   if (shortLabel.length > 56) shortLabel = shortLabel.slice(0, 54).trim() + '…';
-  return `<details class="entry-src"><summary>${ICO_CHEV}<span>${esc(shortLabel)}</span>${hasClaude ? '<span class="src-badge">doplněno AI</span>' : ''}</summary><div class="src-full">${items.map(it => `<p>${gInline(it)}</p>`).join('')}</div></details>`;
+  return gEl('details', { class: 'entry-src' },
+    gEl('summary', null, mkChevIco(), gEl('span', null, shortLabel), hasClaude ? gEl('span', { class: 'src-badge' }, 'doplněno AI') : null),
+    gEl('div', { class: 'src-full' }, items.map(it => gEl('p', null, gInline(it))))
+  );
 }
 
 // Formátuje heslo v teorii: callouty (> [!warning]), tabulky, číslované/odrážkové seznamy, časté omyly, příklady a zdroje.
@@ -115,7 +132,10 @@ function gBody(body, termLabel) {
         title = tm && tm[1] ? tm[1].trim() : 'Poznámka';
         qLines.shift();
       }
-      out.push(`<aside class="callout">${title ? `<div class="callout-head">${ICO_WARN}<span>${esc(title)}</span></div>` : ''}${gBody(qLines.join('\n'), termLabel)}</aside>`);
+      out.push(gEl('aside', { class: 'callout' },
+        title ? gEl('div', { class: 'callout-head' }, mkWarnIco(), gEl('span', null, title)) : null,
+        gBody(qLines.join('\n'), termLabel)
+      ));
     } else if (/^\|/.test(l)) {
       const tLines = [];
       for (; i < L.length && /^\|/.test(L[i]); i++) tLines.push(L[i]);
@@ -126,31 +146,38 @@ function gBody(body, termLabel) {
       i++;
       for (; i < L.length && /^- /.test(L[i]); i++) items.push(L[i].slice(2));
       i--;
-      out.push(`<div class="mistakes"><div class="mistakes-head">Časté omyly</div><ul class="mistake-list">${items.map(gMistakeItem).join('')}</ul></div>`);
+      out.push(gEl('div', { class: 'mistakes' },
+        gEl('div', { class: 'mistakes-head' }, 'Časté omyly'),
+        gEl('ul', { class: 'mistake-list' }, items.map(gMistakeItem))
+      ));
     } else if (/^- /.test(l)) {
       const items = [];
       for (; i < L.length && /^- /.test(L[i]); i++) items.push(L[i].slice(2));
       i--;
       const isMistake = items.some(x => x.includes('❌') && x.includes('✅'));
       out.push(isMistake
-        ? `<ul class="mistake-list">${items.map(gMistakeItem).join('')}</ul>`
-        : `<ul class="g-ul">${items.map(x => `<li>${gInline(x)}</li>`).join('')}</ul>`);
+        ? gEl('ul', { class: 'mistake-list' }, items.map(gMistakeItem))
+        : gEl('ul', { class: 'g-ul' }, items.map(x => gEl('li', null, gInline(x)))));
     } else if (/^\d+\.\s+/.test(l)) {
       const items = [];
       for (; i < L.length && /^\d+\.\s+/.test(L[i]); i++) items.push(L[i].replace(/^\d+\.\s+/, ''));
       i--;
-      out.push(`<ol class="g-ol">${items.map(x => `<li>${gInline(x)}</li>`).join('')}</ol>`);
+      out.push(gEl('ol', { class: 'g-ol' }, items.map(x => gEl('li', null, gInline(x)))));
     } else if (/^\*Zdroj\s*:/i.test(l.trim())) {
       srcLines.push(l);
     } else if (l.trim()) {
       const exMatch = l.match(/^\*(Příklad[^*:]*|Příklady[^*:]*|Další příklad[^*:]*|Dveře[^*:]*):\*\s*(.+)$/);
       const noteMatch = l.match(/^\*(Pozor[^*:]*):\*\s*(.+)$/);
-      if (exMatch) out.push(`<p class="block-ex"><span class="b-tag">${gInline(exMatch[1])}:</span>${gInline(exMatch[2])}</p>`);
-      else if (noteMatch) out.push(`<p class="block-note"><span class="b-tag">${gInline(noteMatch[1])}:</span>${gInline(noteMatch[2])}</p>`);
-      else out.push(`<p>${gInline(l)}</p>`);
+      if (exMatch) out.push(gEl('p', { class: 'block-ex' }, gEl('span', { class: 'b-tag' }, gInline(exMatch[1] + ':')), gInline(exMatch[2])));
+      else if (noteMatch) out.push(gEl('p', { class: 'block-note' }, gEl('span', { class: 'b-tag' }, gInline(noteMatch[1] + ':')), gInline(noteMatch[2])));
+      else out.push(gEl('p', null, gInline(l)));
     }
   }
-  return (out.length ? `<div class="entry-body">${out.join('')}</div>` : '') + gSourceFooter(srcLines);
+  const frag = document.createDocumentFragment();
+  if (out.length) frag.appendChild(gEl('div', { class: 'entry-body' }, out));
+  const foot = gSourceFooter(srcLines);
+  if (foot) frag.appendChild(foot);
+  return frag;
 }
 
 function parseLectureMeta(label) {
@@ -253,11 +280,20 @@ function mergeGroupsByDate(groups) {
   const ovLectures = document.getElementById('ovLectures');
   const drawerSrcToggle = document.getElementById('drawerSrcToggle');
 
-  const tocTermHtml = t => esc(t)
-    .replace(/\^\(([^)]+)\)/g, '<sup>$1</sup>')
-    .replace(/\^([A-Za-z0-9]+)/g, '<sup>$1</sup>')
-    .replace(/_\(([^)]+)\)/g, '<sub>$1</sub>')
-    .replace(/_([A-Za-z0-9]+)/g, '<sub>$1</sub>');
+  const tocTermFrag = t => {
+    const frag = document.createDocumentFragment();
+    const s = String(t ?? '');
+    const re = /\^\(([^)]+)\)|\^([A-Za-z0-9]+)|_\(([^)]+)\)|_([A-Za-z0-9]+)/g;
+    let pos = 0;
+    for (const m of s.matchAll(re)) {
+      if (m.index > pos) frag.appendChild(document.createTextNode(s.slice(pos, m.index)));
+      if (m[1] !== undefined || m[2] !== undefined) frag.appendChild(gEl('sup', null, m[1] ?? m[2]));
+      else frag.appendChild(gEl('sub', null, m[3] ?? m[4]));
+      pos = m.index + m[0].length;
+    }
+    if (pos < s.length) frag.appendChild(document.createTextNode(s.slice(pos)));
+    return frag;
+  };
 
   const norm = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
   const bodyWithoutSources = b => String(b || '').split('\n').filter(l => !/^\*Zdroj\s*:/i.test(l.trim())).join('\n');
@@ -321,28 +357,31 @@ function mergeGroupsByDate(groups) {
     const totalTables = overviewGroups.reduce((s, g) => s + g.entries.reduce((a, e) => a + (String(e.body || '').match(/^[>\s]*\|[\s|:-]+\|\s*$/gm) || []).length, 0), 0);
     const totalMistakes = overviewGroups.reduce((s, g) => s + g.entries.reduce((a, e) => a + (String(e.body || '').match(/^- ❌/gm) || []).length, 0), 0);
     if (ovStats) {
-      ovStats.innerHTML =
-        `<div class="ov-stat"><span class="ov-stat-val">${overviewGroups.length}</span><span class="ov-stat-lbl">Přednášek</span></div>` +
-        `<div class="ov-stat"><span class="ov-stat-val">${totalEntries}</span><span class="ov-stat-lbl">Pojmů</span></div>` +
-        `<div class="ov-stat"><span class="ov-stat-val">${totalTables}/${totalMistakes}</span><span class="ov-stat-lbl">Tabulek/Omylů</span></div>`;
+      gSet(ovStats, [
+        gEl('div', { class: 'ov-stat' }, gEl('span', { class: 'ov-stat-val' }, overviewGroups.length), gEl('span', { class: 'ov-stat-lbl' }, 'Přednášek')),
+        gEl('div', { class: 'ov-stat' }, gEl('span', { class: 'ov-stat-val' }, totalEntries), gEl('span', { class: 'ov-stat-lbl' }, 'Pojmů')),
+        gEl('div', { class: 'ov-stat' }, gEl('span', { class: 'ov-stat-val' }, `${totalTables}/${totalMistakes}`), gEl('span', { class: 'ov-stat-lbl' }, 'Tabulek/Omylů'))
+      ]);
     }
     if (ovLectures) {
       const isAll = state.source === '_all' && !state.activeDateKey;
       const items = [
-        `<button type="button" class="ov-lec-btn${isAll ? ' active' : ''}" data-pick="_all">` +
-          `<span class="ov-lec-title">Všechny přednášky podle data</span><span class="ov-lec-cnt">${totalEntries}</span></button>`
+        gEl('button', { type: 'button', class: `ov-lec-btn${isAll ? ' active' : ''}`, dataset: { pick: '_all' } },
+          gEl('span', { class: 'ov-lec-title' }, 'Všechny přednášky podle data'),
+          gEl('span', { class: 'ov-lec-cnt' }, totalEntries)
+        )
       ];
       for (const g of overviewGroups) {
         const active = (state.source === '_all' && state.activeDateKey === g.key) || (state.groups.length === 1 && state.groups[0].key === g.key && !isAll);
         items.push(
-          `<button type="button" class="ov-lec-btn${active ? ' active' : ''}" data-pick="${esc('date:' + g.key)}">` +
-            `<span class="ov-lec-title">${esc(g.heading)}</span>` +
-            `<span class="ov-lec-cnt">${g.entries.length}</span>` +
-            (g.topicsText ? `<span class="ov-lec-topics">${esc(g.topicsText)}</span>` : '') +
-          `</button>`
+          gEl('button', { type: 'button', class: `ov-lec-btn${active ? ' active' : ''}`, dataset: { pick: 'date:' + g.key } },
+            gEl('span', { class: 'ov-lec-title' }, g.heading),
+            gEl('span', { class: 'ov-lec-cnt' }, g.entries.length),
+            g.topicsText ? gEl('span', { class: 'ov-lec-topics' }, g.topicsText) : null
+          )
         );
       }
-      ovLectures.innerHTML = items.join('');
+      gSet(ovLectures, items);
     }
   }
 
@@ -406,14 +445,23 @@ function mergeGroupsByDate(groups) {
     }
 
     const multi = groups.length > 1;
-    outEl.innerHTML = groups.map((g, gi) => {
+    gSet(outEl, groups.map((g, gi) => {
       const entries = g.entries || [];
-      const cards = entries.map((e, ei) => `<article class="entry" id="e-${gi}-${ei}"><h3>${gInline(e && e.term)}</h3>${gBody(e && e.body, e && e.term)}</article>`).join('');
-      return `<section class="lec-group" id="grp-${gi}" aria-labelledby="gh-${gi}">` +
-        `<div class="grp-head"><h2 id="gh-${gi}">${esc(g.heading)}</h2><span class="grp-count">${entries.length} pojmů</span>` +
-        (g.topicsText ? `<div class="grp-topics">${esc(g.topicsText)}</div>` : '') +
-        `</div><div class="entries-list">${cards}</div></section>`;
-    }).join('');
+      const cards = entries.map((e, ei) =>
+        gEl('article', { class: 'entry', id: `e-${gi}-${ei}` },
+          gEl('h3', null, gInline(e && e.term)),
+          gBody(e && e.body, e && e.term)
+        )
+      );
+      return gEl('section', { class: 'lec-group', id: `grp-${gi}`, 'aria-labelledby': `gh-${gi}` },
+        gEl('div', { class: 'grp-head' },
+          gEl('h2', { id: `gh-${gi}` }, g.heading),
+          gEl('span', { class: 'grp-count' }, `${entries.length} pojmů`),
+          g.topicsText ? gEl('div', { class: 'grp-topics' }, g.topicsText) : null
+        ),
+        gEl('div', { class: 'entries-list' }, cards)
+      );
+    }));
 
     state.groupEls = [...outEl.querySelectorAll('.lec-group')];
     state.entryIndex = [];
@@ -423,19 +471,20 @@ function mergeGroupsByDate(groups) {
       tocAside.hidden = false;
       if (multi) {
         if (tocLabel) tocLabel.textContent = 'Přednášky';
-        tocNav.innerHTML = groups.map((g, gi) =>
-          `<a class="toc-link${gi === 0 ? ' active' : ''}" href="#grp-${gi}" title="${esc(g.label)}">` +
-            `<span>${esc(g.heading)}</span><span class="toc-cnt">${g.entries.length}</span>` +
-            (g.topicsText ? `<span class="toc-sub">${esc(g.topicsText)}</span>` : '') +
-          `</a>`
-        ).join('');
+        gSet(tocNav, groups.map((g, gi) =>
+          gEl('a', { class: `toc-link${gi === 0 ? ' active' : ''}`, href: `#grp-${gi}`, title: g.label },
+            gEl('span', null, g.heading),
+            gEl('span', { class: 'toc-cnt' }, g.entries.length),
+            g.topicsText ? gEl('span', { class: 'toc-sub' }, g.topicsText) : null
+          )
+        ));
         state.tocEls = [...tocNav.querySelectorAll('.toc-link')];
       } else {
         if (tocLabel) tocLabel.textContent = 'Pojmy v přednášce';
         const entries = groups[0].entries || [];
-        tocNav.innerHTML = entries.map((e, ei) =>
-          `<a class="toc-link${ei === 0 ? ' active' : ''}" href="#e-0-${ei}"><span>${tocTermHtml(e.term)}</span></a>`
-        ).join('');
+        gSet(tocNav, entries.map((e, ei) =>
+          gEl('a', { class: `toc-link${ei === 0 ? ' active' : ''}`, href: `#e-0-${ei}` }, gEl('span', null, tocTermFrag(e.term)))
+        ));
       }
     }
 
@@ -465,11 +514,11 @@ function mergeGroupsByDate(groups) {
     const list = state.allMerged;
     if (!list.length) return;
     const total = list.reduce((s, g) => s + g.entries.length, 0);
-    const opts = [`<option value="_all">Všechny přednášky (${total})</option>`];
+    const opts = [gEl('option', { value: '_all' }, `Všechny přednášky (${total})`)];
     for (const g of list) {
-      opts.push(`<option value="${esc('date:' + g.key)}">${esc(g.heading)}</option>`);
+      opts.push(gEl('option', { value: 'date:' + g.key }, g.heading));
     }
-    lecSelect.innerHTML = opts.join('');
+    gSet(lecSelect, opts);
     if (state.source === '_all' && state.activeDateKey) lecSelect.value = 'date:' + state.activeDateKey;
     else if (state.source === '_all') lecSelect.value = '_all';
     else if (state.groups.length === 1 && list.some(x => x.key === state.groups[0].key)) {
