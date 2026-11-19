@@ -92,7 +92,26 @@ function parseSource(s) {
 }
 const recallCats = () => [...new Set(RECALL.map(q => q.category))];
 function selectRecallCat(i) { recallCat = i < 0 ? '' : recallCats()[i]; renderLectures(); applyFilter(); }
+let lecScrolled = false;
+function fitLectures() {
+  const ul = $('lectures');
+  if (!ul || !ul.children || !ul.offsetParent) return;
+  const li = [...ul.children];
+  ul.style.maxHeight = li.length > 4 ? li.slice(-4).reduce((h, e) => h + (e.offsetHeight || 0), 1) + 'px' : '';
+  if (!lecScrolled && ul.offsetHeight) {
+    ul.scrollTop = ul.scrollHeight;
+    lecScrolled = true;
+  }
+}
+if (typeof window !== 'undefined') window.addEventListener('resize', fitLectures);
 function renderLectures() {
+  const ul = $('lectures');
+  const top = ul ? ul.scrollTop : 0;
+  _renderLectures();
+  if (ul) ul.scrollTop = top;
+  fitLectures();
+}
+function _renderLectures() {
   updateTeorieLink();
   const rc = typeFilter === 'recall';
   $('h-lec').textContent = rc ? 'Kategorie' : 'Přednáška';
@@ -261,15 +280,16 @@ async function saveProgress() {
       if (pData && pData.score) {
         const s = pData.score;
         renderDailyProgressUI(s);
-        let toastText = '';
+        const toastParts = [];
         if (s.points_awarded > 0) {
-          toastText = `<b>+${s.points_awarded} b.</b> (${s.difficulty})`;
-          if (s.streak >= 5) toastText += ` 🔥 Streak ${s.streak}! (+${s.streak_bonus} b.)`;
+          toastParts.push(TziDom.el('b', null, `+${s.points_awarded} b.`), ` (${s.difficulty})`);
+          if (s.streak >= 5) toastParts.push(` 🔥 Streak ${s.streak}! (+${s.streak_bonus} b.)`);
         }
         if (s.daily_goal_just_met) {
-          toastText += (toastText ? ' · ' : '') + `📅 Denní cíl splněn! Streak: <b>${s.daily_streak} dní</b>`;
+          if (toastParts.length) toastParts.push(' · ');
+          toastParts.push('📅 Denní cíl splněn! Streak: ', TziDom.el('b', null, `${s.daily_streak} dní`));
         }
-        if (toastText) showToast(toastText);
+        if (toastParts.length) showToast(toastParts);
         refreshUserStats();
       }
     } else {
@@ -289,6 +309,6 @@ async function saveProgress() {
 }
 
 let fromChunks = false;
-function showMenu() { show('menu'); stopRoomPolling(); kothMode = false; activeRoomId = null; activeRoomData = null; if ($('room-results-board')) $('room-results-board').style.display = 'none'; updateMenuStats(false); refreshDailyProgress(); refreshKothStatus(); show('menu'); }
+function showMenu() { show('menu'); stopRoomPolling(); kothMode = false; activeRoomId = null; activeRoomData = null; if ($('room-results-board')) $('room-results-board').style.display = 'none'; updateMenuStats(false); refreshDailyProgress(); refreshKothStatus(); fitLectures(); }
 function showResults() { show('results'); renderResults(); }
 

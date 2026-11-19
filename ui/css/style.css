@@ -195,7 +195,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 h2 { margin: 0 0 12px; font-size: 1.05rem; font-weight: 700; letter-spacing: 0; }
 
 /* ---------- přednášky ---------- */
-.lectures { list-style: none; margin: 0 0 32px; padding: 0; border-top: 1px solid var(--line); }
+.lectures { list-style: none; margin: 0 0 32px; padding: 0; border-top: 1px solid var(--line); overflow-y: auto; overscroll-behavior: contain; }
 .lectures li { border-bottom: 1px solid var(--line); }
 .lec {
   display: grid;
@@ -345,6 +345,7 @@ h2 { margin: 0 0 12px; font-size: 1.05rem; font-weight: 700; letter-spacing: 0; 
   .lec { grid-template-columns: 1.8rem 1fr; }
   .lec .d { grid-column: 2; }
   .filter .filter-sub { display: none; }
+  .filter { flex-wrap: wrap; }
   .filter button { padding: 7px 10px; font-size: .84rem; }
   .foot { gap: 14px; }
 }
