@@ -3,8 +3,6 @@ import json
 import logging
 import re
 import time
-
-_log = logging.getLogger(__name__)
 from collections import defaultdict
 from typing import Dict, Any, List
 from fastapi import APIRouter, Request, Response, HTTPException, Depends
@@ -16,6 +14,7 @@ from ..questions import verify_answer
 from ..sessions import require_user
 from ..csrf import ensure_csrf_token, validate_csrf
 
+_log = logging.getLogger(__name__)
 router = APIRouter()
 
 
