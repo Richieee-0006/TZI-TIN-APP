@@ -1,0 +1,181 @@
+{
+ "title": "Bezkontextové gramatiky: L(G) = {0ⁿ1ⁿ; n ≥ 1}",
+ "lecture": 8,
+ "date": "2026-11-19",
+ "questions": [
+  {
+   "type": "choice",
+   "text": "Jaká slova tvoří jazyk L(G) = {0ⁿ1ⁿ; n ≥ 1} nad abecedou Σ = {0, 1}?",
+   "options": {
+    "A": "Neprázdná slova, která mají nejprve n nul a za nimi stejný počet n jedniček (01, 0011, 000111, …).",
+    "B": "Všechna slova nad {0, 1}, která mají stejný počet nul a jedniček v libovolném pořadí (např. 0101, 1001).",
+    "C": "Slova s libovolným kladným počtem nul následovaných libovolným kladným počtem jedniček (0ᵐ1ᵏ; m, k ≥ 1).",
+    "D": "Všechna slova tvaru 0ⁿ1ⁿ včetně prázdného slova e (pro n = 0)."
+   },
+   "correct": [
+    "A"
+   ],
+   "explanation": "Index n je u 0ⁿ i 1ⁿ stejný a n ≥ 1: slovo začíná n nulami a končí stejným počtem n jedniček. Prázdné slovo e (n = 0) ani promíchané 0101 do jazyka nepatří. Přednáška / cvičení 19. 11.",
+   "number": 1,
+   "id": "8-1"
+  },
+  {
+   "type": "choice",
+   "text": "Která z následujících čtveřic G = (Π, Σ, S, P) generuje přesně jazyk L(G) = {0ⁿ1ⁿ; n ≥ 1}?",
+   "options": {
+    "A": "Π = {S}, Σ = {0, 1}, S, P = {S → 0S1, S → 01}",
+    "B": "Π = {S}, Σ = {0, 1}, S, P = {S → 0S, S → 1S, S → e}",
+    "C": "Π = {S}, Σ = {0, 1}, S, P = {S → 0S1, S → e}",
+    "D": "Π = {S, A}, Σ = {0, 1}, S, P = {S → 0S, S → 1A, A → 1A, A → 1}"
+   },
+   "correct": [
+    "A"
+   ],
+   "explanation": "Pravidlo S → 0S1 přidá v každém kroku jednu 0 vlevo a jednu 1 vpravo, pravidlo S → 01 odvození ukončí a zajistí n ≥ 1. S pravidlem S → e by v jazyce bylo i prázdné slovo (n ≥ 0); regulární pravidla v D generují {0ᵐ1ᵏ; m ≥ 0, k ≥ 1}. Přednáška / cvičení 19. 11.",
+   "number": 2,
+   "id": "8-2"
+  },
+  {
+   "type": "choice",
+   "text": "Jak vypadá odvození S ⇒* 000111 v gramatice s pravidly (1) S → 0S1, (2) S → 01?",
+   "options": {
+    "A": "S ⇒ 0S1 ⇒ 00S11 ⇒ 000111",
+    "B": "S ⇒ 0S ⇒ 00S ⇒ 000S ⇒ 000111",
+    "C": "S ⇒ 01 ⇒ 0011 ⇒ 000111",
+    "D": "S ⇒ 0S1 ⇒ 00S11 ⇒ 000S111 ⇒ 000111"
+   },
+   "correct": [
+    "A"
+   ],
+   "explanation": "Dvakrát se použije rekurzivní pravidlo (1) S → 0S1: S ⇒ 0S1 ⇒ 00S11, a potřetí ukončovací pravidlo (2) S → 01: 00S11 ⇒ 000111 (celkem 3 kroky). Možnost D by na konci vyžadovala pravidlo S → e. Přednáška / cvičení 19. 11.",
+   "number": 3,
+   "id": "8-3"
+  },
+  {
+   "type": "choice",
+   "text": "Jakého nejvyššího typu v Chomského hierarchii je gramatika G = ({S}, {0, 1}, S, {S → 0S1, S → 01})?",
+   "options": {
+    "A": "Typ 2 (bezkontextová, a protože pravé strany jsou neprázdné, splňuje i typ 1 a 0).",
+    "B": "Typ 3 (regulární, protože na levé straně je vždy jediný neterminál S).",
+    "C": "Typ 1 (pouze kontextová, není bezkontextová, protože S je obklopeno 0 a 1).",
+    "D": "Typ 0 (pouze obecná gramatika)."
+   },
+   "correct": [
+    "A"
+   ],
+   "explanation": "Na levé straně každého pravidla je jediný neterminál S (X → γ), jde tedy o bezkontextovou gramatiku (typ 2). Regulární (typ 3) není, protože v pravé straně 0S1 stojí za neterminálem S ještě terminál 1. Přednáška / cvičení 19. 11.",
+   "number": 4,
+   "id": "8-4"
+  },
+  {
+   "type": "choice",
+   "text": "Proč jazyk L = {0ⁿ1ⁿ; n ≥ 1} NENÍ regulární (typu 3) a nelze pro něj sestrojit konečný automat?",
+   "options": {
+    "A": "Konečný automat má jen konečně mnoho stavů, takže si při čtení nul nemůže zapamatovat libovolně velké n, aby ho porovnal s počtem jedniček.",
+    "B": "Protože abeceda Σ = {0, 1} má pouze dva symboly.",
+    "C": "Protože slova v jazyce L mají vždy sudou délku.",
+    "D": "Protože v jazyce L není prázdné slovo e."
+   },
+   "correct": [
+    "A"
+   ],
+   "explanation": "Na rozpoznání {0ⁿ1ⁿ; n ≥ 1} je potřeba neomezená paměť na počítání nul (zásobník – zásobníkový automat). Konečný automat má pevný konečný počet stavů |Q|, takže pro n > |Q| musí podle Dirichletova principu některý stav zopakovat a přijme i slova s různým počtem nul a jedniček. Přednáška / cvičení 19. 11.",
+   "number": 5,
+   "id": "8-5"
+  },
+  {
+   "type": "choice",
+   "text": "Jaký automat rozpoznává bezkontextový jazyk L(G) = {0ⁿ1ⁿ; n ≥ 1}?",
+   "options": {
+    "A": "Zásobníkový automat (při čtení 0 ukládá symboly do zásobníku, při čtení 1 je ze zásobníku odebírá).",
+    "B": "Deterministický konečný automat se dvěma stavy.",
+    "C": "Konečný automat s ε-přechody.",
+    "D": "Žádný automat, jazyk není rekurzivně spočetný."
+   },
+   "correct": [
+    "A"
+   ],
+   "explanation": "Bezkontextové jazyky (typ 2) rozpoznávají zásobníkové automaty. Pro 0ⁿ1ⁿ automat každou přečtenou 0 uloží na zásobník a při čtení 1 ze zásobníku odebírá; přijme, když po dočtení slova zůstane zásobník prázdný. Přednáška / cvičení 19. 11.",
+   "number": 6,
+   "id": "8-6"
+  },
+  {
+   "type": "choice",
+   "text": "Jak bychom změnili pravidla P = {S → 0S1, S → 01}, kdyby byl jazyk zadán jako L = {0ⁿ1ⁿ; n ≥ 0} (tedy včetně prázdného slova e)?",
+   "options": {
+    "A": "P = {S → 0S1, S → e} (případně navíc S → 01).",
+    "B": "P = {S → 0S1, 01 → e}.",
+    "C": "P = {S → 0S, S → 1S, S → e}.",
+    "D": "Prázdné slovo e v bezkontextové gramatice vygenerovat nelze."
+   },
+   "correct": [
+    "A"
+   ],
+   "explanation": "Pro n = 0 je 0⁰1⁰ = e. Pravidlem S → e získáme e v 1 kroku, jedním použitím S → 0S1 a pak S → e získáme 01, dvakrát S → 0S1 a S → e dá 0011 atd. Přednáška / cvičení 19. 11.",
+   "number": 7,
+   "id": "8-7"
+  },
+  {
+   "type": "input",
+   "text": "Gramatika G = ({S}, {0, 1}, S, P) má pravidla (1) S → 0S1, (2) S → 01. Napiš čísla pravidel v odvození S ⇒* 000111 v pořadí použití.",
+   "hint": "čísla pravidel bez mezer, např. 12",
+   "answer": "112",
+   "solution": "S ⇒ 0S1 (1) ⇒ 00S11 (1) ⇒ 000111 (2). Pravidlo 1 se použije dvakrát, pravidlo 2 jednou na zakončení. Přednáška / cvičení 19. 11.",
+   "number": 8,
+   "id": "8-8"
+  },
+  {
+   "type": "input",
+   "text": "Kolik kroků (přímých přepisů ⇒) má odvození S ⇒* 000111 v gramatice s pravidly S → 0S1 | 01?",
+   "hint": "číslo",
+   "answer": "3",
+   "solution": "Pro slovo 0ⁿ1ⁿ (zde n = 3) se (n − 1)-krát použije S → 0S1 a jednou S → 01, celkem (n − 1) + 1 = n = 3 kroky: S ⇒ 0S1 ⇒ 00S11 ⇒ 000111. Přednáška / cvičení 19. 11.",
+   "number": 9,
+   "id": "8-9"
+  },
+  {
+   "type": "input",
+   "text": "Jaké je nejkratší slovo v jazyce L(G) = {0ⁿ1ⁿ; n ≥ 1}?",
+   "hint": "slovo z 0 a 1",
+   "answer": "01",
+   "solution": "Nejmenší povolené n je n = 1, což dává 0¹1¹ = 01 (odvozené jedním krokem S ⇒ 01). Jeho délka je |01| = 2. Přednáška / cvičení 19. 11.",
+   "number": 10,
+   "id": "8-10"
+  },
+  {
+   "type": "input",
+   "text": "Jaká je délka |w| slova w = 000111 odvozeného zápisem S ⇒* 000111?",
+   "hint": "číslo",
+   "answer": "6",
+   "solution": "Slovo 000111 = 0³1³ (n = 3) má 3 nuly a 3 jedničky, celkem |000111| = 2n = 6 znaků. Přednáška / cvičení 19. 11.",
+   "number": 11,
+   "id": "8-11"
+  },
+  {
+   "type": "input",
+   "text": "Patří slovo 00111 do jazyka L(G) = {0ⁿ1ⁿ; n ≥ 1}?",
+   "hint": "ano nebo ne",
+   "answer": "ne",
+   "solution": "Slovo 00111 má dvě nuly (0²), ale tři jedničky (1³). Počet nul a jedniček se neshoduje, proto 00111 ∉ L(G). Přednáška / cvičení 19. 11.",
+   "number": 12,
+   "id": "8-12"
+  },
+  {
+   "type": "input",
+   "text": "Kolik slov délky 6 obsahuje jazyk L(G) = {0ⁿ1ⁿ; n ≥ 1}?",
+   "hint": "číslo",
+   "answer": "1",
+   "solution": "Pro každou sudou délku 2n ≥ 2 obsahuje jazyk {0ⁿ1ⁿ; n ≥ 1} právě jedno slovo (pro délku 6 je to n = 3, tedy jediné slovo 000111). Pro liché délky neobsahuje žádné (0). Přednáška / cvičení 19. 11.",
+   "number": 13,
+   "id": "8-13"
+  },
+  {
+   "type": "input",
+   "reveal": true,
+   "text": "Je dán jazyk L(G) = {0ⁿ1ⁿ; n ≥ 1} nad abecedou Σ = {0, 1}. Zapiš všechny složky generativní gramatiky G = (Π, Σ, S, P), která tento jazyk generuje, vypiš odvození S ⇒* 000111 a urči typ gramatiky v Chomského hierarchii.",
+   "solution": "G = (Π, Σ, S, P):\n• Π = {S} (množina neterminálů)\n• Σ = {0, 1} (množina terminálů)\n• S ∈ Π (počáteční symbol)\n• P = { (1) S → 0S1, (2) S → 01 } (množina přepisovacích pravidel)\n\nOdvození S ⇒* 000111 (n = 3):\nS ⇒ 0S1 (pravidlo 1) ⇒ 00S11 (pravidlo 1) ⇒ 000111 (pravidlo 2).\n\nTyp gramatiky: typ 2 – bezkontextová (každé pravidlo má vlevo jediný neterminál S → γ; protože pravé strany jsou neprázdné, splňuje i typ 1 – kontextová a typ 0). Regulární (typ 3) není, protože v 0S1 následuje za neterminálem S terminál 1. Přednáška / cvičení 19. 11.",
+   "number": 14,
+   "id": "8-14"
+  }
+ ]
+}
