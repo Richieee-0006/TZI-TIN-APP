@@ -1,7 +1,10 @@
 """Studijní API: profil, otázky, postup a synchronizace offline fronty."""
 import json
+import logging
 import re
 import time
+
+_log = logging.getLogger(__name__)
 from collections import defaultdict
 from typing import Dict, Any, List
 from fastapi import APIRouter, Request, Response, HTTPException, Depends
@@ -128,8 +131,8 @@ def api_get_progress(source: str = "", user: Dict[str, Any] = Depends(require_us
         try:
             d = json.loads(r["seen_json"])
             all_seen.update(d)
-        except Exception:
-            pass
+        except Exception as exc:
+            _log.debug("Invalid seen_json skipped: %s", exc)
 
     # 2. Získat session pro konkrétní zvolený zdroj
     active_session = None
@@ -141,8 +144,8 @@ def api_get_progress(source: str = "", user: Dict[str, Any] = Depends(require_us
         if row and row["session_json"]:
             try:
                 active_session = json.loads(row["session_json"])
-            except Exception:
-                pass
+            except Exception as exc:
+                _log.debug("Invalid session_json skipped: %s", exc)
 
     return {"seen": all_seen, "session": active_session}
 

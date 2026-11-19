@@ -1,4 +1,5 @@
 """CSRF ochrana — generování a validace tokenů ve skrytém cookie."""
+import logging
 import os
 import secrets
 from typing import Optional
@@ -7,6 +8,7 @@ from fastapi.responses import Response
 from .config import SESSION_COOKIE
 
 CSRF_COOKIE_NAME = "csrf_token"
+_log = logging.getLogger(__name__)
 
 
 def safe_compare(a: str, b: str) -> bool:
@@ -84,8 +86,8 @@ async def validate_csrf(
             body = await request.json()
             if isinstance(body, dict):
                 token = body.get("csrf_token")
-        except Exception:
-            pass
+        except Exception as exc:
+            _log.debug("CSRF JSON parse skipped: %s", exc)
 
     if is_testing and not token:
         return True

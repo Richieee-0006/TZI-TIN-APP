@@ -1,7 +1,26 @@
 """Soutěžní režimy: King of the Hill, FFA, 1v1 duel a místnosti (lobby)."""
 import json
+import logging
 from typing import Optional, Dict, Any, List
 import time
+
+_log = logging.getLogger(__name__)
+
+
+async def _optional_json_dict(request: Request) -> dict:
+    try:
+        body = await request.json()
+        return body if isinstance(body, dict) else {}
+    except Exception as exc:
+        _log.debug("Optional JSON body skipped: %s", exc)
+        return {}
+
+
+def _clamped_count(body: dict, default: int) -> int:
+    try:
+        return max(1, min(30, int(body.get("count", default))))
+    except (ValueError, TypeError):
+        return default
 from fastapi import APIRouter, Request, Response, HTTPException, Depends
 from itsdangerous import BadSignature, SignatureExpired
 import db
@@ -89,13 +108,10 @@ async def api_koth_start(request: Request, response: Response, user: Dict[str, A
     import random
     count = scoring.KOTH_DEFAULT_QUESTIONS
     source = ""
-    try:
-        body = await request.json()
-        if isinstance(body, dict):
-            count = max(1, min(30, int(body.get("count", count))))
-            source = str(body.get("source", ""))
-    except Exception:
-        pass
+    body = await _optional_json_dict(request)
+    if body:
+        count = _clamped_count(body, count)
+        source = str(body.get("source", ""))
 
     try:
         pool = tzi_trener.load_questions(source or tzi_trener.ALL)
@@ -236,17 +252,17 @@ async def api_rooms_create(request: Request, response: Response, user: Dict[str,
     count = scoring.KOTH_DEFAULT_QUESTIONS
     source = ""
     max_players = None
-    try:
-        body = await request.json()
-        if isinstance(body, dict):
-            mode = str(body.get("mode", "ffa"))
-            name = str(body.get("name", ""))
-            count = max(1, min(30, int(body.get("count", count))))
-            source = str(body.get("source", ""))
-            if body.get("max_players") is not None:
+    body = await _optional_json_dict(request)
+    if body:
+        mode = str(body.get("mode", "ffa"))
+        name = str(body.get("name", ""))
+        count = _clamped_count(body, count)
+        source = str(body.get("source", ""))
+        if body.get("max_players") is not None:
+            try:
                 max_players = int(body.get("max_players"))
-    except Exception:
-        pass
+            except (ValueError, TypeError) as exc:
+                _log.debug("Invalid max_players ignored: %s", exc)
 
     try:
         pool = tzi_trener.load_questions(source or tzi_trener.ALL)
@@ -290,13 +306,8 @@ async def api_room_join(room_id: int, request: Request, response: Response, user
     if user.get("role") == "trial" or uid == 0:
         raise HTTPException(status_code=403, detail="Pro připojení do místnosti je nutné se přihlásit.")
 
-    auto_start_duel = False
-    try:
-        body = await request.json()
-        if isinstance(body, dict):
-            auto_start_duel = bool(body.get("auto_start_duel", False))
-    except Exception:
-        pass
+    body = await _optional_json_dict(request)
+    auto_start_duel = bool(body.get("auto_start_duel", False)) if body else False
 
     user_db = db.get_user_by_id(uid)
     username = user_db["username"] if user_db else user.get("username", "Student")
@@ -391,13 +402,10 @@ async def api_ffa_start(request: Request, response: Response, user: Dict[str, An
     import random
     count = scoring.KOTH_DEFAULT_QUESTIONS
     source = ""
-    try:
-        body = await request.json()
-        if isinstance(body, dict):
-            count = max(1, min(30, int(body.get("count", count))))
-            source = str(body.get("source", ""))
-    except Exception:
-        pass
+    body = await _optional_json_dict(request)
+    if body:
+        count = _clamped_count(body, count)
+        source = str(body.get("source", ""))
     try:
         pool = tzi_trener.load_questions(source or tzi_trener.ALL)
     except Exception:
@@ -465,15 +473,12 @@ async def api_duel_start(request: Request, response: Response, user: Dict[str, A
     source = ""
     duel_id = None
     opponent_id = None
-    try:
-        body = await request.json()
-        if isinstance(body, dict):
-            count = max(1, min(30, int(body.get("count", count))))
-            source = str(body.get("source", ""))
-            duel_id = body.get("duel_id")
-            opponent_id = body.get("opponent_id")
-    except Exception:
-        pass
+    body = await _optional_json_dict(request)
+    if body:
+        count = _clamped_count(body, count)
+        source = str(body.get("source", ""))
+        duel_id = body.get("duel_id")
+        opponent_id = body.get("opponent_id")
 
     if opponent_id is not None:
         opponent_id_val = _parse_sqlite_id(opponent_id, "opponent_id")

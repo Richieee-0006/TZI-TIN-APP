@@ -1,8 +1,11 @@
 from fastapi.staticfiles import StaticFiles
 import tzi_trener
 """Skládá FastAPI aplikaci: inicializace DB, cache otázek, auto-sync bank a připojení routerů."""
+import logging
 import threading
 import time
+
+_log = logging.getLogger(__name__)
 
 from fastapi import FastAPI, Request
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -86,8 +89,8 @@ async def audit_communication_middleware(request: Request, call_next):
         u = get_current_user(request)
         if u:
             user_id = u.get("user_id")
-    except Exception:
-        pass
+    except Exception as exc:
+        _log.debug("Audit user lookup skipped: %s", exc)
 
     try:
         response = await call_next(request)
