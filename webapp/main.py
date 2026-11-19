@@ -1,16 +1,17 @@
-from fastapi.staticfiles import StaticFiles
-import tzi_trener
 """Skládá FastAPI aplikaci: inicializace DB, cache otázek, auto-sync bank a připojení routerů."""
 import logging
 import threading
 import time
 
 from fastapi import FastAPI, Request
+from fastapi.staticfiles import StaticFiles
 from starlette.middleware.base import BaseHTTPMiddleware
 
 import db
+import tzi_trener
 from . import questions
 from .config import HASHED_PASSWORD
+from .cookie_utils import get_client_ip, is_https
 from .git_sync import sync_worker
 from .sessions import get_current_user
 from .routers import account, admin, auth, competitive, pwa, study
@@ -58,7 +59,7 @@ async def add_security_headers(request, call_next):
         "require-trusted-types-for 'script'; "
         f"{tt_policy}"
     )
-    if request.url.scheme == "https":
+    if is_https(request):
         csp += "; upgrade-insecure-requests"
     response.headers["Content-Security-Policy"] = csp
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
@@ -96,7 +97,7 @@ async def audit_communication_middleware(request: Request, call_next):
         response = await call_next(request)
     except Exception as exc:
         duration_ms = int((time.time() - t0) * 1000)
-        ip = request.client.host if request.client else "unknown"
+        ip = get_client_ip(request)
         db.log_error(
             level="ERROR",
             message=f"{request.method} {path} -> 500 Exception: {str(exc)} [{duration_ms}ms, ip={ip}]",
@@ -108,7 +109,7 @@ async def audit_communication_middleware(request: Request, call_next):
 
     duration_ms = int((time.time() - t0) * 1000)
     status_code = response.status_code
-    ip = request.client.host if request.client else "unknown"
+    ip = get_client_ip(request)
 
     # Logovat WARNING pro 4xx odpovědi (neúspěšné pokusy, rate limity, odmítnutí)
     if 400 <= status_code < 500:

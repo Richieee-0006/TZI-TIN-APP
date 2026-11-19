@@ -78,12 +78,21 @@ def test_auth_and_session_edge_cases(iso_db):
         assert "/register?error=" in r.headers["location"], payload
         csrf = c.cookies.get("csrf_token") or csrf
 
-    # Secure cookie flag toggles based on X-Forwarded-Proto
+    # Secure cookie flag toggles based on X-Forwarded-Proto for both session and csrf_token
     r_http = c.get("/trial", follow_redirects=False)
     assert "Secure" not in r_http.headers.get("set-cookie", "")
     r_https = c.get("/trial", headers={"X-Forwarded-Proto": "https"}, follow_redirects=False)
     set_cookies = r_https.headers.get_list("set-cookie")
     assert any("tzi_session=" in sc and "Secure" in sc and "HttpOnly" in sc for sc in set_cookies)
+    assert any("csrf_token=" in sc and "Secure" in sc for sc in set_cookies)
+
+    # CF Tunnel client IP extraction: trusted only on loopback + CF-Ray
+    from types import SimpleNamespace
+    from webapp.cookie_utils import get_client_ip
+    req_cf = SimpleNamespace(client=SimpleNamespace(host="127.0.0.1"), headers={"cf-ray": "abc-PRG", "cf-connecting-ip": "203.0.113.7"})
+    req_spoof = SimpleNamespace(client=SimpleNamespace(host="198.51.100.9"), headers={"cf-ray": "abc-PRG", "cf-connecting-ip": "203.0.113.7"})
+    assert get_client_ip(req_cf) == "203.0.113.7"
+    assert get_client_ip(req_spoof) == "198.51.100.9"
 
 
 def test_verify_answer_and_study_sync_edge_cases(iso_db):

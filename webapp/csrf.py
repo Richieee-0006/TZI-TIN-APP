@@ -6,6 +6,7 @@ from typing import Optional
 from fastapi import Request, HTTPException
 from fastapi.responses import Response
 from .config import SESSION_COOKIE
+from .cookie_utils import is_https
 
 CSRF_COOKIE_NAME = "csrf_token"
 _log = logging.getLogger(__name__)
@@ -20,7 +21,7 @@ def safe_compare(a: str, b: str) -> bool:
     return secrets.compare_digest(a.encode("utf-8"), b.encode("utf-8"))
 
 
-def generate_csrf_token(resp: Response) -> str:
+def generate_csrf_token(resp: Response, request: Optional[Request] = None) -> str:
     """Vygeneruje nový CSRF token a uloží ho do cookie."""
     token = secrets.token_hex(32)
     resp.set_cookie(
@@ -28,7 +29,7 @@ def generate_csrf_token(resp: Response) -> str:
         token,
         httponly=False,
         samesite="lax",
-        secure=False,  # nastaveno později middlewarem / helperem
+        secure=is_https(request),
         path="/",
     )
     return token
@@ -44,18 +45,18 @@ def ensure_csrf_token(request: Request, resp: Response) -> str:
         token,
         httponly=False,
         samesite="lax",
-        secure=False,
+        secure=is_https(request),
         path="/",
     )
     return token
 
 
-def get_csrf_token(resp: Response) -> str:
+def get_csrf_token(resp: Response, request: Optional[Request] = None) -> str:
     """Vrátí existující token z cookie nebo vygeneruje nový."""
     existing = resp.cookies.get(CSRF_COOKIE_NAME)
     if existing:
         return existing
-    return generate_csrf_token(resp)
+    return generate_csrf_token(resp, request)
 
 
 async def validate_csrf(
@@ -99,7 +100,7 @@ async def validate_csrf(
 
     # Rotace tokenu po každém úspěšném requestu (volitelná pro paralelní fetch)
     if rotate:
-        generate_csrf_token(resp)
+        generate_csrf_token(resp, request)
     return True
 
 

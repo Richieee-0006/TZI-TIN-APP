@@ -1,14 +1,13 @@
+import logging
 import re
-import os
 import sqlite3
-import random
-import string
 import secrets
 import threading
 from pathlib import Path
 from typing import Optional, Dict, Any, List, Tuple
 import bcrypt
 
+_log = logging.getLogger(__name__)
 BASE = Path(__file__).resolve().parent
 DB_FILE = BASE / "tzi.db"
 _local = threading.local()
@@ -80,8 +79,8 @@ def close_db():
     if hasattr(_local, "conn") and _local.conn is not None:
         try:
             _local.conn.close()
-        except Exception:
-            pass
+        except Exception as exc:
+            _log.debug("DB close error ignored: %s", exc)
         _local.conn = None
 
 
@@ -283,8 +282,8 @@ def generate_unique_nickname(theme: str) -> str:
     characters = theme_info["characters"]
 
     for _ in range(60):
-        adj = random.choice(adjectives)
-        char = random.choice(characters)
+        adj = secrets.choice(adjectives)
+        char = secrets.choice(characters)
         candidate = f"{adj} {char}"
         row = conn.execute("SELECT id FROM users WHERE username = ?", (candidate,)).fetchone()
         if not row:
@@ -292,9 +291,9 @@ def generate_unique_nickname(theme: str) -> str:
 
     # If combinations are taken, add unique suffix
     for _ in range(100):
-        adj = random.choice(adjectives)
-        char = random.choice(characters)
-        num = random.randint(10, 99)
+        adj = secrets.choice(adjectives)
+        char = secrets.choice(characters)
+        num = 10 + secrets.randbelow(90)
         candidate = f"{adj} {char} {num}"
         row = conn.execute("SELECT id FROM users WHERE username = ?", (candidate,)).fetchone()
         if not row:
@@ -445,8 +444,8 @@ def get_user_all_progress_map(user_id: int) -> Dict[str, Dict[str, str]]:
             data = json.loads(r["seen_json"] or "{}")
             if isinstance(data, dict):
                 out[r["source"]] = data
-        except Exception:
-            pass
+        except Exception as exc:
+            _log.debug("Invalid seen_json skipped: %s", exc)
     return out
 
 
@@ -475,9 +474,9 @@ def log_error(level: str, message: str, endpoint: Optional[str] = None, user_id:
                 """,
                 (level, endpoint, user_id, message, stack_trace)
             )
-    except Exception:
+    except Exception as exc:
         # Nikdy nezhodit request, pokud tabulka v testovacím DB ještě nebyla inicializována
-        pass
+        _log.debug("Error log insert skipped: %s", exc)
 
 
 def get_recent_errors(limit: int = 50) -> List[Dict[str, Any]]:

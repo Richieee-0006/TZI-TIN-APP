@@ -10,6 +10,7 @@ import db
 import scoring
 import tzi_trener
 from .. import questions
+from ..cookie_utils import get_client_ip
 from ..questions import verify_answer
 from ..sessions import require_user
 from ..csrf import ensure_csrf_token, validate_csrf
@@ -177,7 +178,7 @@ def reset_progress_rate_limits():
 async def api_post_progress(request: Request, response: Response, source: str = "", user: Dict[str, Any] = Depends(require_user)):
     await validate_csrf(request, response, rotate=False)
     user_id = user["user_id"]
-    ip = request.client.host if request.client else "unknown"
+    ip = get_client_ip(request)
     rate_key = f"u_{user_id}" if user_id else f"ip_{ip}"
     if not _check_progress_rate_limit(rate_key):
         raise HTTPException(status_code=429, detail="Příliš mnoho požadavků na záznam postupu. Počkejte chvíli.")
@@ -266,7 +267,7 @@ async def api_sync(request: Request, response: Response, user: Dict[str, Any] = 
     """Offline synchronizace: dávkové bezpečné zpracování odpovědí vyřešených offline s anti-spoofing kontrolou."""
     await validate_csrf(request, response, rotate=False)
     user_id = user["user_id"]
-    ip = request.client.host if request.client else "unknown"
+    ip = get_client_ip(request)
     rate_key = f"u:{user_id}_ip:{ip}"
     if not _check_sync_rate_limit(rate_key):
         raise HTTPException(status_code=429, detail="Příliš mnoho synchronizačních požadavků. Počkejte chvíli.")
@@ -365,7 +366,7 @@ def reset_client_error_rate_limits():
 
 @router.post("/api/client-error")
 async def api_client_error(request: Request):
-    ip = request.client.host if request.client else "unknown"
+    ip = get_client_ip(request)
     if not _check_client_error_rate_limit(ip):
         raise HTTPException(status_code=429, detail="Příliš mnoho chybových hlášení. Rate limit překročen.")
     try:

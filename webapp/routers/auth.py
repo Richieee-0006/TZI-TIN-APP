@@ -3,6 +3,7 @@ import time
 from collections import defaultdict
 from html import escape
 from typing import Optional, List, Tuple
+from urllib.parse import quote_plus
 from fastapi import APIRouter, Response, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 import db
@@ -10,7 +11,7 @@ from ..config import HASHED_PASSWORD, SESSION_COOKIE, SESSION_MAX_AGE
 from ..pages import LOGIN_REGISTER_HTML
 from ..sessions import create_session_token
 from ..csrf import validate_csrf, clear_csrf_cookie, generate_csrf_token
-from ..cookie_utils import set_secure_cookie
+from ..cookie_utils import get_client_ip, set_secure_cookie
 
 router = APIRouter()
 
@@ -54,7 +55,7 @@ def get_login(request: Request, error: Optional[str] = None, success: Optional[s
     html = html.replace("<!--REG_DISPLAY-->", "is-hidden")
 
     resp = HTMLResponse(content=html)
-    token = generate_csrf_token(resp)
+    token = generate_csrf_token(resp, request)
     csrf_input = f'<input type="hidden" name="csrf_token" value="{escape(token)}">'
     html = html.replace("<!--CSRF-->", csrf_input)
     resp.body = html.encode("utf-8")
@@ -74,7 +75,7 @@ async def post_login(
     await validate_csrf(request, response, csrf_token=csrf_token)
 
     # Rate limiting
-    ip = request.client.host if request.client else "unknown"
+    ip = get_client_ip(request)
     if _check_rate_limit(ip):
         return RedirectResponse(url="/login?error=Příliš+mnoho+pokusů.+Počkejte+10+minut", status_code=303)
 
@@ -87,7 +88,7 @@ async def post_login(
         token = create_session_token(user, request)
         resp = RedirectResponse(url="/", status_code=303)
         set_secure_cookie(resp, SESSION_COOKIE, token, request, max_age=SESSION_MAX_AGE)
-        generate_csrf_token(resp)
+        generate_csrf_token(resp, request)
         return resp
 
     _record_attempt(ip)
@@ -107,7 +108,7 @@ def get_register(request: Request, error: Optional[str] = None):
     html = html.replace("<!--REG_DISPLAY-->", "")
 
     resp = HTMLResponse(content=html)
-    token = generate_csrf_token(resp)
+    token = generate_csrf_token(resp, request)
     csrf_input = f'<input type="hidden" name="csrf_token" value="{escape(token)}">'
     html = html.replace("<!--CSRF-->", csrf_input)
     resp.body = html.encode("utf-8")
@@ -129,7 +130,7 @@ async def post_register(
     await validate_csrf(request, response, csrf_token=csrf_token)
 
     # Rate limiting
-    ip = request.client.host if request.client else "unknown"
+    ip = get_client_ip(request)
     if _check_rate_limit(ip):
         return RedirectResponse(url="/register?error=Příliš+mnoho+pokusů.+Počkejte+10+minut", status_code=303)
 
@@ -150,15 +151,15 @@ async def post_register(
 
     ok, err, user = db.register_user(theme=theme, password=pwd, username=uname)
     if not ok or not user:
-        err_msg = err or "Registrace se nezdařila."
+        err_msg = quote_plus(err or "Registrace se nezdařila.")
         return RedirectResponse(url=f"/register?error={err_msg}", status_code=303)
 
     # Automatické přihlášení
     token = create_session_token(user, request)
-    assigned_nick = user["username"]
+    assigned_nick = quote_plus(str(user["username"]))
     resp = RedirectResponse(url=f"/?welcome_nick={assigned_nick}", status_code=303)
     set_secure_cookie(resp, SESSION_COOKIE, token, request, max_age=SESSION_MAX_AGE)
-    generate_csrf_token(resp)
+    generate_csrf_token(resp, request)
     return resp
 
 
@@ -173,7 +174,7 @@ def get_trial(request: Request, response: Response):
     token = create_session_token(trial_user, request)
     resp = RedirectResponse(url="/", status_code=303)
     set_secure_cookie(resp, SESSION_COOKIE, token, request, max_age=86400)
-    generate_csrf_token(resp)
+    generate_csrf_token(resp, request)
     return resp
 
 
