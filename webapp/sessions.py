@@ -6,13 +6,14 @@ from typing import Optional, Dict, Any
 from fastapi import Request, HTTPException, status
 from itsdangerous import BadSignature, SignatureExpired
 from .config import SESSION_COOKIE, SESSION_MAX_AGE, serializer
+from .cookie_utils import get_client_ip
 from .csrf import safe_compare
 
 
 # --- Session Helpers ---
 def _client_fingerprint(request: Request) -> str:
     """Vygeneruje stabilní hash z IP + User-Agent pro bindování session."""
-    ip = request.client.host if request.client else "unknown"
+    ip = get_client_ip(request)
     ua = request.headers.get("user-agent", "")
     return hashlib.sha256(f"{ip}|{ua}".encode()).hexdigest()[:16]
 

@@ -1,21 +1,35 @@
-"""Bezpečné nastavení cookie — podmíněný secure flag dle HTTP/HTTPS."""
+"""Bezpečné nastavení cookie — podmíněný secure flag dle HTTP/HTTPS a detekce IP za CF Tunnelem."""
 from fastapi import Request
 from fastapi.responses import Response
-from typing import Any, Dict
+from typing import Any, Optional
 
 from .config import SESSION_COOKIE
 
 DEFAULT_SECURE = True  # default pro produkci (HTTPS)
 
 
-def is_https(request: Request) -> bool:
+def is_https(request: Optional[Request]) -> bool:
     """Zjistí, zda je spojení HTTPS.
     Kontroluje X-Forwarded-Proto header (proxy) a scheme z requestu.
     """
+    if not request:
+        return False
     forwarded = request.headers.get("x-forwarded-proto", "").lower()
     if forwarded:
         return forwarded == "https"
     return request.url.scheme == "https"
+
+
+def get_client_ip(request: Optional[Request]) -> str:
+    """Vrátí IP klienta. Za lokálním Cloudflare Tunnelem (loopback + CF-Ray) čte CF-Connecting-IP."""
+    if not request:
+        return "unknown"
+    host = request.client.host if request.client else "unknown"
+    if host in ("127.0.0.1", "::1") and request.headers.get("cf-ray"):
+        cf_ip = request.headers.get("cf-connecting-ip", "").strip()
+        if cf_ip:
+            return cf_ip
+    return host
 
 
 def set_secure_cookie(
