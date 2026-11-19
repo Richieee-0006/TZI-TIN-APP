@@ -1,9 +1,3 @@
-const _escFmt = s => (typeof esc === 'function'
-  ? esc(s)
-  : String(s ?? '').replace(/[&<>"']/g, c => ({
-      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-    }[c])));
-
 function renderLatexNode(tex, displayMode) {
   const span = document.createElement('span');
   if (typeof katex !== 'undefined' && katex && typeof katex.render === 'function') {
@@ -30,23 +24,6 @@ function renderLatexNode(tex, displayMode) {
   span.dataset.display = displayMode ? '1' : '0';
   span.textContent = tex;
   return span;
-}
-
-function renderLatexExpr(tex, displayMode) {
-  if (typeof katex !== 'undefined' && katex && typeof katex.renderToString === 'function') {
-    const opts = { displayMode: !!displayMode, throwOnError: false };
-    const isMathml = typeof document !== 'undefined' && document.documentElement && document.documentElement.dataset && document.documentElement.dataset.katexMode === 'mathml';
-    if (isMathml) opts.output = 'mathml';
-    try {
-      let html = katex.renderToString(tex, opts);
-      if (isMathml) {
-        const bb = { N: 'ℕ', Z: 'ℤ', Q: 'ℚ', R: 'ℝ', C: 'ℂ' };
-        html = html.replace(/<mi mathvariant="double-struck">([NZQRC])<\/mi>/g, (_, ch) => `<mtext class="math-bb">${bb[ch]}</mtext>`);
-      }
-      return html;
-    } catch (e) {}
-  }
-  return `<span class="math-tex katex-fallback" data-display="${displayMode ? '1' : '0'}">${_escFmt(tex)}</span>`;
 }
 
 // Zápis z banky / glosáře (LaTeX $...$, $$...$$, \(...\), \[...\] + matematické výrazy) převede na KaTeX (HTML / MathML).
@@ -240,21 +217,6 @@ function setFmt(targetEl, s) {
   if (!targetEl) return targetEl;
   targetEl.replaceChildren(fmtToFragment(s));
   return targetEl;
-}
-
-function fmt(s) {
-  const prep = _prepareFmt(s);
-  if (prep.wholeMath) return renderLatexExpr(prep.wholeMath.tex, prep.wholeMath.display);
-  let out = prep.text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  out = out
-    .replace(/_\(([^)]+)\)/g, '<sub>$1</sub>').replace(/_([A-Za-z0-9]+)/g, '<sub>$1</sub>')
-    .replace(/\^\(([^)]+)\)/g, '<sup>$1</sup>').replace(/\^([A-Za-z0-9]+)/g, '<sup>$1</sup>')
-    .replace(/[₀-₉]+/g, m => '<sub>' + [...m].map(c => '₀₁₂₃₄₅₆₇₈₉'.indexOf(c)).join('') + '</sub>')
-    .replace(/-&gt;/g, '→').replace(/&lt;-/g, '←').replace(/\.\.\./g, '…');
-  if (prep.mathBlocks.length > 0) {
-    out = out.replace(/\x00MATH(\d+)\x00/g, (_, i) => renderLatexExpr(prep.mathBlocks[Number(i)].tex, prep.mathBlocks[Number(i)].display));
-  }
-  return out;
 }
 
 

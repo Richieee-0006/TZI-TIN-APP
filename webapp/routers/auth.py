@@ -50,8 +50,8 @@ def get_login(request: Request, error: Optional[str] = None, success: Optional[s
     html = html.replace("<!--MESSAGE-->", msg)
     html = html.replace("<!--LOGIN_ACTIVE-->", "active")
     html = html.replace("<!--REG_ACTIVE-->", "")
-    html = html.replace("<!--LOGIN_DISPLAY-->", "block")
-    html = html.replace("<!--REG_DISPLAY-->", "none")
+    html = html.replace("<!--LOGIN_DISPLAY-->", "")
+    html = html.replace("<!--REG_DISPLAY-->", "is-hidden")
 
     resp = HTMLResponse(content=html)
     token = generate_csrf_token(resp)
@@ -103,8 +103,8 @@ def get_register(request: Request, error: Optional[str] = None):
     html = html.replace("<!--MESSAGE-->", msg)
     html = html.replace("<!--LOGIN_ACTIVE-->", "")
     html = html.replace("<!--REG_ACTIVE-->", "active")
-    html = html.replace("<!--LOGIN_DISPLAY-->", "none")
-    html = html.replace("<!--REG_DISPLAY-->", "block")
+    html = html.replace("<!--LOGIN_DISPLAY-->", "is-hidden")
+    html = html.replace("<!--REG_DISPLAY-->", "")
 
     resp = HTMLResponse(content=html)
     token = generate_csrf_token(resp)

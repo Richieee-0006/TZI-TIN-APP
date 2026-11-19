@@ -39,8 +39,13 @@ function updateAchievements(u, dp) {
     } else {
       el.classList.remove('unlocked');
     }
-    el.innerHTML = `<span class="ach-title"><span>${esc(baseName)}</span><span>${isUnl ? '✓' : ''}</span></span>` +
-      (hint ? `<small class="ach-hint">${esc(hint)}</small>` : '');
+    TziDom.setChildren(el,
+      TziDom.el('span', { class: 'ach-title' },
+        TziDom.el('span', null, baseName),
+        TziDom.el('span', null, isUnl ? '✓' : '')
+      ),
+      hint ? TziDom.el('small', { class: 'ach-hint' }, hint) : null
+    );
   });
   const cntEl = document.getElementById('prof-ach-count');
   if (cntEl) cntEl.textContent = `${unlockedCount} / ${ACH_BIT_KEYS.length} unlocked`;
@@ -57,7 +62,7 @@ function renderDailyProgressUI(dp) {
   const stEl = document.getElementById('dp-streak');
   if (stEl) stEl.textContent = String(dStreak);
   const cntEl = document.getElementById('dp-count');
-  if (cntEl) cntEl.innerHTML = `Denní cíl: <b>${ans}</b>/${goal} odpovědí (+50 XP)`;
+  if (cntEl) TziDom.setChildren(cntEl, 'Denní cíl: ', TziDom.el('b', null, String(ans)), `/${goal} odpovědí (+50 XP)`);
   const barEl = document.getElementById('dp-bar-fill');
   if (barEl) {
     barEl.style.width = `${pct}%`;
@@ -70,9 +75,12 @@ function renderDailyProgressUI(dp) {
   }
   const histEl = document.getElementById('dp-history');
   if (histEl && Array.isArray(dp.history)) {
-    histEl.innerHTML = dp.history.slice(0, 7).map(h =>
-      `<span class="daily-day-dot${h.goal_met ? ' met' : ''}" title="${esc(h.date)}: ${h.questions_answered} otázek">${esc(String(h.date).slice(5))} ${h.goal_met ? '✓' : '·'}</span>`
-    ).join('');
+    TziDom.setChildren(histEl, ...dp.history.slice(0, 7).map(h =>
+      TziDom.el('span', {
+        class: `daily-day-dot${h.goal_met ? ' met' : ''}`,
+        title: `${h.date}: ${h.questions_answered} otázek`
+      }, `${String(h.date).slice(5)} ${h.goal_met ? '✓' : '·'}`)
+    ));
   }
   updateAchievements(currentUserData, dp);
 }

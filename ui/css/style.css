@@ -723,3 +723,59 @@ h2 { margin: 0 0 12px; font-size: 1.05rem; font-weight: 700; letter-spacing: 0; 
   .katex { font-size: 1.05em; }
   .question-text .katex, .opt .katex, .solution .katex { display: inline-block; max-width: 100%; overflow-x: auto; overflow-y: hidden; vertical-align: middle; }
   @media (max-width: 640px) { .katex { font-size: .88em; } }
+  math { font-family: math, "Latin Modern Math", "Cambria Math", "STIX Two Math", serif; }
+  math mtext.math-bb { font-family: var(--font), "DejaVu Sans", sans-serif; font-style: normal; font-weight: 500; }
+
+  .is-hidden { display: none; }
+  .nav-link-btn { text-decoration: none; }
+  .ico-inline { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .bits-title { margin: 0; }
+  .xp-fill-init { width: 33%; }
+  .rooms-count { font-family: var(--mono); font-size: .8rem; color: var(--blue); }
+  .lb-count { font-family: var(--mono); font-size: .8rem; color: var(--muted); }
+  .lb-table-wrap { overflow-x: auto; }
+  .lb-empty { color: var(--muted); }
+  .lb-you { color: var(--blue); }
+  .lb-lvl { font-family: var(--mono); font-size: .8rem; }
+  .lb-pts { color: var(--ok); font-family: var(--mono); }
+  .btn-signout { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 40%, var(--line)); }
+  .prof-role-badge { font-family: var(--mono); font-size: .78rem; color: var(--blue); }
+  .prof-history-wrap { margin-bottom: 16px; }
+  .prof-sub-title { font-size: .8125rem; font-weight: 500; color: var(--muted); margin-bottom: 6px; }
+  .prof-sub-title-spaced { margin-top: 16px; }
+  .prof-ach-count { font-family: var(--mono); font-size: .8rem; color: var(--ok); }
+  .recap-source-stats { font-family: var(--mono); font-size: .8rem; color: var(--muted); }
+  .recap-ok { color: var(--ok); }
+  .recap-bad { color: var(--bad); }
+  .rl-host-tag { color: var(--muted); }
+  .rl-ready-tag { font-family: var(--mono); font-size: .8rem; color: var(--ok); }
+  .prof-field-lbl { font-size: .8rem; color: var(--muted); }
+  .prof-sound-row { display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 6px; }
+  .prof-sound-lbl { font-size: .82rem; color: var(--muted); }
+  .danger-zone-card { border-color: color-mix(in srgb, var(--bad) 35%, var(--line)); }
+  .danger-zone-title { font-size: .95rem; font-weight: 800; color: var(--bad); margin-bottom: 4px; }
+  .danger-zone-desc { margin: 0; font-size: .82rem; color: var(--muted); }
+  .danger-zone-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+  .btn-remove-profile { border-width: 2px; font-weight: 800; }
+  .modal-danger-title { font-size: 1.25rem; }
+  .modal-desc { font-size: .86rem; color: var(--muted); margin: 0 0 14px; }
+  .modal-desc-sm { font-size: .85rem; color: var(--muted); margin: 0 0 10px; }
+  .modal-input-mb { margin-bottom: 8px; }
+  .modal-err { color: var(--bad); font-size: .8rem; min-height: 1.2em; margin-top: 8px; }
+  .modal-btns-mt { margin-top: 16px; }
+  .modal-btns-mt-sm { margin-top: 14px; }
+  .btn-danger-confirm { background: var(--bad); color: #0f1729; }
+  .modal-narrow { width: min(100%, 420px); }
+  .modal-head-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .del-prof-title { font-size: 1.2rem; margin: 0; color: var(--bad); }
+  .del-prof-badge { font-family: var(--mono); font-size: .75rem; padding: 2px 8px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); }
+  .del-prof-ack-row { display: flex; align-items: flex-start; gap: 8px; font-size: .84rem; color: var(--ink); cursor: pointer; padding: 10px; background: var(--paper-2); border: 1px solid var(--line); border-radius: 8px; }
+  .del-prof-ack-chk { margin-top: 3px; }
+  .del-prof-user-b { color: var(--ink); }
+  .rl-title-h { margin: 0 0 4px; font-size: 1.35rem; }
+  .rl-sub-p { margin: 0; color: var(--muted); font-size: .85rem; }
+  .rl-players-h { margin: 0 0 8px; font-size: .82rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  .options-reset { border: none; padding: 0; margin: 0; }
+  .app-footer { margin-top: 2.5rem; padding-top: 1.2rem; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.8rem; text-align: center; line-height: 1.6; }
+  .app-footer-link { color: var(--blue); text-decoration: underline; }
+  .app-footer-privacy { margin-top: 0.4rem; font-size: 0.72rem; opacity: 0.85; }

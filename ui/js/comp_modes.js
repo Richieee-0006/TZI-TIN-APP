@@ -32,12 +32,14 @@ async function startCompetitiveMode(mode = 'koth', duelId = null) {
   activeMatchToken = matchToken;
   kothStartTime = Date.now(); kothLastResult = null;
   if (mode === 'ffa') {
-    $('sudden-banner').innerHTML = '🏟️ Free For All Aréna<span>Získej co nejvyšší skóre v žebříčku všech hráčů (10 otázek na čas)!</span>';
+    TziDom.setChildren($('sudden-banner'), '🏟️ Free For All Aréna', TziDom.el('span', null, 'Získej co nejvyšší skóre v žebříčku všech hráčů (10 otázek na čas)!'));
   } else if (mode === 'duel') {
-    const opp = matchedDuel && matchedDuel.creator_username ? `Soupeř: ${esc(matchedDuel.creator_username)} (${matchedDuel.creator_score} b.)` : 'Zakládáš novou 1v1 výzvu pro soupeře';
-    $('sudden-banner').innerHTML = `⚔️ 1v1 Duel<span>${opp}</span>`;
+    const opp = matchedDuel && matchedDuel.creator_username
+      ? `Soupeř: ${matchedDuel.creator_username} (${matchedDuel.creator_score} b.)`
+      : 'Zakládáš novou 1v1 výzvu pro soupeře';
+    TziDom.setChildren($('sudden-banner'), '⚔️ 1v1 Duel', TziDom.el('span', null, opp));
   } else {
-    $('sudden-banner').innerHTML = '👑 King of the Hill<span>Překonej skóre krále kopce v 10 otázkách na čas!</span>';
+    TziDom.setChildren($('sudden-banner'), '👑 King of the Hill', TziDom.el('span', null, 'Překonej skóre krále kopce v 10 otázkách na čas!'));
   }
   $('sudden-banner').style.display = 'block';
   show('quiz');

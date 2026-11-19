@@ -64,27 +64,44 @@ console.log(`${cases.length} případů matcheru, ${bank.length} otázek v bance
 
 // ── míchání možností: skutečné renderQ / klávesy / confirmAnswer z novy.html nad malým falešným DOM ──
 class El {
-  constructor(id) {
-    Object.assign(this, {id, style: {}, children: [], value: '', _h: '', _c: new Set()});
-    this.classList = {add: (...c) => c.forEach(x => this._c.add(x)), remove: (...c) => c.forEach(x => this._c.delete(x)), contains: c => this._c.has(c)};
+  constructor(id, tag = '') {
+    Object.assign(this, {id, tag, nodeType: 1, isFrag: tag === '#frag', style: {}, dataset: {}, attrs: {}, children: [], value: '', _h: '', _c: new Set()});
+    this.classList = {add: (...c) => c.forEach(x => this._c.add(x)), remove: (...c) => c.forEach(x => this._c.delete(x)), contains: c => this._c.has(c), toggle: (c, f) => (f === undefined ? !this._c.has(c) : f) ? this._c.add(c) : this._c.delete(c)};
   }
-  set innerHTML(v) { this._h = v; if (v === '') this.children = []; } get innerHTML() { return this._h; }
-  set textContent(v) { this._h = String(v); } get textContent() { return this._h; }
-  set className(v) { this._c = new Set(String(v).split(' ').filter(Boolean)); } get className() { return [...this._c].join(' '); }
-  appendChild(c) { this.children.push(c); } addEventListener(t, f) { this['on' + t] = f; }
-  setAttribute() {} focus() {}
+  set textContent(v) { this.children = []; this._h = String(v ?? ''); }
+  get textContent() { return this.children.length ? this.children.map(c => c.textContent).join('') : this._h; }
+  set className(v) { this._c = new Set(String(v).split(' ').filter(Boolean)); this.attrs.class = String(v); }
+  get className() { return [...this._c].join(' '); }
+  appendChild(c) {
+    if (c && c.isFrag) { for (const x of c.children) this.children.push(x); }
+    else if (c) this.children.push(c);
+    return c;
+  }
+  replaceChildren(...items) { this.children = []; this._h = ''; for (const i of items) this.appendChild(i); }
+  addEventListener(t, f) { this['on' + t] = f; }
+  setAttribute(k, v) { this.attrs[k] = String(v); if (k === 'id') this.id = String(v); if (k === 'class') this.className = v; }
+  focus() {}
 }
 const els = {opts: new El('opts')}, docOn = {};
+const stubDoc = {
+  getElementById: id => id.startsWith('opt-') ? els.opts.children.find(c => c.id === id) || null : (els[id] ||= new El(id)),
+  createElement: tag => new El('', tag),
+  createElementNS: (_ns, tag) => new El('', tag),
+  createTextNode: txt => { const n = new El('', ''); n._h = String(txt ?? ''); n.nodeType = 3; return n; },
+  createDocumentFragment: () => new El('', '#frag'),
+  addEventListener: (t, f) => { docOn[t] = f; },
+  querySelectorAll: () => [],
+  querySelector: () => null
+};
 const page = vm.createContext({
-  document: {getElementById: id => id.startsWith('opt-') ? els.opts.children.find(c => c.id === id) || null : (els[id] ||= new El(id)),
-    createElement: () => new El(''), addEventListener: (t, f) => { docOn[t] = f; }, querySelectorAll: () => []},
+  document: stubDoc,
   localStorage: {getItem: () => null, setItem() {}}, fetch: () => new Promise(() => {}), // server se nevolá
   setTimeout, setInterval, clearInterval, alert() {}, confirm: () => false,
 });
 vm.runInContext(js, page);
 const run = code => vm.runInContext(code, page);
 const key = k => docOn.keydown({key: k, target: {tagName: 'DIV'}, preventDefault() {}});
-const shown = () => els.opts.children.map(c => ({key: c.id.slice(4), letter: /class="letter">(\w)</.exec(c.innerHTML)[1], html: c.innerHTML}));
+const shown = () => els.opts.children.map(c => ({key: c.id.slice(4), letter: c.children[0].textContent, text: c.children[1].textContent}));
 const choices = fs.readdirSync(path.join(ROOT, 'banky')).filter(f => f.endsWith('.json'))
   .flatMap(f => JSON.parse(fs.readFileSync(path.join(ROOT, 'banky', f), 'utf8')).questions).filter(q => q.type === 'choice');
 const Q1 = choices.find(q => q.correct.length === 1 && Object.keys(q.options).length === 4);
@@ -96,7 +113,7 @@ for (let t = 0; t < N; t++) {
   run('beginSession([Q1, Q2], false)');
   const s = shown(), order = s.map(o => o.key).join('');
   assert.deepStrictEqual(s.map(o => o.letter), ['A', 'B', 'C', 'D'], 'písmena A–D podle pozice');
-  s.forEach(o => assert(o.html.includes(run('fmt')(Q1.options[o.key])), 'text možnosti patří ke klíči'));
+  s.forEach(o => assert.strictEqual(o.text, run('fmtToFragment')(Q1.options[o.key]).textContent, 'text možnosti patří ke klíči'));
   orders.add(order);
   const c = s.find(o => o.key === Q1.correct[0]); pos[s.indexOf(c)]++;
   if (t % 2) { // špatně: text „Správně: X“ musí ukázat zobrazené písmeno

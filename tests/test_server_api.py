@@ -349,108 +349,150 @@ def test_glosar_and_automat_routes():
     import re
     import subprocess
 
-    client = TestClient(server.app, headers={"User-Agent": "TestBrowser/1.0"})
+    test_db = BASE / "test_temp_glosar.db"
+    _cleanup_db(test_db)
+    old_db = db.DB_FILE
+    db.DB_FILE = test_db
+    db.init_db()
+    try:
+        client = TestClient(server.app, headers={"User-Agent": "TestBrowser/1.0"})
 
-    # 1. Zero-trust unauthenticated denial on pages, API, and exclusive assets
-    for page in ("/automat", "/teorie", "/glosar"):
-        r = client.get(page, follow_redirects=False)
-        assert r.status_code in (302, 307)
-        assert r.headers.get("location") == "/login"
-    for ep in ("/api/teorie?source=_all", "/api/glosar?source=_all", "/fmt.js", "/automat-core.js", "/automat-delta.jpg"):
-        assert client.get(ep).status_code == 401
+        # 1. Zero-trust unauthenticated denial on pages, API, and exclusive assets
+        for page in ("/automat", "/teorie", "/glosar"):
+            r = client.get(page, follow_redirects=False)
+            assert r.status_code in (302, 307)
+            assert r.headers.get("location") == "/login"
+        for ep in ("/api/teorie?source=_all", "/api/glosar?source=_all", "/fmt.js", "/automat-core.js", "/automat-delta.jpg"):
+            assert client.get(ep).status_code == 401
 
-    # 2. Tampered session cookie rejected
-    bad_client = TestClient(server.app, headers={"User-Agent": "TestBrowser/1.0"})
-    bad_client.cookies.set("tzi_session", "forged.token.value")
-    assert bad_client.get("/api/teorie?source=_all").status_code == 401
-    assert bad_client.get("/automat", follow_redirects=False).status_code in (302, 307)
+        # 2. Tampered session cookie rejected
+        bad_client = TestClient(server.app, headers={"User-Agent": "TestBrowser/1.0"})
+        bad_client.cookies.set("tzi_session", "forged.token.value")
+        assert bad_client.get("/api/teorie?source=_all").status_code == 401
+        assert bad_client.get("/automat", follow_redirects=False).status_code in (302, 307)
 
-    # 3. Trial login -> verify UA/IP session binding + strict headers + strict CSP
-    assert client.get("/trial", follow_redirects=False).status_code in (302, 303, 307)
-    cookie_val = client.cookies.get("tzi_session")
-    assert cookie_val
+        # 3. Trial login -> verify UA/IP session binding + strict headers + strict CSP
+        assert client.get("/trial", follow_redirects=False).status_code in (302, 303, 307)
+        cookie_val = client.cookies.get("tzi_session")
+        assert cookie_val
 
-    # Mismatched User-Agent with stolen cookie must fail (Zero-Trust fingerprint binding)
-    thief = TestClient(server.app, headers={"User-Agent": "EvilScraper/9.9"})
-    thief.cookies.set("tzi_session", cookie_val)
-    assert thief.get("/api/teorie?source=_all").status_code == 401
-    assert thief.get("/automat", follow_redirects=False).status_code in (302, 307)
+        # Mismatched User-Agent with stolen cookie must fail (Zero-Trust fingerprint binding)
+        thief = TestClient(server.app, headers={"User-Agent": "EvilScraper/9.9"})
+        thief.cookies.set("tzi_session", cookie_val)
+        assert thief.get("/api/teorie?source=_all").status_code == 401
+        assert thief.get("/automat", follow_redirects=False).status_code in (302, 307)
 
-    # Legitimate authenticated requests pass with strict CSP & security headers
-    for page in ("/automat", "/teorie"):
-        resp = client.get(page)
-        assert resp.status_code == 200
-        csp = resp.headers.get("content-security-policy", "")
-        assert "default-src 'none'" in csp
-        assert "script-src 'self'" in csp
-        assert "'unsafe-inline'" not in csp
-        assert "'wasm-unsafe-eval'" not in csp
-        assert "frame-ancestors 'none'" in csp
-        assert "object-src 'none'" in csp
-        assert "require-trusted-types-for 'script'" in csp
-        assert "trusted-types 'none'" in csp
-        assert resp.headers.get("x-frame-options") == "DENY"
-        assert resp.headers.get("x-content-type-options") == "nosniff"
-        assert resp.headers.get("cross-origin-opener-policy") == "same-origin"
-        assert resp.headers.get("cross-origin-resource-policy") == "same-origin"
-        assert "no-store" in resp.headers.get("cache-control", "")
-        # Zero inline <script>, <style>, style=, or on*= event handlers in HTML
-        body = resp.text
-        assert not re.search(r"<script(?![^>]*\bsrc=)[^>]*>", body, re.I)
-        assert not re.search(r"<style\b", body, re.I)
-        assert not re.search(r"\bon\w+\s*=", body, re.I)
-        assert "style=" not in body
+        # Legitimate authenticated & public requests pass with strict CSP & security headers
+        def assert_strict_html(resp, allow_wasm=False):
+            assert resp.status_code == 200
+            csp = resp.headers.get("content-security-policy", "")
+            assert "default-src 'none'" in csp
+            if allow_wasm:
+                assert "script-src 'self' 'wasm-unsafe-eval'" in csp
+            else:
+                assert "script-src 'self'" in csp
+                assert "'wasm-unsafe-eval'" not in csp
+            assert "'unsafe-inline'" not in csp
+            assert "frame-ancestors 'none'" in csp
+            assert "object-src 'none'" in csp
+            assert "require-trusted-types-for 'script'" in csp
+            assert ("trusted-types tzi-sw" if allow_wasm else "trusted-types 'none'") in csp
+            assert resp.headers.get("x-frame-options") == "DENY"
+            assert resp.headers.get("x-content-type-options") == "nosniff"
+            assert resp.headers.get("cross-origin-opener-policy") == "same-origin"
+            assert resp.headers.get("cross-origin-resource-policy") == "same-origin"
+            assert "no-store" in resp.headers.get("cache-control", "")
+            body = resp.text
+            assert not re.search(r"<script(?![^>]*\bsrc=)[^>]*>", body, re.I)
+            assert not re.search(r"<style\b", body, re.I)
+            assert not re.search(r"\bon\w+\s*=", body, re.I)
+            assert "style=" not in body
 
-    assert client.get("/fmt.js").status_code == 200
-    assert client.get("/automat-core.js").status_code == 200
-    assert client.get("/automat-delta.jpg").status_code == 200
-    assert client.get("/static/css/automat.css").status_code == 200
-    assert client.get("/static/js/dom.js").status_code == 200
-    assert client.get("/static/js/format.js").status_code == 200
-    assert client.get("/static/js/automat.js").status_code == 200
-    assert client.get("/static/css/glosar.css").status_code == 200
-    assert client.get("/static/js/glosar.js").status_code == 200
+        assert_strict_html(client.get("/"), allow_wasm=True)
+        for page in ("/automat", "/teorie", "/login", "/register"):
+            assert_strict_html(client.get(page), allow_wasm=False)
 
-    # 4. API input validation & no error-detail leak
-    assert client.get("/api/glosar?source=../../etc/passwd").status_code == 400
-    assert client.get("/api/glosar?source=%3Cscript%3E").status_code == 400
-    r404 = client.get("/api/glosar?source=neexistujici_banka")
-    assert r404.status_code == 404
-    assert r404.json()["detail"] == "Zdroj nebyl nalezen"
+        # Admin route strict CSP & clean HTML (with error & student rows present)
+        db.register_user(theme="catppuccin", password="StrongPass123!", username="adm_row_stu")
+        db.log_error(level="ERROR", message="Sample error", endpoint="/test", user_id=1, stack_trace="line 1")
+        from webapp.sessions import create_session_token
+        adm_tok = create_session_token({"id": 999, "username": "admin_test", "role": "admin"}, type("R", (), {"headers": {"user-agent": "TestBrowser/1.0"}, "client": type("C", (), {"host": "testclient"})()})())
+        adm_client = TestClient(server.app, headers={"User-Agent": "TestBrowser/1.0"})
+        adm_client.cookies.set("tzi_session", adm_tok)
+        assert_strict_html(adm_client.get("/admin"), allow_wasm=False)
 
-    gl = client.get("/api/glosar?source=_all").json()
-    assert len(gl["groups"]) >= 2
-    srcs = [s["id"] for s in client.get("/api/sources").json()["sources"]]
-    assert "06-2026-11-05" in srcs and "07-2026-11-12" in srcs
+        assert client.get("/fmt.js").status_code == 200
+        assert client.get("/automat-core.js").status_code == 200
+        assert client.get("/automat-delta.jpg").status_code == 200
+        assert client.get("/static/css/automat.css").status_code == 200
+        assert client.get("/static/js/dom.js").status_code == 200
+        assert client.get("/static/js/format.js").status_code == 200
+        assert client.get("/static/js/automat.js").status_code == 200
+        assert client.get("/static/css/glosar.css").status_code == 200
+        assert client.get("/static/js/glosar.js").status_code == 200
 
-    # 5. Node.js check for fmt.js XSS escaping & ReDoS + automat-core.js prototype safety
-    js_check = r"""
-    const fs = require('fs');
-    const vm = require('vm');
-    const Auto = require('./ui/automat-core.js');
-    const sp = Auto.parseSpec('Q = {__proto__, constructor, q0}\nΣ = {0}\npočáteční stav q0\nF = {}\nδ(q0, 0) = q0');
-    if (sp.states.some(s => s.id === '__proto__' || s.id === 'constructor')) throw new Error('Reserved id allowed');
-    const d = Auto.delta({ states: [{ id: 'q0' }], trans: [{ from: 'q0', to: 'q0', symbols: ['0'] }] });
-    if (Object.getPrototypeOf(d) !== null || d.toString !== undefined) throw new Error('Prototype not null');
+        # 4. API input validation & no error-detail leak
+        assert client.get("/api/glosar?source=../../etc/passwd").status_code == 400
+        assert client.get("/api/glosar?source=%3Cscript%3E").status_code == 400
+        r404 = client.get("/api/glosar?source=neexistujici_banka")
+        assert r404.status_code == 404
+        assert r404.json()["detail"] == "Zdroj nebyl nalezen"
 
-    const ctx = {};
-    vm.runInNewContext(fs.readFileSync('./ui/fmt.js', 'utf8'), ctx);
-    const xssOut = ctx.fmt('<img src=x onerror="alert(1)">\'test\'');
-    if (xssOut.includes('<img') || xssOut.includes('"') || xssOut.includes("'")) throw new Error('fmt XSS leak: ' + xssOut);
-    const t0 = Date.now();
-    ctx.fmtZadani('G: a, pravidla ' + '(1) x '.repeat(50) + 'beztecky');
-    if (Date.now() - t0 > 100) throw new Error('ReDoS detected');
-    """
-    res = subprocess.run(["node", "-e", js_check], cwd=str(BASE.parent), capture_output=True, text=True)
-    assert res.returncode == 0, res.stderr
-    for js_file in ("ui/js/dom.js", "ui/js/format.js", "ui/js/automat.js", "ui/js/glosar.js", "ui/fmt.js", "ui/automat-core.js"):
-        chk = subprocess.run(["node", "--check", js_file], cwd=str(BASE.parent), capture_output=True, text=True)
-        assert chk.returncode == 0, f"{js_file}: {chk.stderr}"
+        gl = client.get("/api/glosar?source=_all").json()
+        assert len(gl["groups"]) >= 2
+        srcs = [s["id"] for s in client.get("/api/sources").json()["sources"]]
+        assert "06-2026-11-05" in srcs and "07-2026-11-12" in srcs
 
-    for clean_js in ("ui/js/automat.js", "ui/js/glosar.js"):
-        src = (BASE.parent / clean_js).read_text(encoding="utf-8")
-        for sink in ("innerHTML", "outerHTML", "insertAdjacentHTML", "document.write"):
-            assert sink not in src, f"{clean_js} contains forbidden DOM sink {sink}"
+        # 5. Node.js check for fmt.js XSS escaping & ReDoS + automat-core.js prototype safety
+        js_check = r"""
+        const fs = require('fs');
+        const vm = require('vm');
+        const Auto = require('./ui/automat-core.js');
+        const sp = Auto.parseSpec('Q = {__proto__, constructor, q0}\nΣ = {0}\npočáteční stav q0\nF = {}\nδ(q0, 0) = q0');
+        if (sp.states.some(s => s.id === '__proto__' || s.id === 'constructor')) throw new Error('Reserved id allowed');
+        const d = Auto.delta({ states: [{ id: 'q0' }], trans: [{ from: 'q0', to: 'q0', symbols: ['0'] }] });
+        if (Object.getPrototypeOf(d) !== null || d.toString !== undefined) throw new Error('Prototype not null');
+
+        const ctx = {};
+        vm.runInNewContext(fs.readFileSync('./ui/fmt.js', 'utf8'), ctx);
+        const xssOut = ctx.fmt('<img src=x onerror="alert(1)">\'test\'');
+        if (xssOut.includes('<img') || xssOut.includes('"') || xssOut.includes("'")) throw new Error('fmt XSS leak: ' + xssOut);
+        const t0 = Date.now();
+        ctx.fmtZadani('G: a, pravidla ' + '(1) x '.repeat(50) + 'beztecky');
+        if (Date.now() - t0 > 100) throw new Error('ReDoS detected');
+        """
+        res = subprocess.run(["node", "-e", js_check], cwd=str(BASE.parent), capture_output=True, text=True)
+        assert res.returncode == 0, res.stderr
+
+        root = BASE.parent
+        js_files = sorted([p.relative_to(root).as_posix() for p in (root / "ui" / "js").glob("*.js")]) + ["ui/fmt.js", "ui/automat-core.js", "ui/sw.js"]
+        for js_file in js_files:
+            chk = subprocess.run(["node", "--check", js_file], cwd=str(root), capture_output=True, text=True)
+            assert chk.returncode == 0, f"{js_file}: {chk.stderr}"
+
+        for clean_js in sorted((root / "ui" / "js").glob("*.js")):
+            if clean_js.name == "dom.js":
+                continue
+            src = clean_js.read_text(encoding="utf-8")
+            for sink in ("innerHTML", "outerHTML", "insertAdjacentHTML", "document.write"):
+                assert sink not in src, f"{clean_js.name} contains forbidden DOM sink {sink}"
+
+        html_files = sorted(list((root / "ui").glob("*.html")) + list((root / "webapp" / "templates").glob("*.html")))
+        for hf in html_files:
+            hsrc = hf.read_text(encoding="utf-8")
+            assert not re.search(r"<script(?![^>]*\bsrc=)[^>]*>", hsrc, re.I), f"{hf.name}: inline <script>"
+            assert not re.search(r"<style\b", hsrc, re.I), f"{hf.name}: <style>"
+            assert not re.search(r"\bon\w+\s*=", hsrc, re.I), f"{hf.name}: inline on* handler"
+            assert "style=" not in hsrc, f"{hf.name}: inline style="
+
+        assert client.get("/static/css/auth.css").status_code == 200
+        assert client.get("/static/js/login.js").status_code == 200
+        assert client.get("/static/css/admin.css").status_code == 200
+        assert client.get("/static/js/admin.js").status_code == 200
+        assert client.get("/static/js/events.js").status_code == 200
+    finally:
+        _cleanup_db(test_db)
+        db.DB_FILE = old_db
 
 
 def test_automat_toolbar_shortcuts_and_csp():

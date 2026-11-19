@@ -17,18 +17,18 @@ async function openLeaderboardView() {
       const rows = Array.isArray(lb.leaderboard) ? lb.leaderboard : [];
       const myName = currentUserData ? currentUserData.username : '';
       if (tbody) {
-        tbody.innerHTML = rows.length ? rows.map((r, i) => {
+        TziDom.setChildren(tbody, ...(rows.length ? rows.map((r, i) => {
           const rInfo = getRankInfo(r.points || 0);
           const isMe = myName && r.username === myName;
-          return `<tr class="${isMe ? 'me-row' : ''}">
-            <td><b>#${i + 1}</b></td>
-            <td><b>${esc(r.username)}</b>${isMe ? ' <small style="color:var(--blue)">(You)</small>' : ''}</td>
-            <td><span style="font-family:var(--mono);font-size:.8rem;">Lvl ${rInfo.lvl} · ${rInfo.title}</span></td>
-            <td><b style="color:var(--ok);font-family:var(--mono);">${r.points || 0} XP</b></td>
-            <td>${r.best_streak || 0}</td>
-            <td>${r.daily_streak || 0}d</td>
-          </tr>`;
-        }).join('') : '<tr><td colspan="6">Zatím žádné záznamy.</td></tr>';
+          return TziDom.el('tr', { class: isMe ? 'me-row' : null },
+            TziDom.el('td', null, TziDom.el('b', null, `#${i + 1}`)),
+            TziDom.el('td', null, TziDom.el('b', null, r.username || ''), isMe ? ' ' : null, isMe ? TziDom.el('small', { class: 'lb-you' }, '(You)') : null),
+            TziDom.el('td', null, TziDom.el('span', { class: 'lb-lvl' }, `Lvl ${rInfo.lvl} · ${rInfo.title}`)),
+            TziDom.el('td', null, TziDom.el('b', { class: 'lb-pts' }, `${r.points || 0} XP`)),
+            TziDom.el('td', null, String(r.best_streak || 0)),
+            TziDom.el('td', null, `${r.daily_streak || 0}d`)
+          );
+        }) : [TziDom.el('tr', null, TziDom.el('td', { colspan: '6' }, 'Zatím žádné záznamy.'))]));
       }
     }
     if (compRes.ok) {
@@ -37,19 +37,28 @@ async function openLeaderboardView() {
       if (compEl) {
         const items = [];
         if (ov.koth && ov.koth.king) {
-          items.push(`<li><span>👑 <b>Král kopce (KotH):</b> ${esc(ov.koth.king.username)} (obhájení ${ov.koth.king.defenses_count || 0}×)</span><span><b>${ov.koth.king.score} b.</b></span></li>`);
+          items.push(TziDom.el('li', null,
+            TziDom.el('span', null, '👑 ', TziDom.el('b', null, 'Král kopce (KotH):'), ` ${ov.koth.king.username || ''} (obhájení ${ov.koth.king.defenses_count || 0}×)`),
+            TziDom.el('span', null, TziDom.el('b', null, `${ov.koth.king.score} b.`))
+          ));
         }
         if (ov.ffa && Array.isArray(ov.ffa.leaderboard) && ov.ffa.leaderboard.length) {
           ov.ffa.leaderboard.slice(0, 3).forEach((r, idx) => {
-            items.push(`<li><span>🏟️ <b>FFA #${idx + 1}:</b> ${esc(r.username)} (${r.best_correct}/10 správně)</span><span><b>${r.best_score} b.</b></span></li>`);
+            items.push(TziDom.el('li', null,
+              TziDom.el('span', null, '🏟️ ', TziDom.el('b', null, `FFA #${idx + 1}:`), ` ${r.username || ''} (${r.best_correct}/10 správně)`),
+              TziDom.el('span', null, TziDom.el('b', null, `${r.best_score} b.`))
+            ));
           });
         }
         if (ov.duel && Array.isArray(ov.duel.leaderboard) && ov.duel.leaderboard.length) {
           ov.duel.leaderboard.slice(0, 3).forEach((r, idx) => {
-            items.push(`<li><span>⚔️ <b>1v1 Duel #${idx + 1}:</b> ${esc(r.username)}</span><span><b>🏆 ${r.wins} výher</b></span></li>`);
+            items.push(TziDom.el('li', null,
+              TziDom.el('span', null, '⚔️ ', TziDom.el('b', null, `1v1 Duel #${idx + 1}:`), ` ${r.username || ''}`),
+              TziDom.el('span', null, TziDom.el('b', null, `🏆 ${r.wins} výher`))
+            ));
           });
         }
-        compEl.innerHTML = items.length ? items.join('') : '<li><span>Zatím žádné odehrané kompetitivní zápasy.</span></li>';
+        TziDom.setChildren(compEl, ...(items.length ? items : [TziDom.el('li', null, TziDom.el('span', null, 'Zatím žádné odehrané kompetitivní zápasy.'))]));
       }
     }
   } catch (e) {}
@@ -87,20 +96,26 @@ async function openProfileView() {
       if ($('prof-mastered')) $('prof-mastered').textContent = `${tc} / ${tq} (${cov} %)`;
       const listEl = $('profile-recap-sources');
       if (listEl && Array.isArray(recap.sources)) {
-        listEl.innerHTML = recap.sources.map(s => {
+        TziDom.setChildren(listEl, ...recap.sources.map(s => {
           const okPct = WASM_CORE.exp.calcPercentage(s.correct | 0, s.total | 0);
           const badPct = WASM_CORE.exp.calcPercentage(s.wrong | 0, s.total | 0);
-          return `<div class="recap-source-row">
-            <div class="recap-source-top">
-              <strong>${esc(s.title)}</strong>
-              <span style="font-family:var(--mono);font-size:.8rem;color:var(--muted);"><b style="color:var(--ok)">${s.correct}✓</b> · <b style="color:var(--bad)">${s.wrong}✗</b> / ${s.total} (${okPct} %)</span>
-            </div>
-            <div class="recap-bar">
-              <div class="recap-bar-ok" style="width:${okPct}%"></div>
-              <div class="recap-bar-bad" style="width:${badPct}%"></div>
-            </div>
-          </div>`;
-        }).join('');
+          const okBar = TziDom.el('div', { class: 'recap-bar-ok' });
+          okBar.style.width = `${okPct}%`;
+          const badBar = TziDom.el('div', { class: 'recap-bar-bad' });
+          badBar.style.width = `${badPct}%`;
+          return TziDom.el('div', { class: 'recap-source-row' },
+            TziDom.el('div', { class: 'recap-source-top' },
+              TziDom.el('strong', null, s.title || ''),
+              TziDom.el('span', { class: 'recap-source-stats' },
+                TziDom.el('b', { class: 'recap-ok' }, `${s.correct}✓`),
+                ' · ',
+                TziDom.el('b', { class: 'recap-bad' }, `${s.wrong}✗`),
+                ` / ${s.total} (${okPct} %)`
+              )
+            ),
+            TziDom.el('div', { class: 'recap-bar' }, okBar, badBar)
+          );
+        }));
       }
     }
   } catch (e) {}
@@ -122,7 +137,7 @@ async function submitUsernameChange() {
       showToast('⚠️ ' + (data.detail || 'Změna přezdívky se nezdařila.'));
       return;
     }
-    showToast(`✅ Přezdívka změněna na <b>${esc(data.username)}</b>`);
+    showToast(['✅ Přezdívka změněna na ', TziDom.el('b', null, data.username || '')]);
     await refreshUserStats();
     await openProfileView();
   } catch (e) {

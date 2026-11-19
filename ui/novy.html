@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="cs" data-theme="catppuccin">
+<html lang="cs" data-theme="catppuccin" data-katex-mode="mathml">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/static/css/style.css?v=22">
+<link rel="stylesheet" href="/static/css/style.css?v=23">
   <link rel="stylesheet" href="/static/vendor/katex/katex.min.css">
   <script src="/static/vendor/katex/katex.min.js"></script>
 </head>
@@ -31,16 +31,16 @@
       <div class="top-right">
         <p>Opakování přednášek z Teoretické informatiky, KI/TIN</p>
         <nav class="top-user" aria-label="Uživatelská navigace">
-          <button type="button" id="u-net" class="badge-net badge-net-online" onclick="toggleOfflineMode()" title="Toggle Online / Offline mode">Online</button>
-          <button type="button" class="nav-pill-btn" onclick="openLeaderboardView()" title="Leaderboard">Leaderboard</button>
-          <a href="/teorie?source=_all" id="teorie-link" class="nav-pill-btn" style="text-decoration:none;" title="Teorie a pojmy k přednáškám">Teorie</a>
-          <a href="/automat" class="nav-pill-btn" style="text-decoration:none;" title="Návrhář konečných automatů">Návrhář automatů</a>
-          <button type="button" class="nav-pill-btn" onclick="openProfileView()" title="Otevřít profil, rekapitulaci a nastavení účtu">
-            <svg viewBox="0 0 24 24" aria-hidden="true" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <button type="button" id="u-net" class="badge-net badge-net-online" data-click="toggleOfflineMode" title="Toggle Online / Offline mode">Online</button>
+          <button type="button" class="nav-pill-btn" data-click="openLeaderboardView" title="Leaderboard">Leaderboard</button>
+          <a href="/teorie?source=_all" id="teorie-link" class="nav-pill-btn nav-link-btn" title="Teorie a pojmy k přednáškám">Teorie</a>
+          <a href="/automat" class="nav-pill-btn nav-link-btn" title="Návrhář konečných automatů">Návrhář automatů</a>
+          <button type="button" class="nav-pill-btn" data-click="openProfileView" title="Otevřít profil, rekapitulaci a nastavení účtu">
+            <svg viewBox="0 0 24 24" aria-hidden="true" class="ico-inline"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             <span id="u-badge">Profile</span>
           </button>
-          <output id="u-score" style="display:none;"></output>
-          <a href="/admin" id="admin-link" class="top-lnk" style="display:none;">
+          <output id="u-score" class="is-hidden"></output>
+          <a href="/admin" id="admin-link" class="top-lnk is-hidden">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
             Správa
           </a>
@@ -54,7 +54,7 @@
         <span class="lvl-box" id="u-lvl">1</span>
         <strong class="lvl-title" id="u-rank-title">NPC</strong>
         <div class="xp-track" role="progressbar" aria-label="Postup XP k další úrovni" aria-valuemin="0" aria-valuemax="100">
-          <div class="xp-fill" id="xp-bar-fill" style="width: 33%;"></div>
+          <div class="xp-fill xp-fill-init" id="xp-bar-fill"></div>
         </div>
         <span class="xp-stat"><b id="u-xp">0</b> XP</span>
         <span class="xp-stat" title="Aktuální streak správných odpovědí">
@@ -87,7 +87,7 @@
 
         <div class="bits-panel">
           <header class="bits-head">
-            <h2 style="margin:0">Tvůj postup</h2>
+            <h2 class="bits-title">Tvůj postup</h2>
             <output id="bits-sum"></output>
           </header>
           <figure class="bits" id="bits" role="group" aria-label="Postup po blocích, klikni na blok"></figure>
@@ -101,13 +101,13 @@
 
       <section aria-label="Režimy">
         <div class="filter" id="type-row" role="toolbar" aria-label="Typ otázek">
-          <button data-t="all" aria-pressed="true" onclick="setType('all')">Vše</button>
-          <button data-t="choice" aria-pressed="false" onclick="setType('choice')"><span>Teorie</span><span class="filter-sub"> (A/B/C/D)</span></button>
-          <button data-t="input" aria-pressed="false" onclick="setType('input')"><span>Příklady</span><span class="filter-sub"> (výsledek)</span></button>
-          <button data-t="recall" id="btn-recall" aria-pressed="false" onclick="setType('recall')">Doplňovačka</button>
+          <button data-t="all" aria-pressed="true" data-click="setType" data-arg="all">Vše</button>
+          <button data-t="choice" aria-pressed="false" data-click="setType" data-arg="choice"><span>Teorie</span><span class="filter-sub"> (A/B/C/D)</span></button>
+          <button data-t="input" aria-pressed="false" data-click="setType" data-arg="input"><span>Příklady</span><span class="filter-sub"> (výsledek)</span></button>
+          <button data-t="recall" id="btn-recall" aria-pressed="false" data-click="setType" data-arg="recall">Doplňovačka</button>
         </div>
 
-        <button class="go" id="go" onclick="goPrimary()">
+        <button class="go" id="go" data-click="goPrimary">
           <strong id="go-title">Načítám…</strong>
           <span id="go-sub"></span>
         </button>
@@ -115,34 +115,34 @@
         <section class="group" aria-labelledby="h-proc">
           <h2 id="h-proc">Procvičuj</h2>
           <ul class="modes">
-            <li><button class="mode" onclick="showChunks()"><span class="name"><svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>Po <span id="menu-chunk-size">10</span></span><span class="desc">Postupně po blocích, v bloku si vybereš podmnožinu</span><span class="count" id="c-blocks"></span></button></li>
-            <li><button class="mode" onclick="startAll()"><span class="name"><svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>Vše popořadě</span><span class="desc">Celá banka od první otázky</span><span class="count" id="c-all"></span></button></li>
-            <li><button class="mode" onclick="showRandomModal('random')"><span class="name"><svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>Náhodný výběr</span><span class="desc">Zadáš kolik otázek chceš</span><span class="count">?</span></button></li>
-            <li><button class="mode" onclick="showRandomModal('study')"><span class="name"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Studuj, pak testuj</span><span class="desc">Nejdřív otázky s odpovědí a postupem, potom test</span><span class="count"></span></button></li>
+            <li><button class="mode" data-click="showChunks"><span class="name"><svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>Po <span id="menu-chunk-size">10</span></span><span class="desc">Postupně po blocích, v bloku si vybereš podmnožinu</span><span class="count" id="c-blocks"></span></button></li>
+            <li><button class="mode" data-click="startAll"><span class="name"><svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>Vše popořadě</span><span class="desc">Celá banka od první otázky</span><span class="count" id="c-all"></span></button></li>
+            <li><button class="mode" data-click="showRandomModal" data-arg="random"><span class="name"><svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>Náhodný výběr</span><span class="desc">Zadáš kolik otázek chceš</span><span class="count">?</span></button></li>
+            <li><button class="mode" data-click="showRandomModal" data-arg="study"><span class="name"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Studuj, pak testuj</span><span class="desc">Nejdřív otázky s odpovědí a postupem, potom test</span><span class="count"></span></button></li>
           </ul>
         </section>
 
         <section class="group" aria-labelledby="h-rev">
           <h2 id="h-rev">Vrať se k tomu, co ti nejde</h2>
           <ul class="modes">
-            <li><button class="mode new" id="btn-unseen" onclick="startUnseen()"><span class="name"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Jen neprozkoumané</span><span class="desc">Na tyhle jsi ještě neodpovídal</span><span class="count" id="unseen-count"></span></button></li>
-            <li><button class="mode bad" id="btn-wrongs" onclick="startWrongs()"><span class="name"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Jen chybné</span><span class="desc">Odpověděl jsi špatně</span><span class="count" id="wrongs-count"></span></button></li>
-            <li><button class="mode ok" id="btn-correct" onclick="startCorrect()"><span class="name"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Zopakovat správné</span><span class="desc">Ať ti nevyprchaly z hlavy</span><span class="count" id="correct-count"></span></button></li>
+            <li><button class="mode new" id="btn-unseen" data-click="startUnseen"><span class="name"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Jen neprozkoumané</span><span class="desc">Na tyhle jsi ještě neodpovídal</span><span class="count" id="unseen-count"></span></button></li>
+            <li><button class="mode bad" id="btn-wrongs" data-click="startWrongs"><span class="name"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Jen chybné</span><span class="desc">Odpověděl jsi špatně</span><span class="count" id="wrongs-count"></span></button></li>
+            <li><button class="mode ok" id="btn-correct" data-click="startCorrect"><span class="name"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Zopakovat správné</span><span class="desc">Ať ti nevyprchaly z hlavy</span><span class="count" id="correct-count"></span></button></li>
           </ul>
         </section>
 
         <section class="exam" id="koth-section" aria-labelledby="h-exam">
           <h2 id="h-exam">Zkouška nanečisto &amp; Kompetitivní aréna</h2>
           <ul class="modes">
-            <li><button class="mode" onclick="startExam()"><span class="name"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>Ostrý test</span><span class="desc"><span id="exam-n">15</span> otázek, <span id="exam-min">30</span> minut, na úspěch orientačně 60 %</span><span class="count" id="exam-clock">30:00</span></button></li>
-            <li><button class="mode" onclick="startSuddenDeath()"><span class="name"><svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Sudden Death</span><span class="desc">Náhodné otázky, první chyba ukončí hru</span><span class="count">1 život</span></button></li>
-            <li><button class="mode" id="btn-comp-arena" onclick="openCompArena()"><span class="name"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/><path d="M16 16l4 4"/><path d="M19 21l2-2"/><path d="M9.5 17.5L21 6V3h-3L6.5 14.5"/><path d="M11 19l-6-6"/><path d="M8 16l-4 4"/><path d="M5 21l-2-2"/></svg>Kompetitivní aréna</span><span class="desc" id="comp-arena-desc">Vytvoř nebo se připoj do místnosti · FFA, 1v1 Duel &amp; King of the Hill</span><span class="count" id="comp-arena-badge">Aréna →</span></button></li>
+            <li><button class="mode" data-click="startExam"><span class="name"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>Ostrý test</span><span class="desc"><span id="exam-n">15</span> otázek, <span id="exam-min">30</span> minut, na úspěch orientačně 60 %</span><span class="count" id="exam-clock">30:00</span></button></li>
+            <li><button class="mode" data-click="startSuddenDeath"><span class="name"><svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Sudden Death</span><span class="desc">Náhodné otázky, první chyba ukončí hru</span><span class="count">1 život</span></button></li>
+            <li><button class="mode" id="btn-comp-arena" data-click="openCompArena"><span class="name"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/><path d="M16 16l4 4"/><path d="M19 21l2-2"/><path d="M9.5 17.5L21 6V3h-3L6.5 14.5"/><path d="M11 19l-6-6"/><path d="M8 16l-4 4"/><path d="M5 21l-2-2"/></svg>Kompetitivní aréna</span><span class="desc" id="comp-arena-desc">Vytvoř nebo se připoj do místnosti · FFA, 1v1 Duel &amp; King of the Hill</span><span class="count" id="comp-arena-badge">Aréna →</span></button></li>
           </ul>
         </section>
 
         <nav class="foot" aria-label="Quick links">
-          <button class="lnk" onclick="openProfileView()">Profile &amp; Study Recap</button>
-          <button class="lnk" onclick="openLeaderboardView()">Leaderboard</button>
+          <button class="lnk" data-click="openProfileView">Profile &amp; Study Recap</button>
+          <button class="lnk" data-click="openLeaderboardView">Leaderboard</button>
         </nav>
       </section>
     </div>
@@ -151,13 +151,13 @@
   <!-- Pohled: Otázky po blocích -->
   <section id="chunks" aria-labelledby="chunks-heading">
     <h1 id="chunks-heading">Otázky po <span id="chunks-size-label">10</span></h1>
-    <form class="chunk-size-row" onsubmit="event.preventDefault(); applyChunkSize();">
+    <form class="chunk-size-row" data-submit="applyChunkSize">
       <label for="chunk-size-input">Velikost bloku</label>
       <input type="number" id="chunk-size-input" min="1" step="1">
       <button type="submit">Použít</button>
     </form>
     <section class="chunk-list" id="chunk-list" aria-label="Seznam bloků"></section>
-    <button class="chunk-back" onclick="showMenu()">Zpět do menu</button>
+    <button class="chunk-back" data-click="showMenu">Zpět do menu</button>
   </section>
 
   <!-- Pohled: Detail bloku -->
@@ -165,26 +165,26 @@
     <h1 id="chunk-detail-title"></h1>
     <div class="chunk-detail-wrap">
       <nav class="chunk-detail-btns" aria-label="Filtrování otázek v bloku">
-        <button onclick="startChunkSubset('all')">Vše</button>
-        <button onclick="startChunkSubset(undefined)">Neznámé</button>
-        <button onclick="startChunkSubset('wrong')">Chybné</button>
-        <button onclick="startChunkSubset('correct')">Správné</button>
-        <button onclick="startChunkStudy()">Studuj, pak testuj</button>
+        <button data-click="startChunkSubset" data-arg="all">Vše</button>
+        <button data-click="startChunkSubset">Neznámé</button>
+        <button data-click="startChunkSubset" data-arg="wrong">Chybné</button>
+        <button data-click="startChunkSubset" data-arg="correct">Správné</button>
+        <button data-click="startChunkStudy">Studuj, pak testuj</button>
       </nav>
       <section class="cd-section good"><h3><i>1</i>Správné</h3><div class="cd-qlist" id="cd-good"></div></section>
       <section class="cd-section bad"><h3><i>0</i>Chybné</h3><div class="cd-qlist" id="cd-bad"></div></section>
       <section class="cd-section new"><h3><i>·</i>Neznámé</h3><div class="cd-qlist" id="cd-new"></div></section>
     </div>
-    <button class="chunk-back" onclick="showChunks()">Zpět na bloky</button>
+    <button class="chunk-back" data-click="showChunks">Zpět na bloky</button>
   </article>
 
   <!-- Modální dialog: Náhodný výběr -->
   <aside class="overlay" id="random-modal" role="dialog" aria-modal="true" aria-labelledby="rand-modal-title">
-    <form class="modal" onsubmit="event.preventDefault(); startRandom();">
+    <form class="modal" data-submit="startRandom">
       <h2 id="rand-modal-title">Kolik otázek?</h2>
       <input type="number" id="rand-count" min="1" value="10">
       <menu class="modal-btns">
-        <button type="button" class="btn-cancel" onclick="closeModal()">Zrušit</button>
+        <button type="button" class="btn-cancel" data-click="closeModal">Zrušit</button>
         <button type="submit" class="btn-ok">Spustit</button>
       </menu>
     </form>
@@ -193,8 +193,8 @@
   <!-- Pohled: Competitive Arena (Subpage) -->
   <section id="comp-arena" aria-labelledby="arena-heading">
     <div class="subpage-nav">
-      <button type="button" class="subpage-back" onclick="showMenu()">← Back to Menu</button>
-      <button type="button" class="nav-pill-btn" onclick="openLeaderboardView()">Leaderboard</button>
+      <button type="button" class="subpage-back" data-click="showMenu">← Back to Menu</button>
+      <button type="button" class="nav-pill-btn" data-click="openLeaderboardView">Leaderboard</button>
     </div>
     <div class="subpage-head">
       <h1 id="arena-heading">Competitive Arena</h1>
@@ -207,14 +207,14 @@
         <span class="arena-card-sub">10 timed questions · identical question set for all players</span>
       </div>
 
-      <select id="room-mode-select" aria-label="Room Mode" style="display:none;">
+      <select id="room-mode-select" aria-label="Room Mode" class="is-hidden">
         <option value="ffa" selected>Free For All (FFA)</option>
         <option value="duel">1v1 Duel</option>
         <option value="koth">King of the Hill</option>
       </select>
 
       <div class="arena-modes-grid" role="radiogroup" aria-label="Select competitive mode">
-        <div class="arena-mode-card active" data-mode="ffa" onclick="selectArenaRoomMode('ffa')">
+        <div class="arena-mode-card active" data-mode="ffa" data-click="selectArenaRoomMode" data-arg="ffa">
           <div>
             <div class="amc-top">
               <span class="amc-title">Free For All (FFA)</span>
@@ -224,11 +224,11 @@
           </div>
           <div class="amc-meta">
             <span id="ffa-players-badge">0 players</span>
-            <button type="button" class="amc-solo-btn" id="btn-ffa-start" onclick="event.stopPropagation(); startCompetitiveMode('ffa')">Solo FFA →</button>
+            <button type="button" class="amc-solo-btn" id="btn-ffa-start" data-click="startCompetitiveMode" data-arg="ffa" data-stop="1">Solo FFA →</button>
           </div>
         </div>
 
-        <div class="arena-mode-card" data-mode="duel" onclick="selectArenaRoomMode('duel')">
+        <div class="arena-mode-card" data-mode="duel" data-click="selectArenaRoomMode" data-arg="duel">
           <div>
             <div class="amc-top">
               <span class="amc-title">1v1 Duel</span>
@@ -238,11 +238,11 @@
           </div>
           <div class="amc-meta">
             <span id="duel-open-badge">0 open</span>
-            <button type="button" class="amc-solo-btn" id="btn-duel-start" onclick="event.stopPropagation(); startCompetitiveMode('duel')">Async 1v1 →</button>
+            <button type="button" class="amc-solo-btn" id="btn-duel-start" data-click="startCompetitiveMode" data-arg="duel" data-stop="1">Async 1v1 →</button>
           </div>
         </div>
 
-        <div class="arena-mode-card" data-mode="koth" onclick="selectArenaRoomMode('koth')">
+        <div class="arena-mode-card" data-mode="koth" data-click="selectArenaRoomMode" data-arg="koth">
           <div>
             <div class="amc-top">
               <span class="amc-title">King of the Hill</span>
@@ -252,7 +252,7 @@
           </div>
           <div class="amc-meta">
             <span id="koth-defenses-badge">0×</span>
-            <button type="button" class="amc-solo-btn" id="btn-koth-start" onclick="event.stopPropagation(); startKothChallenge()">Challenge →</button>
+            <button type="button" class="amc-solo-btn" id="btn-koth-start" data-click="startKothChallenge" data-stop="1">Challenge →</button>
           </div>
         </div>
       </div>
@@ -266,14 +266,14 @@
           <span class="arena-toggle-track"></span>
           <span>Auto-start on full</span>
         </label>
-        <button type="button" class="room-create-btn" id="btn-create-room" onclick="createRoomFromUI()">+ Create Room</button>
+        <button type="button" class="room-create-btn" id="btn-create-room" data-click="createRoomFromUI">+ Create Room</button>
       </div>
     </div>
 
     <div class="arena-section-card">
       <div class="rooms-head">
         <span>Active Lobby Rooms</span>
-        <span id="rooms-count-badge" style="font-family:var(--mono);font-size:.8rem;color:var(--blue);">0 open</span>
+        <span id="rooms-count-badge" class="rooms-count">0 open</span>
       </div>
       <ul class="rooms-list" id="comp-rooms-list"></ul>
     </div>
@@ -289,8 +289,8 @@
   <!-- Pohled: Leaderboard (Subpage) -->
   <section id="leaderboard-view" aria-labelledby="lb-heading">
     <div class="subpage-nav">
-      <button type="button" class="subpage-back" onclick="showMenu()">← Back to Menu</button>
-      <button type="button" class="nav-pill-btn" onclick="openCompArena()">Competitive Arena →</button>
+      <button type="button" class="subpage-back" data-click="showMenu">← Back to Menu</button>
+      <button type="button" class="nav-pill-btn" data-click="openCompArena">Competitive Arena →</button>
     </div>
     <div class="subpage-head">
       <h1 id="lb-heading">Leaderboard</h1>
@@ -307,9 +307,9 @@
     <div class="arena-section-card">
       <div class="rooms-head">
         <span>Study XP Standings</span>
-        <span id="lb-total-users" style="font-family:var(--mono);font-size:.8rem;color:var(--muted);"></span>
+        <span id="lb-total-users" class="lb-count"></span>
       </div>
-      <div style="overflow-x:auto;">
+      <div class="lb-table-wrap" tabindex="0" role="region" aria-label="Study XP Standings">
         <table class="lb-table">
           <thead>
             <tr>
@@ -322,7 +322,7 @@
             </tr>
           </thead>
           <tbody id="lb-table-body">
-            <tr><td colspan="6" style="color:var(--muted);">Loading standings...</td></tr>
+            <tr><td colspan="6" class="lb-empty">Loading standings...</td></tr>
           </tbody>
         </table>
       </div>
@@ -339,8 +339,8 @@
   <!-- Pohled: Profile & Study Recap (Subpage) -->
   <section id="profile-view" aria-labelledby="prof-heading">
     <div class="subpage-nav">
-      <button type="button" class="subpage-back" onclick="showMenu()">← Back to Menu</button>
-      <a href="/logout" class="subpage-back" style="color:var(--bad);border-color:color-mix(in srgb, var(--bad) 40%, var(--line));">Sign out</a>
+      <button type="button" class="subpage-back" data-click="showMenu">← Back to Menu</button>
+      <a href="/logout" class="subpage-back btn-signout">Sign out</a>
     </div>
     <div class="subpage-head">
       <h1 id="prof-heading">Profile &amp; Study Recap</h1>
@@ -351,7 +351,7 @@
     <div class="arena-section-card">
       <div class="rooms-head">
         <span>Study Recap</span>
-        <span id="prof-role-badge" style="font-family:var(--mono);font-size:.78rem;color:var(--blue);"></span>
+        <span id="prof-role-badge" class="prof-role-badge"></span>
       </div>
       <div class="prof-grid">
         <div class="prof-stat-box"><span>Level &amp; Rank</span><strong id="prof-lvl-title">1 · NPC</strong></div>
@@ -360,12 +360,12 @@
         <div class="prof-stat-box"><span>Best Streak</span><strong id="prof-best-streak">0</strong></div>
       </div>
 
-      <div style="margin-bottom:16px;">
-        <div style="font-size:.8125rem;font-weight:500;color:var(--muted);margin-bottom:6px;">Aktivita za posledních 7 dní</div>
+      <div class="prof-history-wrap">
+        <div class="prof-sub-title">Aktivita za posledních 7 dní</div>
         <div id="dp-history"></div>
       </div>
 
-      <div style="font-size:.8125rem;font-weight:500;color:var(--muted);margin-top:16px;margin-bottom:6px;">Přehled po přednáškách</div>
+      <div class="prof-sub-title prof-sub-title-spaced">Přehled po přednáškách</div>
       <div class="recap-source-list" id="profile-recap-sources"></div>
     </div>
 
@@ -373,7 +373,7 @@
     <div class="arena-section-card">
       <div class="rooms-head">
         <span>Achievements</span>
-        <span id="prof-ach-count" style="font-family:var(--mono);font-size:.8rem;color:var(--ok);">0 / 17</span>
+        <span id="prof-ach-count" class="prof-ach-count">0 / 17</span>
       </div>
       <div class="ach-grid" id="ach-list" aria-label="Achievements">
         <div class="ach-badge" data-ach="first" data-label="First Step" data-hint="Answer your first question correctly"><span class="ach-title">First Step</span><small class="ach-hint">Answer your first question correctly</small></div>
@@ -404,28 +404,28 @@
       <div class="prof-form-grid">
         <div class="prof-form-box">
           <h3>Appearance &amp; Audio</h3>
-          <label for="theme-switcher" style="font-size:.8rem;color:var(--muted);">Color Theme</label>
-          <select class="prof-input" id="theme-switcher" onchange="applyUserTheme(this.value)" aria-label="Color Theme">
+          <label for="theme-switcher" class="prof-field-lbl">Color Theme</label>
+          <select class="prof-input" id="theme-switcher" data-change="applyUserTheme" aria-label="Color Theme">
             <option value="dark">Dark (Graphite)</option>
             <option value="amoled">AMOLED</option>
             <option value="catppuccin">Catppuccin</option>
             <option value="light">Light</option>
             <option value="auto">System Auto</option>
           </select>
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:6px;">
-            <span style="font-size:.82rem;color:var(--muted);">Answer Sound Effects</span>
-            <button type="button" class="nav-pill-btn" id="btn-sound" onclick="toggleSound()">Sound On</button>
+          <div class="prof-sound-row">
+            <span class="prof-sound-lbl">Answer Sound Effects</span>
+            <button type="button" class="nav-pill-btn" id="btn-sound" data-click="toggleSound">Sound On</button>
           </div>
         </div>
 
-        <form class="prof-form-box" onsubmit="event.preventDefault(); submitUsernameChange();">
+        <form class="prof-form-box" data-submit="submitUsernameChange">
           <h3>Change Username</h3>
-          <label for="prof-new-username" style="font-size:.8rem;color:var(--muted);">New username (3–25 chars)</label>
+          <label for="prof-new-username" class="prof-field-lbl">New username (3–25 chars)</label>
           <input type="text" id="prof-new-username" class="prof-input" minlength="3" maxlength="25" placeholder="Enter new username..." required>
           <button type="submit" class="prof-btn">Save Username</button>
         </form>
 
-        <form class="prof-form-box" onsubmit="event.preventDefault(); submitPasswordChange();">
+        <form class="prof-form-box" data-submit="submitPasswordChange">
           <h3>Change Password</h3>
           <input type="password" id="prof-cur-pw" class="prof-input" placeholder="Current password" required>
           <input type="password" id="prof-new-pw" class="prof-input" minlength="8" placeholder="New password (min. 8 chars)" required>
@@ -436,16 +436,16 @@
     </div>
 
     <!-- Danger Zone (Revalidated Data Deletion) -->
-    <div class="arena-section-card" style="border-color:color-mix(in srgb, var(--bad) 35%, var(--line));">
+    <div class="arena-section-card danger-zone-card">
       <div class="danger-zone-bar">
         <div>
-          <div style="font-size:.95rem;font-weight:800;color:var(--bad);margin-bottom:4px;">Data Management &amp; Progress Reset</div>
-          <p style="margin:0;font-size:.82rem;color:var(--muted);">Deleting study progress is permanent and requires password revalidation.</p>
+          <div class="danger-zone-title">Data Management &amp; Progress Reset</div>
+          <p class="danger-zone-desc">Deleting study progress is permanent and requires password revalidation.</p>
         </div>
-        <div style="display:flex;flex-wrap:wrap;gap:10px;">
-          <button type="button" class="prof-btn danger" onclick="clearSourceProgress()">Reset Current Lecture</button>
-          <button type="button" class="prof-btn danger" onclick="openRevalidateModal('all')">Reset All Progress</button>
-          <button type="button" class="prof-btn danger" id="btn-remove-profile" onclick="openDeleteProfileModal()" style="border-width:2px;font-weight:800;">Remove Profile</button>
+        <div class="danger-zone-actions">
+          <button type="button" class="prof-btn danger" data-click="clearSourceProgress">Reset Current Lecture</button>
+          <button type="button" class="prof-btn danger" data-click="openRevalidateModal" data-arg="all">Reset All Progress</button>
+          <button type="button" class="prof-btn danger btn-remove-profile" id="btn-remove-profile" data-click="openDeleteProfileModal">Remove Profile</button>
         </div>
       </div>
     </div>
@@ -453,58 +453,58 @@
 
   <!-- Modal: Password Revalidation before Data Deletion -->
   <aside class="overlay" id="revalidate-modal" role="dialog" aria-modal="true" aria-labelledby="reval-modal-title">
-    <form class="modal" onsubmit="event.preventDefault(); confirmRevalidatedDelete();">
-      <h2 id="reval-modal-title" style="font-size:1.25rem;">Confirm Data Reset</h2>
-      <p id="reval-modal-desc" style="font-size:.86rem;color:var(--muted);margin:0 0 14px;">Enter your account password to confirm progress deletion.</p>
-      <input type="password" id="reval-password-input" class="prof-input" placeholder="Enter password to confirm..." required style="margin-bottom:8px;">
-      <div id="reval-error-msg" style="color:var(--bad);font-size:.8rem;min-height:1.2em;"></div>
-      <menu class="modal-btns" style="margin-top:16px;">
-        <button type="button" class="btn-cancel" onclick="closeRevalidateModal()">Cancel</button>
-        <button type="submit" class="btn-ok" style="background:var(--bad);color:#0f1729;">Confirm Reset</button>
+    <form class="modal" data-submit="confirmRevalidatedDelete">
+      <h2 id="reval-modal-title" class="modal-danger-title">Confirm Data Reset</h2>
+      <p id="reval-modal-desc" class="modal-desc">Enter your account password to confirm progress deletion.</p>
+      <input type="password" id="reval-password-input" class="prof-input modal-input-mb" placeholder="Enter password to confirm..." required>
+      <div id="reval-error-msg" class="modal-err"></div>
+      <menu class="modal-btns modal-btns-mt">
+        <button type="button" class="btn-cancel" data-click="closeRevalidateModal">Cancel</button>
+        <button type="submit" class="btn-ok btn-danger-confirm">Confirm Reset</button>
       </menu>
     </form>
   </aside>
 
   <!-- Modal: 3-Step Confirmation for Removing Profile -->
   <aside class="overlay" id="delete-profile-modal" role="dialog" aria-modal="true" aria-labelledby="del-prof-title">
-    <form class="modal" style="width:min(100%, 420px);" onsubmit="event.preventDefault(); submitDeleteProfileStep();">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-        <h2 id="del-prof-title" style="font-size:1.2rem;margin:0;color:var(--bad);">Remove Profile</h2>
-        <span id="del-prof-step-badge" style="font-family:var(--mono);font-size:.75rem;padding:2px 8px;border:1px solid var(--line);border-radius:999px;color:var(--muted);">Step 1 / 3</span>
+    <form class="modal modal-narrow" data-submit="submitDeleteProfileStep">
+      <div class="modal-head-row">
+        <h2 id="del-prof-title" class="del-prof-title">Remove Profile</h2>
+        <span id="del-prof-step-badge" class="del-prof-badge">Step 1 / 3</span>
       </div>
 
       <!-- Step 1: Warning & Checkbox -->
       <div id="del-prof-step-1">
-        <p style="font-size:.86rem;color:var(--muted);margin:0 0 12px;line-height:1.45;">
+        <p class="modal-desc">
           This action will permanently remove your user account, XP standings, streaks, unlocked achievements, and all lecture history.
         </p>
-        <label style="display:flex;align-items:flex-start;gap:8px;font-size:.84rem;color:var(--ink);cursor:pointer;padding:10px;background:var(--paper-2);border:1px solid var(--line);border-radius:8px;">
-          <input type="checkbox" id="del-prof-ack-chk" style="margin-top:3px;">
+        <label class="del-prof-ack-row">
+          <input type="checkbox" id="del-prof-ack-chk" class="del-prof-ack-chk">
           <span>I understand that removing my profile is permanent and cannot be undone.</span>
         </label>
       </div>
 
       <!-- Step 2: Username & Phrase Confirmation -->
-      <div id="del-prof-step-2" style="display:none;">
-        <p style="font-size:.85rem;color:var(--muted);margin:0 0 10px;">
-          Step 2: Type your exact username (<b id="del-prof-expected-user" style="color:var(--ink);"></b>) and the word <b>DELETE</b> below.
+      <div id="del-prof-step-2" class="is-hidden">
+        <p class="modal-desc-sm">
+          Step 2: Type your exact username (<b id="del-prof-expected-user" class="del-prof-user-b"></b>) and the word <b>DELETE</b> below.
         </p>
-        <input type="text" id="del-prof-user-inp" class="prof-input" placeholder="Your exact username" style="margin-bottom:8px;" autocomplete="off">
+        <input type="text" id="del-prof-user-inp" class="prof-input modal-input-mb" placeholder="Your exact username" autocomplete="off">
         <input type="text" id="del-prof-phrase-inp" class="prof-input" placeholder="Type DELETE to confirm" autocomplete="off">
       </div>
 
       <!-- Step 3: Final Password Revalidation -->
-      <div id="del-prof-step-3" style="display:none;">
-        <p style="font-size:.85rem;color:var(--muted);margin:0 0 10px;">
+      <div id="del-prof-step-3" class="is-hidden">
+        <p class="modal-desc-sm">
           Step 3 (Final): Enter your account password to permanently remove your profile.
         </p>
         <input type="password" id="del-prof-pw-inp" class="prof-input" placeholder="Account password" autocomplete="current-password">
       </div>
 
-      <div id="del-prof-err" style="color:var(--bad);font-size:.8rem;min-height:1.3em;margin-top:8px;"></div>
-      <menu class="modal-btns" style="margin-top:14px;">
-        <button type="button" class="btn-cancel" onclick="closeDeleteProfileModal()">Cancel</button>
-        <button type="submit" class="btn-ok" id="del-prof-submit-btn" style="background:var(--bad);color:#0f1729;">Continue (1/3) →</button>
+      <div id="del-prof-err" class="modal-err"></div>
+      <menu class="modal-btns modal-btns-mt-sm">
+        <button type="button" class="btn-cancel" data-click="closeDeleteProfileModal">Cancel</button>
+        <button type="submit" class="btn-ok btn-danger-confirm" id="del-prof-submit-btn">Continue (1/3) →</button>
       </menu>
     </form>
   </aside>
@@ -516,21 +516,21 @@
         <span class="rl-badge" id="rl-mode-badge">LOBBY ROOM</span>
         <span class="rl-timer" id="rl-timer"></span>
       </div>
-      <h1 id="rl-title" style="margin:0 0 4px;font-size:1.35rem;">Room</h1>
-      <p id="rl-subtitle" style="margin:0;color:var(--muted);font-size:.85rem;">10 timed questions</p>
+      <h1 id="rl-title" class="rl-title-h">Room</h1>
+      <p id="rl-subtitle" class="rl-sub-p">10 timed questions</p>
       <div class="rl-status" id="rl-status-banner">Waiting for players to join or host to start the match...</div>
-      <h2 style="margin:0 0 8px;font-size:.82rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);">Players in Lobby (<span id="rl-player-count">1/8</span>)</h2>
+      <h2 class="rl-players-h">Players in Lobby (<span id="rl-player-count">1/8</span>)</h2>
       <ul class="rl-players" id="rl-players-list"></ul>
       <div class="rl-actions">
-        <button type="button" class="primary" id="btn-rl-start" onclick="startActiveRoomByHost()">Start Match Now</button>
-        <button type="button" onclick="leaveActiveRoom()">Leave Room</button>
+        <button type="button" class="primary" id="btn-rl-start" data-click="startActiveRoomByHost">Start Match Now</button>
+        <button type="button" data-click="leaveActiveRoom">Leave Room</button>
       </div>
     </div>
   </section>
 
   <!-- Pohled: Kvíz -->
   <section id="quiz" aria-live="polite">
-    <aside id="sudden-banner" class="sudden-banner" style="display:none">Sudden Death<span>1 život, první chyba ukončí hru</span></aside>
+    <aside id="sudden-banner" class="sudden-banner is-hidden">Sudden Death<span>1 život, první chyba ukončí hru</span></aside>
     <header class="header">
       <output class="prog" id="prog-label"></output>
       <output class="score" id="score-label"></output>
@@ -542,14 +542,14 @@
       <div class="question-text" id="q-text"></div>
       <aside class="hint" id="q-hint"></aside>
     </article>
-    <fieldset class="options" id="opts" style="border:none; padding:0; margin:0;"></fieldset>
-    <input type="text" class="ans-input" id="ans-input" autocomplete="off" autocapitalize="characters" spellcheck="false" style="display:none" oninput="onInput()">
+    <fieldset class="options options-reset" id="opts"></fieldset>
+    <input type="text" class="ans-input is-hidden" id="ans-input" autocomplete="off" autocapitalize="characters" spellcheck="false" data-input="onInput">
     <output class="feedback" id="feedback"></output>
     <section class="solution" id="solution"></section>
     <nav class="nav" aria-label="Navigace v kvízu">
-      <button class="btn-prev" id="btn-prev" onclick="prevQ()">Předchozí</button>
-      <button class="btn-end" onclick="finishEarly()">Ukončit předčasně</button>
-      <button class="btn-next" id="btn-action" onclick="handleAction()">Potvrdit<span class="kh">Enter</span></button>
+      <button class="btn-prev" id="btn-prev" data-click="prevQ">Předchozí</button>
+      <button class="btn-end" data-click="finishEarly">Ukončit předčasně</button>
+      <button class="btn-next" id="btn-action" data-click="handleAction">Potvrdit<span class="kh">Enter</span></button>
     </nav>
   </section>
 
@@ -562,22 +562,22 @@
     </header>
     <figure class="res-bits" id="res-bits" role="img" aria-label="Grafický přehled výsledků"></figure>
     <p class="res-note" id="res-note"></p>
-    <section class="room-standings" id="room-results-board" style="display:none"><h3>Pořadí hráčů v místnosti</h3><ul id="room-results-list"></ul></section>
-    <section id="res-meter-wrap" style="display:none">
+    <section class="room-standings is-hidden" id="room-results-board"><h3>Pořadí hráčů v místnosti</h3><ul id="room-results-list"></ul></section>
+    <section id="res-meter-wrap" class="is-hidden">
       <div class="res-meter" id="res-meter"><i></i><u></u></div>
       <div class="res-meter-lab"><span>hranice 60 %</span></div>
     </section>
     <nav class="res-btns" aria-label="Akce po vyhodnocení">
-      <button class="primary" onclick="restartSame()">Restartovat stejný výběr</button>
-      <button id="btn-wrong" onclick="practiceWrong()" style="display:none" class="warning-btn"></button>
-      <button onclick="backFromResults()">Hlavní menu</button>
+      <button class="primary" data-click="restartSame">Restartovat stejný výběr</button>
+      <button id="btn-wrong" data-click="practiceWrong" class="warning-btn is-hidden"></button>
+      <button data-click="backFromResults">Hlavní menu</button>
     </nav>
   </section>
 
   <!-- Globální patička -->
-  <footer style="margin-top: 2.5rem; padding-top: 1.2rem; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.8rem; text-align: center; line-height: 1.6;">
-    <div>Made with AI · Poděkování <b>Zdenax</b> za vytvoření apky · <a href="https://github.com/zdenax/TZI-TIN-APP" target="_blank" rel="noopener noreferrer" style="color: var(--blue); text-decoration: underline;">GitHub: TZI-TIN-APP</a></div>
-    <div style="margin-top: 0.4rem; font-size: 0.72rem; opacity: 0.85;">Soukromí: Žádný tracking, e-maily ani analytika. V databázi je jen hash hesla, zvolená přezdívka a skóre pro synchronizaci mezi zařízeními a fungování arény. Kompletní smazání účtu i historie je dostupné v profilu.</div>
+  <footer class="app-footer">
+    <div>Made with AI · Poděkování <b>Zdenax</b> za vytvoření apky · <a href="https://github.com/zdenax/TZI-TIN-APP" target="_blank" rel="noopener noreferrer" class="app-footer-link">GitHub: TZI-TIN-APP</a></div>
+    <div class="app-footer-privacy">Soukromí: Žádný tracking, e-maily ani analytika. V databázi je jen hash hesla, zvolená přezdívka a skóre pro synchronizaci mezi zařízeními a fungování arény. Kompletní smazání účtu i historie je dostupné v profilu.</div>
   </footer>
 
   <!-- HTML5 Templates pro dynamicky generované komponenty -->
@@ -607,19 +607,21 @@
   </template>
 
 </main>
+<script src="/static/js/dom.js?v=1"></script>
 <script src="/static/js/core.js?v=14"></script>
-<script src="/static/js/format.js?v=16"></script>
-<script src="/static/js/shell.js?v=16"></script>
+<script src="/static/js/format.js?v=18"></script>
+<script src="/static/js/shell.js?v=17"></script>
 <script src="/static/js/arena.js?v=14"></script>
-<script src="/static/js/account.js?v=14"></script>
-<script src="/static/js/offline.js?v=14"></script>
-<script src="/static/js/gamification.js?v=14"></script>
-<script src="/static/js/rooms.js?v=15"></script>
-<script src="/static/js/menu.js?v=15"></script>
-<script src="/static/js/chunks.js?v=14"></script>
-<script src="/static/js/modes.js?v=14"></script>
-<script src="/static/js/comp_modes.js?v=14"></script>
+<script src="/static/js/account.js?v=15"></script>
+<script src="/static/js/offline.js?v=15"></script>
+<script src="/static/js/gamification.js?v=15"></script>
+<script src="/static/js/rooms.js?v=16"></script>
+<script src="/static/js/menu.js?v=16"></script>
+<script src="/static/js/chunks.js?v=15"></script>
+<script src="/static/js/modes.js?v=15"></script>
+<script src="/static/js/comp_modes.js?v=15"></script>
 <script src="/static/js/recall.js?v=14"></script>
-<script src="/static/js/quiz.js?v=15"></script>
+<script src="/static/js/quiz.js?v=16"></script>
+<script src="/static/js/events.js?v=1"></script>
 </body>
 </html>
