@@ -41,6 +41,25 @@ def git_pull():
         checkout_res = _git("checkout", "upstream/main", "--", ":(glob)banky/*.json", "glosar", timeout=30)
         out = (checkout_res.stdout + "\n" + checkout_res.stderr).strip()
 
+        # Obnovit vlastní doplňky v glosar/, které zatím nejsou v upstream/main
+        try:
+            import json
+            for gname in ("glosar/glosar.json", "glosar/doplnky.json"):
+                head_res = _git("show", f"HEAD:{gname}", timeout=10)
+                gpath = BASE / gname
+                if head_res.returncode == 0 and gpath.is_file():
+                    head_data = json.loads(head_res.stdout)
+                    curr_data = json.loads(gpath.read_text(encoding="utf-8"))
+                    changed = False
+                    for bk, entries in head_data.get("banks", {}).items():
+                        if bk not in curr_data.get("banks", {}):
+                            curr_data.setdefault("banks", {})[bk] = entries
+                            changed = True
+                    if changed:
+                        gpath.write_text(json.dumps(curr_data, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+        except Exception as merge_err:
+            print(f"[Auto-sync] Varování při sloučení glosáře: {merge_err}")
+
         # Okamžitě obnovit cache otázek v paměti běžícího serveru
         refresh_questions()
 
