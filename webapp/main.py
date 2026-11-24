@@ -3,13 +3,13 @@ import logging
 import threading
 import time
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.base import BaseHTTPMiddleware
 
 import db
 import tzi_trener
-from . import questions
+from . import questions, uni_bridge
 from .config import HASHED_PASSWORD
 from .cookie_utils import get_client_ip, is_https
 from .git_sync import sync_worker
@@ -70,6 +70,25 @@ async def add_security_headers(request, call_next):
     if "text/html" in response.headers.get("content-type", "") and "cache-control" not in response.headers:
         response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
         response.headers["Pragma"] = "no-cache"
+    if (
+        uni_bridge.is_migration_mode()
+        and response.status_code == 200
+        and "text/html" in response.headers.get("content-type", "")
+    ):
+        chunks = [chunk async for chunk in response.body_iterator]
+        raw_body = b"".join(chunks)
+        html_text = raw_body.decode("utf-8", errors="replace")
+        patched = uni_bridge.inject_deprecation_banner(html_text).encode("utf-8")
+        new_resp = Response(
+            content=patched,
+            status_code=response.status_code,
+            media_type=response.media_type,
+        )
+        for k, v in response.headers.items():
+            if k.lower() != "content-length":
+                new_resp.headers.append(k, v)
+        new_resp.headers["content-length"] = str(len(patched))
+        return new_resp
     return response
 
 
