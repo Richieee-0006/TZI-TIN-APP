@@ -12,6 +12,7 @@ from ..pages import LOGIN_REGISTER_HTML
 from ..sessions import create_session_token
 from ..csrf import validate_csrf, clear_csrf_cookie, generate_csrf_token
 from ..cookie_utils import get_client_ip, set_secure_cookie
+from .. import uni_bridge
 
 router = APIRouter()
 
@@ -71,6 +72,9 @@ async def post_login(
     password: str = Form(...),
     csrf_token: Optional[str] = Form(None),
 ):
+    if uni_bridge.is_migration_mode() and uni_bridge.is_trial_only():
+        return RedirectResponse(url=uni_bridge.get_target_url(), status_code=303)
+
     # CSRF validace
     await validate_csrf(request, response, csrf_token=csrf_token)
 
@@ -97,6 +101,9 @@ async def post_login(
 
 @router.get("/register", response_class=HTMLResponse)
 def get_register(request: Request, error: Optional[str] = None):
+    if uni_bridge.is_migration_mode():
+        return RedirectResponse(url=uni_bridge.get_register_url(), status_code=303)
+
     msg = f'<div class="error-msg">{escape(error)}</div>' if error else ""
 
     # Generování CSRF tokenu do cookie
@@ -126,6 +133,9 @@ async def post_register(
     theme: str = Form("games"),
     csrf_token: Optional[str] = Form(None),
 ):
+    if uni_bridge.is_migration_mode():
+        return RedirectResponse(url=uni_bridge.get_register_url(), status_code=303)
+
     # CSRF validace
     await validate_csrf(request, response, csrf_token=csrf_token)
 

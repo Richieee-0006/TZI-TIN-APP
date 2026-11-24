@@ -5,6 +5,7 @@ import subprocess
 import time
 from .config import BASE
 from .questions import refresh_questions
+from . import uni_bridge
 
 
 UPSTREAM_URL = "https://github.com/zdenax/TZI-TIN-APP.git"
@@ -29,6 +30,12 @@ def _ensure_upstream_remote():
 
 # --- Git Auto-sync Worker (pouze banky otázek z upstream/main) ---
 def git_pull():
+    if uni_bridge.is_migration_mode() and uni_bridge.get_bundle_url() and uni_bridge.get_sync_token():
+        ok, msg = uni_bridge.pull_tzi_bundle()
+        if ok:
+            refresh_questions()
+        print(f"[UNI-Bridge] {msg}")
+        return msg
     try:
         _ensure_upstream_remote()
         print("[Auto-sync] Kontroluji nové banky otázek z upstream/main (zdenax/TZI-TIN-APP)...")
